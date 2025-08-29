@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "chart.js": "^4.4.7",
-    "dayjs": "^1.11.13",
+    "chart.js": "^4.5.0",
     "next": "15.3.3",
     "react": "^19.0",
-    "react-chartjs-2": "^5.2.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0"
   },
   "devDependencies": {
     "@antfu/ni": "^25.0.0",
-    "@biomejs/biome": "^2.1.2",
+    "@biomejs/biome": "^2.2.2",
     "@sablier/devkit": "github:sablier-labs/devkit#main",
     "@types/node": "^20",
     "@types/react": "^19",
