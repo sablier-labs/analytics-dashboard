@@ -11,17 +11,18 @@
     "react-dom": "^19.0"
   },
   "devDependencies": {
+    "@antfu/ni": "^25.0.0",
     "@biomejs/biome": "^2.1.2",
     "@sablier/devkit": "github:sablier-labs/devkit#main",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.4",
+    "postcss": "^8.5.6",
     "prettier": "^3.6.2",
-    "tailwindcss": "^4",
+    "tailwindcss": "^3",
     "tsx": "^4.20.4",
     "typescript": "^5",
     "vercel": "^45.0.9"
@@ -30,6 +31,11 @@
     "node": ">=20"
   },
   "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
     "prepare": "husky"
   }
 }
