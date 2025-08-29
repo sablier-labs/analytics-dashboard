@@ -1,6 +1,7 @@
 import { UserCounter } from "@/components/UserCounter";
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
+import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 
 export default function Home() {
   return (
@@ -22,7 +23,10 @@ export default function Home() {
           
           <TimeBasedUserCounters />
           
-          <CumulativeUserChart />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <CumulativeUserChart />
+            <ChainDistributionChart />
+          </div>
         </div>
       </div>
     </div>

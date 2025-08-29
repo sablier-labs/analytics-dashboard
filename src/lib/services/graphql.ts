@@ -43,6 +43,20 @@ export interface TimeBasedUserCounts {
   pastYear: number;
 }
 
+export interface ChainDistribution {
+  chainId: string;
+  userCount: number;
+}
+
+export interface ChainDistributionResponse {
+  User_aggregate_by_pk: Array<{
+    chainId: string;
+    aggregate: {
+      count: number;
+    };
+  }>;
+}
+
 export interface MonthlyUserGrowth {
   month: string;
   cumulativeUsers: number;
@@ -269,6 +283,104 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
     return monthlyData.filter(data => data.cumulativeUsers > 0);
   } catch (error) {
     console.error('Error fetching monthly user growth:', error);
+    throw error;
+  }
+}
+
+export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
+  // First, get all unique chain IDs
+  const chainQuery = `
+    query GetUniqueChains {
+      User(
+        where: {
+          transactions: {}
+        }
+        distinct_on: [chainId]
+      ) {
+        chainId
+      }
+    }
+  `;
+
+  try {
+    const chainResponse = await fetch(GRAPHQL_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: chainQuery }),
+    });
+
+    if (!chainResponse.ok) {
+      throw new Error(`HTTP error! status: ${chainResponse.status}`);
+    }
+
+    const chainResult: GraphQLResponse<{ User: Array<{ chainId: string }> }> = await chainResponse.json();
+
+    if (chainResult.errors) {
+      throw new Error(`GraphQL error: ${chainResult.errors[0]?.message}`);
+    }
+
+    const uniqueChains = chainResult.data.User.map(u => u.chainId);
+    
+    // Now create aggregation queries for each chain
+    const chainQueries = uniqueChains.map((chainId, index) => {
+      return `
+        chain_${index}: User_aggregate(
+          where: {
+            chainId: { _eq: "${chainId}" }
+            transactions: {}
+          }
+        ) {
+          aggregate {
+            count
+          }
+        }
+      `;
+    });
+
+    const aggregateQuery = `
+      query GetChainDistribution {
+        ${chainQueries.join('\n')}
+      }
+    `;
+
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: aggregateQuery }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<any> = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Process results
+    const chainDistribution: ChainDistribution[] = [];
+    
+    uniqueChains.forEach((chainId, index) => {
+      const key = `chain_${index}`;
+      const count = result.data[key].aggregate.count;
+      
+      if (count > 0) {
+        chainDistribution.push({
+          chainId: chainId.toString(),
+          userCount: count,
+        });
+      }
+    });
+
+    return chainDistribution.sort((a, b) => b.userCount - a.userCount);
+  } catch (error) {
+    console.error('Error fetching chain distribution:', error);
     throw error;
   }
 }
