@@ -27,7 +27,7 @@ const chainNames: Record<string, string> = {
   "42": "lukso",
   "44": "crab",
   "46": "darwinia",
-  "50": "xdc",
+  "50": "XDC",
   "52": "csc",
   "55": "zyx",
   "56": "binance",
@@ -40,7 +40,7 @@ const chainNames: Record<string, string> = {
   "87": "nova network",
   "88": "tomochain",
   "96": "bitkub",
-  "100": "xdai",
+  "100": "Gnosis Chain",
   "106": "velas",
   "108": "thundercore",
   "119": "enuls",
@@ -108,6 +108,7 @@ const chainNames: Record<string, string> = {
   "1625": "gravity",
   "1729": "reya network",
   "1868": "soneium",
+  "1890": "LightLink",
   "1923": "swellchain",
   "1975": "onus",
   "1992": "hubblenet",
@@ -127,6 +128,7 @@ const chainNames: Record<string, string> = {
   "5000": "mantle",
   "5050": "skate",
   "5330": "superseed",
+  "5845": "Tangle",
   "5432": "yeying",
   "5551": "nahmii",
   "6001": "bouncebit",
@@ -160,6 +162,7 @@ const chainNames: Record<string, string> = {
   "32659": "fusion",
   "32769": "zilliqa",
   "33139": "apechain",
+  "34443": "Mode",
   "41923": "edu chain",
   "42161": "arbitrum",
   "42170": "arbitrum nova",
@@ -236,8 +239,12 @@ export function ChainDistributionChart() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchChainDistribution();
-        setChainData(data);
+        const rawData = await fetchChainDistribution();
+        // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
+        const filteredData = rawData.filter(chain => 
+          chain.chainId !== '11155111' && chain.chainId !== '84532'
+        );
+        setChainData(filteredData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load chain distribution');
       } finally {

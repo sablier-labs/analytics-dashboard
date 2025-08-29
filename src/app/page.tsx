@@ -1,6 +1,13 @@
 import { UserCounter } from "@/components/UserCounter";
+import { TransactionCounter } from "@/components/TransactionCounter";
+import { AverageTransactionsPerUser } from "@/components/AverageTransactionsPerUser";
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
+import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
+import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
+import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
+import { DailyTransactionVolumeChart } from "@/components/DailyTransactionVolumeChart";
+import { UserTransactionDistributionChart } from "@/components/UserTransactionDistributionChart";
 import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 
 export default function Home() {
@@ -17,16 +24,29 @@ export default function Home() {
         </div>
         
         <div className="max-w-6xl mx-auto space-y-12">
-          <div className="max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <UserCounter />
+            <TransactionCounter />
+            <AverageTransactionsPerUser />
           </div>
           
           <TimeBasedUserCounters />
           
+          <TimeBasedTransactionCounters />
+          
+          <GrowthRateIndicators />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CumulativeUserChart />
-            <ChainDistributionChart />
+            <CumulativeTransactionChart />
           </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <DailyTransactionVolumeChart />
+            <UserTransactionDistributionChart />
+          </div>
+          
+          <ChainDistributionChart />
         </div>
       </div>
     </div>
