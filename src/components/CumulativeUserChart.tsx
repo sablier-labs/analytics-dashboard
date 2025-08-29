@@ -1,19 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
-  Chart as ChartJS,
   CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
   LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import { fetchMonthlyUserGrowth, type MonthlyUserGrowth } from "@/lib/services/graphql";
+} from "chart.js";
+import { useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
+import type { MonthlyUserGrowth } from "@/lib/services/graphql";
+import { fetchMonthlyUserGrowth } from "@/lib/services/graphql";
 
 ChartJS.register(
   CategoryScale,
@@ -23,7 +24,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 export function CumulativeUserChart() {
@@ -39,7 +40,7 @@ export function CumulativeUserChart() {
         const data = await fetchMonthlyUserGrowth();
         setUserGrowthData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load user growth data');
+        setError(err instanceof Error ? err.message : "Failed to load user growth data");
       } finally {
         setLoading(false);
       }
@@ -49,7 +50,7 @@ export function CumulativeUserChart() {
   }, []);
 
   const formatMonth = (monthString: string) => {
-    const [year, month] = monthString.split('-');
+    const [year, month] = monthString.split("-");
     const date = new Date(parseInt(year), parseInt(month) - 1, 1);
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -86,120 +87,118 @@ export function CumulativeUserChart() {
   }
 
   const chartData = {
-    labels: userGrowthData.map(data => formatMonth(data.month)),
     datasets: [
       {
-        label: 'Cumulative Users',
-        data: userGrowthData.map(data => data.cumulativeUsers),
-        borderColor: 'rgb(226, 92, 49)',
-        backgroundColor: 'rgba(226, 92, 49, 0.1)',
+        backgroundColor: "rgba(226, 92, 49, 0.1)",
+        borderColor: "rgb(226, 92, 49)",
         borderWidth: 3,
+        data: userGrowthData.map((data) => data.cumulativeUsers),
         fill: true,
-        tension: 0.1,
-        pointBackgroundColor: 'rgb(226, 92, 49)',
-        pointBorderColor: 'rgb(255, 255, 255)',
+        label: "Cumulative Users",
+        pointBackgroundColor: "rgb(226, 92, 49)",
+        pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
-        pointRadius: 4,
         pointHoverRadius: 6,
+        pointRadius: 4,
+        tension: 0.1,
       },
       {
-        label: 'New Users',
-        data: userGrowthData.map(data => data.newUsers),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        borderColor: "rgb(59, 130, 246)",
         borderWidth: 2,
+        data: userGrowthData.map((data) => data.newUsers),
         fill: false,
-        tension: 0.1,
-        pointBackgroundColor: 'rgb(59, 130, 246)',
-        pointBorderColor: 'rgb(255, 255, 255)',
+        label: "New Users",
+        pointBackgroundColor: "rgb(59, 130, 246)",
+        pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
-        pointRadius: 3,
         pointHoverRadius: 5,
+        pointRadius: 3,
+        tension: 0.1,
       },
     ],
+    labels: userGrowthData.map((data) => formatMonth(data.month)),
   };
 
   const options = {
-    responsive: true,
+    interaction: {
+      axis: "x" as const,
+      intersect: false,
+      mode: "nearest" as const,
+    },
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
         labels: {
-          usePointStyle: true,
-          padding: 20,
           font: {
             size: 12,
           },
+          padding: 20,
+          usePointStyle: true,
         },
+        position: "top" as const,
       },
       title: {
         display: false,
       },
       tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'rgb(255, 255, 255)',
-        bodyColor: 'rgb(255, 255, 255)',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        bodyColor: "rgb(255, 255, 255)",
+        borderColor: "rgba(255, 255, 255, 0.2)",
         borderWidth: 1,
-        cornerRadius: 8,
-        displayColors: true,
         callbacks: {
-          label: function(context: any) {
-            const label = context.dataset.label || '';
+          label: (context: any) => {
+            const label = context.dataset.label || "";
             const value = new Intl.NumberFormat().format(context.parsed.y);
             return `${label}: ${value}`;
           },
         },
+        cornerRadius: 8,
+        displayColors: true,
+        intersect: false,
+        mode: "index" as const,
+        titleColor: "rgb(255, 255, 255)",
       },
     },
-    interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
-      intersect: false,
-    },
+    responsive: true,
     scales: {
       x: {
         display: true,
-        title: {
-          display: true,
-          text: 'Month',
-          font: {
-            size: 12,
-          },
-        },
         grid: {
           display: false,
         },
         ticks: {
-          maxTicksLimit: 12,
           font: {
             size: 11,
           },
+          maxTicksLimit: 12,
         },
-      },
-      y: {
-        display: true,
         title: {
           display: true,
-          text: 'Number of Users',
           font: {
             size: 12,
           },
+          text: "Month",
         },
+      },
+      y: {
         beginAtZero: true,
+        display: true,
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
+          color: "rgba(0, 0, 0, 0.1)",
         },
         ticks: {
-          callback: function(value: any) {
-            return new Intl.NumberFormat().format(value);
-          },
+          callback: (value: any) => new Intl.NumberFormat().format(value),
           font: {
             size: 11,
           },
+        },
+        title: {
+          display: true,
+          font: {
+            size: 12,
+          },
+          text: "Number of Users",
         },
       },
     },
@@ -209,7 +208,9 @@ export function CumulativeUserChart() {
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-2">Cumulative User Growth</h2>
-        <p className="text-sm text-gray-600">Monthly user acquisition and cumulative growth since inception</p>
+        <p className="text-sm text-gray-600">
+          Monthly user acquisition and cumulative growth since inception
+        </p>
       </div>
       <div className="h-80">
         <Line data={chartData} options={options} />

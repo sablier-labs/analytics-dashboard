@@ -1,4 +1,4 @@
-const GRAPHQL_ENDPOINT = 'https://indexer.hyperindex.xyz/7672d32/v1/graphql';
+const GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/7672d32/v1/graphql";
 
 export interface GraphQLResponse<T> {
   data: T;
@@ -117,7 +117,6 @@ export interface UserTransactionDistribution {
   userCount: number;
 }
 
-
 export interface GrowthRateMetrics {
   userGrowthRate: number;
   transactionGrowthRate: number;
@@ -150,11 +149,11 @@ export async function fetchTotalUsers(): Promise<number> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -169,7 +168,7 @@ export async function fetchTotalUsers(): Promise<number> {
 
     return result.data.User_aggregate.aggregate.count;
   } catch (error) {
-    console.error('Error fetching total users:', error);
+    console.error("Error fetching total users:", error);
     throw error;
   }
 }
@@ -187,11 +186,11 @@ export async function fetchTotalTransactions(): Promise<number> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -206,7 +205,7 @@ export async function fetchTotalTransactions(): Promise<number> {
 
     return result.data.UserTransaction_aggregate.aggregate.count;
   } catch (error) {
-    console.error('Error fetching total transactions:', error);
+    console.error("Error fetching total transactions:", error);
     throw error;
   }
 }
@@ -214,10 +213,10 @@ export async function fetchTotalTransactions(): Promise<number> {
 export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
   // Calculate timestamps for different periods as ISO date strings
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-  const ninetyDaysAgo = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
-  const oneHundredEightyDaysAgo = new Date(now.getTime() - (180 * 24 * 60 * 60 * 1000));
-  const oneYearAgo = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const oneHundredEightyDaysAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
   const query = `
     query GetTimeBasedUserCounts {
@@ -270,11 +269,11 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -294,7 +293,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       pastYear: result.data.pastYear.aggregate.count,
     };
   } catch (error) {
-    console.error('Error fetching time-based user counts:', error);
+    console.error("Error fetching time-based user counts:", error);
     throw error;
   }
 }
@@ -302,10 +301,10 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
 export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransactionCounts> {
   // Calculate timestamps for different periods as ISO date strings
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-  const ninetyDaysAgo = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
-  const oneHundredEightyDaysAgo = new Date(now.getTime() - (180 * 24 * 60 * 60 * 1000));
-  const oneYearAgo = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const oneHundredEightyDaysAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
   const query = `
     query GetTimeBasedTransactionCounts {
@@ -350,11 +349,11 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -374,7 +373,7 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       pastYear: result.data.pastYear.aggregate.count,
     };
   } catch (error) {
-    console.error('Error fetching time-based transaction counts:', error);
+    console.error("Error fetching time-based transaction counts:", error);
     throw error;
   }
 }
@@ -383,19 +382,19 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
   // Extended approach: get cumulative counts from Sablier's inception
   const now = new Date();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
-  
+
   // Start from when Sablier began
-  const startDate = new Date('2023-07-01');
+  const startDate = new Date("2023-07-01");
   const current = new Date(startDate);
-  
+
   // Generate monthly timestamps from start date to now
   while (current <= now) {
     // Use end of month instead of beginning to capture all users in that month
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
     const timestamp = endOfMonth.toISOString();
-    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
-    
+
     // Move to first day of next month
     current.setMonth(current.getMonth() + 1);
   }
@@ -418,17 +417,17 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
 
   const query = `
     query GetCumulativeUserGrowth {
-      ${queries.join('\n')}
+      ${queries.join("\n")}
     }
   `;
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -443,24 +442,23 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
 
     // Process results into monthly growth data
     const monthlyData: MonthlyUserGrowth[] = [];
-    
+
     timeRanges.forEach((range, index) => {
       const key = `month_${index}`;
       const cumulativeUsers = result.data[key].aggregate.count;
       const previousCumulative = index > 0 ? monthlyData[index - 1].cumulativeUsers : 0;
       const newUsers = cumulativeUsers - previousCumulative;
-      
-      
+
       monthlyData.push({
-        month: range.label,
         cumulativeUsers,
+        month: range.label,
         newUsers: Math.max(0, newUsers), // Ensure non-negative
       });
     });
 
-    return monthlyData.filter(data => data.cumulativeUsers > 0);
+    return monthlyData.filter((data) => data.cumulativeUsers > 0);
   } catch (error) {
-    console.error('Error fetching monthly user growth:', error);
+    console.error("Error fetching monthly user growth:", error);
     throw error;
   }
 }
@@ -482,25 +480,26 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
   try {
     const chainResponse = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query: chainQuery }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!chainResponse.ok) {
       throw new Error(`HTTP error! status: ${chainResponse.status}`);
     }
 
-    const chainResult: GraphQLResponse<{ User: Array<{ chainId: string }> }> = await chainResponse.json();
+    const chainResult: GraphQLResponse<{ User: Array<{ chainId: string }> }> =
+      await chainResponse.json();
 
     if (chainResult.errors) {
       throw new Error(`GraphQL error: ${chainResult.errors[0]?.message}`);
     }
 
-    const uniqueChains = chainResult.data.User.map(u => u.chainId);
-    
+    const uniqueChains = chainResult.data.User.map((u) => u.chainId);
+
     // Now create aggregation queries for each chain
     const chainQueries = uniqueChains.map((chainId, index) => {
       return `
@@ -519,16 +518,16 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     const aggregateQuery = `
       query GetChainDistribution {
-        ${chainQueries.join('\n')}
+        ${chainQueries.join("\n")}
       }
     `;
 
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query: aggregateQuery }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -543,11 +542,11 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     // Process results
     const chainDistribution: ChainDistribution[] = [];
-    
+
     uniqueChains.forEach((chainId, index) => {
       const key = `chain_${index}`;
       const count = result.data[key].aggregate.count;
-      
+
       if (count > 0) {
         chainDistribution.push({
           chainId: chainId.toString(),
@@ -558,7 +557,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     return chainDistribution.sort((a, b) => b.userCount - a.userCount);
   } catch (error) {
-    console.error('Error fetching chain distribution:', error);
+    console.error("Error fetching chain distribution:", error);
     throw error;
   }
 }
@@ -566,16 +565,16 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactionGrowth[]> {
   const now = new Date();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
-  
-  const startDate = new Date('2023-07-01');
+
+  const startDate = new Date("2023-07-01");
   const current = new Date(startDate);
-  
+
   while (current <= now) {
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
     const timestamp = endOfMonth.toISOString();
-    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
-    
+
     current.setMonth(current.getMonth() + 1);
   }
 
@@ -595,17 +594,17 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
 
   const query = `
     query GetCumulativeTransactionGrowth {
-      ${queries.join('\n')}
+      ${queries.join("\n")}
     }
   `;
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -619,23 +618,23 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
     }
 
     const monthlyData: MonthlyTransactionGrowth[] = [];
-    
+
     timeRanges.forEach((range, index) => {
       const key = `month_${index}`;
       const cumulativeTransactions = result.data[key].aggregate.count;
       const previousCumulative = index > 0 ? monthlyData[index - 1].cumulativeTransactions : 0;
       const newTransactions = cumulativeTransactions - previousCumulative;
-      
+
       monthlyData.push({
-        month: range.label,
         cumulativeTransactions,
+        month: range.label,
         newTransactions: Math.max(0, newTransactions),
       });
     });
 
-    return monthlyData.filter(data => data.cumulativeTransactions > 0);
+    return monthlyData.filter((data) => data.cumulativeTransactions > 0);
   } catch (error) {
-    console.error('Error fetching monthly transaction growth:', error);
+    console.error("Error fetching monthly transaction growth:", error);
     throw error;
   }
 }
@@ -658,11 +657,11 @@ export async function fetchAverageTransactionsPerUser(): Promise<number> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -683,26 +682,28 @@ export async function fetchAverageTransactionsPerUser(): Promise<number> {
 
     return totalUsers > 0 ? totalTransactions / totalUsers : 0;
   } catch (error) {
-    console.error('Error fetching average transactions per user:', error);
+    console.error("Error fetching average transactions per user:", error);
     throw error;
   }
 }
 
-export async function fetchDailyTransactionVolume(days: number = 30): Promise<DailyTransactionVolume[]> {
+export async function fetchDailyTransactionVolume(
+  days: number = 30,
+): Promise<DailyTransactionVolume[]> {
   const now = new Date();
-  const startDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-  
+  const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
   // Generate date ranges for each day
   const dateRanges: Array<{ date: string; start: string; end: string }> = [];
-  
+
   for (let i = 0; i < days; i++) {
-    const currentDate = new Date(startDate.getTime() + (i * 24 * 60 * 60 * 1000));
-    const nextDate = new Date(currentDate.getTime() + (24 * 60 * 60 * 1000));
-    
+    const currentDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+    const nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+
     dateRanges.push({
-      date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD format
-      start: currentDate.toISOString(),
+      date: currentDate.toISOString().split("T")[0], // YYYY-MM-DD format
       end: nextDate.toISOString(),
+      start: currentDate.toISOString(),
     });
   }
 
@@ -722,17 +723,17 @@ export async function fetchDailyTransactionVolume(days: number = 30): Promise<Da
 
   const query = `
     query GetDailyTransactionVolume {
-      ${queries.join('\n')}
+      ${queries.join("\n")}
     }
   `;
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -746,20 +747,20 @@ export async function fetchDailyTransactionVolume(days: number = 30): Promise<Da
     }
 
     const dailyData: DailyTransactionVolume[] = [];
-    
+
     dateRanges.forEach((range, index) => {
       const key = `day_${index}`;
       const count = result.data[key].aggregate.count;
-      
+
       dailyData.push({
-        date: range.date,
         count: count,
+        date: range.date,
       });
     });
 
     return dailyData;
   } catch (error) {
-    console.error('Error fetching daily transaction volume:', error);
+    console.error("Error fetching daily transaction volume:", error);
     throw error;
   }
 }
@@ -767,7 +768,7 @@ export async function fetchDailyTransactionVolume(days: number = 30): Promise<Da
 export async function fetchUserTransactionDistribution(): Promise<UserTransactionDistribution[]> {
   // Use simple aggregate approach like other metrics
   // Create separate queries for each transaction range using simple filters
-  
+
   const query = `
     query GetUserTransactionDistribution {
       bucket_1: User_aggregate(
@@ -852,11 +853,11 @@ export async function fetchUserTransactionDistribution(): Promise<UserTransactio
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -875,28 +876,27 @@ export async function fetchUserTransactionDistribution(): Promise<UserTransactio
     // For now, create a simplified distribution based on known patterns
     // This is a temporary approach until we can figure out the proper aggregation syntax
     const distribution: UserTransactionDistribution[] = [
-      { label: '1', userCount: Math.floor(totalUsers * 0.4) },
-      { label: '2-5', userCount: Math.floor(totalUsers * 0.3) },
-      { label: '6-10', userCount: Math.floor(totalUsers * 0.15) },
-      { label: '11-25', userCount: Math.floor(totalUsers * 0.1) },
-      { label: '26-50', userCount: Math.floor(totalUsers * 0.03) },
-      { label: '51-100', userCount: Math.floor(totalUsers * 0.015) },
-      { label: '100+', userCount: Math.floor(totalUsers * 0.005) },
-    ].filter(item => item.userCount > 0);
+      { label: "1", userCount: Math.floor(totalUsers * 0.4) },
+      { label: "2-5", userCount: Math.floor(totalUsers * 0.3) },
+      { label: "6-10", userCount: Math.floor(totalUsers * 0.15) },
+      { label: "11-25", userCount: Math.floor(totalUsers * 0.1) },
+      { label: "26-50", userCount: Math.floor(totalUsers * 0.03) },
+      { label: "51-100", userCount: Math.floor(totalUsers * 0.015) },
+      { label: "100+", userCount: Math.floor(totalUsers * 0.005) },
+    ].filter((item) => item.userCount > 0);
 
     return distribution;
   } catch (error) {
-    console.error('Error fetching user transaction distribution:', error);
+    console.error("Error fetching user transaction distribution:", error);
     throw error;
   }
 }
-
 
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   const now = new Date();
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  
+
   const query = `
     query GetGrowthRateMetrics {
       currentMonthUsers: User_aggregate(
@@ -944,11 +944,11 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -971,20 +971,25 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
     const currentTransactions = result.data.currentMonthTransactions.aggregate.count;
     const previousTransactions = result.data.previousMonthTransactions.aggregate.count;
 
-    const userGrowthRate = previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0;
-    const transactionGrowthRate = previousTransactions > 0 ? ((currentTransactions - previousTransactions) / previousTransactions) * 100 : 0;
-    
+    const userGrowthRate =
+      previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0;
+    const transactionGrowthRate =
+      previousTransactions > 0
+        ? ((currentTransactions - previousTransactions) / previousTransactions) * 100
+        : 0;
+
     const currentAvgTx = currentUsers > 0 ? currentTransactions / currentUsers : 0;
     const previousAvgTx = previousUsers > 0 ? previousTransactions / previousUsers : 0;
-    const averageTransactionGrowthRate = previousAvgTx > 0 ? ((currentAvgTx - previousAvgTx) / previousAvgTx) * 100 : 0;
+    const averageTransactionGrowthRate =
+      previousAvgTx > 0 ? ((currentAvgTx - previousAvgTx) / previousAvgTx) * 100 : 0;
 
     return {
-      userGrowthRate,
-      transactionGrowthRate,
       averageTransactionGrowthRate,
+      transactionGrowthRate,
+      userGrowthRate,
     };
   } catch (error) {
-    console.error('Error fetching growth rate metrics:', error);
+    console.error("Error fetching growth rate metrics:", error);
     throw error;
   }
 }

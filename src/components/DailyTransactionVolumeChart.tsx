@@ -1,26 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
+  BarElement,
+  CategoryScale,
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
   Legend,
-} from 'chart.js';
-import { Bar } from 'react-chartjs-2';
-import { fetchDailyTransactionVolume, type DailyTransactionVolume } from "@/lib/services/graphql";
-
-ChartJS.register(
-  CategoryScale,
   LinearScale,
-  BarElement,
   Title,
   Tooltip,
-  Legend
-);
+} from "chart.js";
+import { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
+import type { DailyTransactionVolume } from "@/lib/services/graphql";
+import { fetchDailyTransactionVolume } from "@/lib/services/graphql";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export function DailyTransactionVolumeChart() {
   const [volumeData, setVolumeData] = useState<DailyTransactionVolume[] | null>(null);
@@ -36,7 +30,7 @@ export function DailyTransactionVolumeChart() {
         const data = await fetchDailyTransactionVolume(period);
         setVolumeData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load transaction volume data');
+        setError(err instanceof Error ? err.message : "Failed to load transaction volume data");
       } finally {
         setLoading(false);
       }
@@ -74,70 +68,70 @@ export function DailyTransactionVolumeChart() {
   }
 
   const chartData = {
-    labels: volumeData.map(item => {
-      const date = new Date(item.date);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    }),
     datasets: [
       {
-        label: 'Daily Transactions',
-        data: volumeData.map(item => item.count),
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderColor: 'rgb(59, 130, 246)',
-        borderWidth: 1,
+        backgroundColor: "rgba(59, 130, 246, 0.8)",
+        borderColor: "rgb(59, 130, 246)",
         borderRadius: 4,
         borderSkipped: false,
+        borderWidth: 1,
+        data: volumeData.map((item) => item.count),
+        label: "Daily Transactions",
       },
     ],
+    labels: volumeData.map((item) => {
+      const date = new Date(item.date);
+      return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+    }),
   };
 
   const options = {
-    responsive: true,
-    maintainAspectRatio: false,
     interaction: {
       intersect: false,
-      mode: 'index' as const,
+      mode: "index" as const,
     },
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'rgb(255, 255, 255)',
-        bodyColor: 'rgb(255, 255, 255)',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        bodyColor: "rgb(255, 255, 255)",
+        borderColor: "rgba(255, 255, 255, 0.2)",
         borderWidth: 1,
-        cornerRadius: 8,
-        displayColors: false,
         callbacks: {
-          title: function(context: any) {
-            const dataIndex = context[0].dataIndex;
-            const date = new Date(volumeData[dataIndex].date);
-            return date.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            });
-          },
-          label: function(context: any) {
+          label: (context: any) => {
             const value = new Intl.NumberFormat().format(context.parsed.y);
             return `${value} transactions`;
           },
+          title: (context: any) => {
+            const dataIndex = context[0].dataIndex;
+            const date = new Date(volumeData[dataIndex].date);
+            return date.toLocaleDateString("en-US", {
+              day: "numeric",
+              month: "long",
+              weekday: "long",
+              year: "numeric",
+            });
+          },
         },
+        cornerRadius: 8,
+        displayColors: false,
+        titleColor: "rgb(255, 255, 255)",
       },
     },
+    responsive: true,
     scales: {
       x: {
-        grid: {
-          display: false,
-        },
         border: {
           display: false,
         },
+        grid: {
+          display: false,
+        },
         ticks: {
-          color: 'rgb(107, 114, 128)',
+          color: "rgb(107, 114, 128)",
           font: {
             size: 12,
           },
@@ -146,24 +140,24 @@ export function DailyTransactionVolumeChart() {
       },
       y: {
         beginAtZero: true,
-        grid: {
-          color: 'rgba(229, 231, 235, 0.8)',
-          drawBorder: false,
-        },
         border: {
           display: false,
         },
+        grid: {
+          color: "rgba(229, 231, 235, 0.8)",
+          drawBorder: false,
+        },
         ticks: {
-          color: 'rgb(107, 114, 128)',
-          font: {
-            size: 12,
-          },
-          callback: function(tickValue: any) {
+          callback: (tickValue: any) => {
             const value = Number(tickValue);
             if (value >= 1000) {
-              return (value / 1000).toFixed(0) + 'k';
+              return (value / 1000).toFixed(0) + "k";
             }
             return new Intl.NumberFormat().format(value);
+          },
+          color: "rgb(107, 114, 128)",
+          font: {
+            size: 12,
           },
         },
       },
@@ -181,9 +175,7 @@ export function DailyTransactionVolumeChart() {
           <button
             onClick={() => setPeriod(30)}
             className={`px-3 py-1 text-sm font-medium transition-colors ${
-              period === 30
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-50'
+              period === 30 ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-50"
             }`}
           >
             30 days
@@ -191,9 +183,7 @@ export function DailyTransactionVolumeChart() {
           <button
             onClick={() => setPeriod(90)}
             className={`px-3 py-1 text-sm font-medium transition-colors ${
-              period === 90
-                ? 'bg-blue-100 text-blue-700'
-                : 'text-gray-600 hover:bg-gray-50'
+              period === 90 ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-50"
             }`}
           >
             90 days

@@ -16,7 +16,7 @@ export function TransactionCounter() {
         const count = await fetchTotalTransactions();
         setTransactionCount(count);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load transaction count');
+        setError(err instanceof Error ? err.message : "Failed to load transaction count");
       } finally {
         setLoading(false);
       }
@@ -55,7 +55,7 @@ export function TransactionCounter() {
         <div>
           <p className="text-sm font-medium text-gray-600">Total Transactions</p>
           <p className="text-2xl font-bold text-gray-900">
-            {transactionCount !== null ? formatNumber(transactionCount) : '—'}
+            {transactionCount !== null ? formatNumber(transactionCount) : "—"}
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">

@@ -1,51 +1,49 @@
-import { UserCounter } from "@/components/UserCounter";
-import { TransactionCounter } from "@/components/TransactionCounter";
 import { AverageTransactionsPerUser } from "@/components/AverageTransactionsPerUser";
-import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
-import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
-import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
-import { CumulativeUserChart } from "@/components/CumulativeUserChart";
-import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
-import { DailyTransactionVolumeChart } from "@/components/DailyTransactionVolumeChart";
-import { UserTransactionDistributionChart } from "@/components/UserTransactionDistributionChart";
 import { ChainDistributionChart } from "@/components/ChainDistributionChart";
+import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
+import { CumulativeUserChart } from "@/components/CumulativeUserChart";
+import { DailyTransactionVolumeChart } from "@/components/DailyTransactionVolumeChart";
+import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
+import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
+import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
+import { TransactionCounter } from "@/components/TransactionCounter";
+import { UserCounter } from "@/components/UserCounter";
+import { UserTransactionDistributionChart } from "@/components/UserTransactionDistributionChart";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="px-8 py-12">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Sablier Analytics
-          </h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Sablier Analytics</h1>
           <p className="text-xl text-gray-600">
             Protocol metrics for token distribution, vesting, payroll, and more
           </p>
         </div>
-        
+
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <UserCounter />
             <TransactionCounter />
             <AverageTransactionsPerUser />
           </div>
-          
+
           <TimeBasedUserCounters />
-          
+
           <TimeBasedTransactionCounters />
-          
+
           <GrowthRateIndicators />
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CumulativeUserChart />
             <CumulativeTransactionChart />
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <DailyTransactionVolumeChart />
             <UserTransactionDistributionChart />
           </div>
-          
+
           <ChainDistributionChart />
         </div>
       </div>

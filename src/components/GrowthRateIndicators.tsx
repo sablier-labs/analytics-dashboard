@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchGrowthRateMetrics, type GrowthRateMetrics } from "@/lib/services/graphql";
+import type { GrowthRateMetrics } from "@/lib/services/graphql";
+import { fetchGrowthRateMetrics } from "@/lib/services/graphql";
 
 export function GrowthRateIndicators() {
   const [growthMetrics, setGrowthMetrics] = useState<GrowthRateMetrics | null>(null);
@@ -16,7 +17,7 @@ export function GrowthRateIndicators() {
         const metrics = await fetchGrowthRateMetrics();
         setGrowthMetrics(metrics);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load growth metrics');
+        setError(err instanceof Error ? err.message : "Failed to load growth metrics");
       } finally {
         setLoading(false);
       }
@@ -26,28 +27,43 @@ export function GrowthRateIndicators() {
   }, []);
 
   const formatPercentage = (value: number) => {
-    const sign = value >= 0 ? '+' : '';
+    const sign = value >= 0 ? "+" : "";
     return `${sign}${value.toFixed(1)}%`;
   };
 
   const getGrowthColor = (value: number) => {
-    if (value > 0) return 'text-green-600';
-    if (value < 0) return 'text-red-600';
-    return 'text-gray-600';
+    if (value > 0) return "text-green-600";
+    if (value < 0) return "text-red-600";
+    return "text-gray-600";
   };
 
   const getGrowthIcon = (value: number) => {
     if (value > 0) {
       return (
-        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+        <svg
+          className="w-4 h-4 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 11l5-5m0 0l5 5m-5-5v12"
+          />
         </svg>
       );
     }
     if (value < 0) {
       return (
         <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M17 13l-5 5m0 0l-5-5m5 5V6"
+          />
         </svg>
       );
     }
@@ -95,19 +111,19 @@ export function GrowthRateIndicators() {
 
   const metrics = [
     {
-      label: 'User Growth',
+      description: "Month-over-month",
+      label: "User Growth",
       value: growthMetrics.userGrowthRate,
-      description: 'Month-over-month',
     },
     {
-      label: 'Transaction Growth',
+      description: "Month-over-month",
+      label: "Transaction Growth",
       value: growthMetrics.transactionGrowthRate,
-      description: 'Month-over-month',
     },
     {
-      label: 'Avg Tx/User Growth',
+      description: "Month-over-month",
+      label: "Avg Tx/User Growth",
       value: growthMetrics.averageTransactionGrowthRate,
-      description: 'Month-over-month',
     },
   ];
 
@@ -123,9 +139,11 @@ export function GrowthRateIndicators() {
               </p>
               <p className="text-xs text-gray-500 mt-1">{metric.description}</p>
             </div>
-            <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${
-              metric.value > 0 ? 'bg-green-100' : metric.value < 0 ? 'bg-red-100' : 'bg-gray-100'
-            }`}>
+            <div
+              className={`flex items-center justify-center w-12 h-12 rounded-lg ${
+                metric.value > 0 ? "bg-green-100" : metric.value < 0 ? "bg-red-100" : "bg-gray-100"
+              }`}
+            >
               {getGrowthIcon(metric.value)}
             </div>
           </div>

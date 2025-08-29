@@ -1,14 +1,10 @@
 "use client";
 
+import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useEffect, useState } from "react";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Pie } from 'react-chartjs-2';
-import { fetchChainDistribution, type ChainDistribution } from "@/lib/services/graphql";
+import { Pie } from "react-chartjs-2";
+import type { ChainDistribution } from "@/lib/services/graphql";
+import { fetchChainDistribution } from "@/lib/services/graphql";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -128,9 +124,9 @@ const chainNames: Record<string, string> = {
   "5000": "mantle",
   "5050": "skate",
   "5330": "superseed",
-  "5845": "Tangle",
   "5432": "yeying",
   "5551": "nahmii",
+  "5845": "Tangle",
   "6001": "bouncebit",
   "6880": "mtt network",
   "6900": "nibiru",
@@ -201,6 +197,7 @@ const chainNames: Record<string, string> = {
   "777777": "winr",
   "810180": "zklink nova",
   "888888": "vision",
+  "7000700": "jmdt",
   "7225878": "saakuru",
   "7777777": "zora",
   "20250217": "xphere",
@@ -212,20 +209,49 @@ const chainNames: Record<string, string> = {
   "11297108109": "palm",
   "383414847825": "zeniq",
   "836542336838601": "curio",
-  "7000700": "jmdt",
 };
 
 // Generate vibrant colors for pie chart
 function generateChainColors(chainData: ChainDistribution[]): string[] {
   const colors = [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-    '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384', '#36A2EB', '#FFCE56',
-    '#9966FF', '#FF9F40', '#FF6384', '#36A2EB', '#4BC0C0', '#FFCE56',
-    '#C9CBCF', '#9966FF', '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56',
-    '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF6384', '#36A2EB',
-    '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF6384'
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#4BC0C0",
+    "#9966FF",
+    "#FF9F40",
+    "#FF6384",
+    "#C9CBCF",
+    "#4BC0C0",
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#9966FF",
+    "#FF9F40",
+    "#FF6384",
+    "#36A2EB",
+    "#4BC0C0",
+    "#FFCE56",
+    "#C9CBCF",
+    "#9966FF",
+    "#FF9F40",
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#4BC0C0",
+    "#9966FF",
+    "#FF9F40",
+    "#C9CBCF",
+    "#FF6384",
+    "#36A2EB",
+    "#FFCE56",
+    "#4BC0C0",
+    "#9966FF",
+    "#FF9F40",
+    "#C9CBCF",
+    "#FF6384",
   ];
-  
+
   return chainData.map((_, index) => colors[index % colors.length]);
 }
 
@@ -241,12 +267,12 @@ export function ChainDistributionChart() {
         setError(null);
         const rawData = await fetchChainDistribution();
         // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
-        const filteredData = rawData.filter(chain => 
-          chain.chainId !== '11155111' && chain.chainId !== '84532'
+        const filteredData = rawData.filter(
+          (chain) => chain.chainId !== "11155111" && chain.chainId !== "84532",
         );
         setChainData(filteredData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load chain distribution');
+        setError(err instanceof Error ? err.message : "Failed to load chain distribution");
       } finally {
         setLoading(false);
       }
@@ -284,81 +310,86 @@ export function ChainDistributionChart() {
   }
 
   const chartData = {
-    labels: chainData.map(chain => {
+    datasets: [
+      {
+        backgroundColor: generateChainColors(chainData),
+        borderColor: "#ffffff",
+        borderWidth: 2,
+        data: chainData.map((chain) => chain.userCount),
+        hoverBackgroundColor: generateChainColors(chainData).map((color) => color + "CC"), // Add transparency on hover
+        hoverBorderWidth: 3,
+      },
+    ],
+    labels: chainData.map((chain) => {
       const chainName = chainNames[chain.chainId] || `Chain ${chain.chainId}`;
       return chainName.charAt(0).toUpperCase() + chainName.slice(1); // Capitalize first letter
     }),
-    datasets: [
-      {
-        data: chainData.map(chain => chain.userCount),
-        backgroundColor: generateChainColors(chainData),
-        borderColor: '#ffffff',
-        borderWidth: 2,
-        hoverBorderWidth: 3,
-        hoverBackgroundColor: generateChainColors(chainData).map(color => color + 'CC'), // Add transparency on hover
-      },
-    ],
   };
 
   const options = {
-    responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'right' as const,
         labels: {
-          padding: 20,
-          usePointStyle: true,
           font: {
             size: 12,
           },
-          generateLabels: function(chart: any) {
+          generateLabels: (chart: any) => {
             const data = chart.data;
-            const total = data.datasets[0].data.reduce((sum: number, value: number) => sum + value, 0);
-            
+            const total = data.datasets[0].data.reduce(
+              (sum: number, value: number) => sum + value,
+              0,
+            );
+
             return data.labels.map((label: string, index: number) => {
               const value = data.datasets[0].data[index];
               const percentage = ((value / total) * 100).toFixed(1);
-              
+
               return {
-                text: `${label} (${percentage}%)`,
                 fillStyle: data.datasets[0].backgroundColor[index],
-                strokeStyle: data.datasets[0].borderColor,
-                lineWidth: data.datasets[0].borderWidth,
-                pointStyle: 'circle',
                 hidden: false,
-                index: index
+                index: index,
+                lineWidth: data.datasets[0].borderWidth,
+                pointStyle: "circle",
+                strokeStyle: data.datasets[0].borderColor,
+                text: `${label} (${percentage}%)`,
               };
             });
           },
+          padding: 20,
+          usePointStyle: true,
         },
+        position: "right" as const,
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'rgb(255, 255, 255)',
-        bodyColor: 'rgb(255, 255, 255)',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        bodyColor: "rgb(255, 255, 255)",
+        borderColor: "rgba(255, 255, 255, 0.2)",
         borderWidth: 1,
-        cornerRadius: 8,
-        displayColors: true,
         callbacks: {
-          label: function(context: any) {
-            const label = context.label || '';
+          label: (context: any) => {
+            const label = context.label || "";
             const value = new Intl.NumberFormat().format(context.parsed);
             const total = context.dataset.data.reduce((sum: number, val: number) => sum + val, 0);
             const percentage = ((context.parsed / total) * 100).toFixed(1);
             return `${label}: ${value} users (${percentage}%)`;
           },
         },
+        cornerRadius: 8,
+        displayColors: true,
+        titleColor: "rgb(255, 255, 255)",
       },
     },
+    responsive: true,
   };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-2">User Distribution by Chain</h2>
-        <p className="text-sm text-gray-600">Distribution of active users across different blockchain networks</p>
+        <p className="text-sm text-gray-600">
+          Distribution of active users across different blockchain networks
+        </p>
       </div>
       <div className="h-80">
         <Pie data={chartData} options={options} />

@@ -16,7 +16,9 @@ export function AverageTransactionsPerUser() {
         const average = await fetchAverageTransactionsPerUser();
         setAverageTransactions(average);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load average transactions per user');
+        setError(
+          err instanceof Error ? err.message : "Failed to load average transactions per user",
+        );
       } finally {
         setLoading(false);
       }
@@ -55,7 +57,7 @@ export function AverageTransactionsPerUser() {
         <div>
           <p className="text-sm font-medium text-gray-600">Avg Transactions Per User</p>
           <p className="text-2xl font-bold text-gray-900">
-            {averageTransactions !== null ? formatNumber(averageTransactions) : '—'}
+            {averageTransactions !== null ? formatNumber(averageTransactions) : "—"}
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg">

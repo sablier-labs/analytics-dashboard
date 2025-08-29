@@ -16,7 +16,7 @@ export function UserCounter() {
         const count = await fetchTotalUsers();
         setUserCount(count);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load user count');
+        setError(err instanceof Error ? err.message : "Failed to load user count");
       } finally {
         setLoading(false);
       }
@@ -55,7 +55,7 @@ export function UserCounter() {
         <div>
           <p className="text-sm font-medium text-gray-600">Total Users</p>
           <p className="text-2xl font-bold text-gray-900">
-            {userCount !== null ? formatNumber(userCount) : '—'}
+            {userCount !== null ? formatNumber(userCount) : "—"}
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
