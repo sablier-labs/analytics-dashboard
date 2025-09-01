@@ -8,7 +8,6 @@ import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionC
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
 import { TransactionCounter } from "@/components/TransactionCounter";
 import { UserCounter } from "@/components/UserCounter";
-import { UserTransactionDistributionChart } from "@/components/UserTransactionDistributionChart";
 
 export default function Home() {
   return (
@@ -39,10 +38,7 @@ export default function Home() {
             <CumulativeTransactionChart />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <DailyTransactionVolumeChart />
-            <UserTransactionDistributionChart />
-          </div>
+          <DailyTransactionVolumeChart />
 
           <ChainDistributionChart />
         </div>
