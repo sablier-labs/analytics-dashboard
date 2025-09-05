@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchTotalTransactions } from "@/lib/services/graphql";
+import { getCachedTotalTransactions } from "@/lib/services/cache";
 
 export function TransactionCounter() {
   const [transactionCount, setTransactionCount] = useState<number | null>(null);
@@ -13,7 +13,7 @@ export function TransactionCounter() {
       try {
         setLoading(true);
         setError(null);
-        const count = await fetchTotalTransactions();
+        const count = await getCachedTotalTransactions();
         setTransactionCount(count);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load transaction count");

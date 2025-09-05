@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchAverageTransactionsPerUser } from "@/lib/services/graphql";
+import { getCachedAverageTransactionsPerUser } from "@/lib/services/cache";
 
 export function AverageTransactionsPerUser() {
   const [averageTransactions, setAverageTransactions] = useState<number | null>(null);
@@ -13,7 +13,7 @@ export function AverageTransactionsPerUser() {
       try {
         setLoading(true);
         setError(null);
-        const average = await fetchAverageTransactionsPerUser();
+        const average = await getCachedAverageTransactionsPerUser();
         setAverageTransactions(average);
       } catch (err) {
         setError(

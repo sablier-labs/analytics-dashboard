@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { TimeBasedUserCounts } from "@/lib/services/graphql";
-import { fetchTimeBasedUserCounts } from "@/lib/services/graphql";
+import { getCachedTimeBasedUserCounts } from "@/lib/services/cache";
 
 export function TimeBasedUserCounters() {
   const [userCounts, setUserCounts] = useState<TimeBasedUserCounts | null>(null);
@@ -14,7 +14,7 @@ export function TimeBasedUserCounters() {
       try {
         setLoading(true);
         setError(null);
-        const counts = await fetchTimeBasedUserCounts();
+        const counts = await getCachedTimeBasedUserCounts();
         setUserCounts(counts);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user counts");

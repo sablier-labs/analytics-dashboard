@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import type { DailyTransactionVolume } from "@/lib/services/graphql";
-import { fetchDailyTransactionVolume } from "@/lib/services/graphql";
+import { getCachedDailyTransactionVolume } from "@/lib/services/cache";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -27,7 +27,7 @@ export function DailyTransactionVolumeChart() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchDailyTransactionVolume(period);
+        const data = await getCachedDailyTransactionVolume(period);
         setVolumeData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load transaction volume data");

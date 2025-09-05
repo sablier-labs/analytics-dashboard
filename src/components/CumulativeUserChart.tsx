@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
-import { fetchMonthlyUserGrowth } from "@/lib/services/graphql";
+import { getCachedMonthlyUserGrowth } from "@/lib/services/cache";
 
 ChartJS.register(
   CategoryScale,
@@ -37,7 +37,7 @@ export function CumulativeUserChart() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchMonthlyUserGrowth();
+        const data = await getCachedMonthlyUserGrowth();
         setUserGrowthData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user growth data");

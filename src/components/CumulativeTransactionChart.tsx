@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
-import { fetchMonthlyTransactionGrowth } from "@/lib/services/graphql";
+import { getCachedMonthlyTransactionGrowth } from "@/lib/services/cache";
 
 ChartJS.register(
   CategoryScale,
@@ -37,7 +37,7 @@ export function CumulativeTransactionChart() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchMonthlyTransactionGrowth();
+        const data = await getCachedMonthlyTransactionGrowth();
         setTransactionData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load transaction growth data");

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
-import { fetchGrowthRateMetrics } from "@/lib/services/graphql";
+import { getCachedGrowthRateMetrics } from "@/lib/services/cache";
 
 export function GrowthRateIndicators() {
   const [growthMetrics, setGrowthMetrics] = useState<GrowthRateMetrics | null>(null);
@@ -14,7 +14,7 @@ export function GrowthRateIndicators() {
       try {
         setLoading(true);
         setError(null);
-        const metrics = await fetchGrowthRateMetrics();
+        const metrics = await getCachedGrowthRateMetrics();
         setGrowthMetrics(metrics);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load growth metrics");

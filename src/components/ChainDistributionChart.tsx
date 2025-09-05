@@ -4,7 +4,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import type { ChainDistribution } from "@/lib/services/graphql";
-import { fetchChainDistribution } from "@/lib/services/graphql";
+import { getCachedChainDistribution } from "@/lib/services/cache";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -265,7 +265,7 @@ export function ChainDistributionChart() {
       try {
         setLoading(true);
         setError(null);
-        const rawData = await fetchChainDistribution();
+        const rawData = await getCachedChainDistribution();
         // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
         const filteredData = rawData.filter(
           (chain) => chain.chainId !== "11155111" && chain.chainId !== "84532",

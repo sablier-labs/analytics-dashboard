@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchTotalUsers } from "@/lib/services/graphql";
+import { getCachedTotalUsers } from "@/lib/services/cache";
 
 export function UserCounter() {
   const [userCount, setUserCount] = useState<number | null>(null);
@@ -13,7 +13,7 @@ export function UserCounter() {
       try {
         setLoading(true);
         setError(null);
-        const count = await fetchTotalUsers();
+        const count = await getCachedTotalUsers();
         setUserCount(count);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user count");

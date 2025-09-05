@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@vercel/edge-config": "^1.4.0",
     "chart.js": "^4.5.0",
     "next": "15.3.3",
     "react": "^19.0",
