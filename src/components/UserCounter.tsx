@@ -1,29 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getCachedTotalUsers } from "@/lib/services/cache";
+import { useAnalytics } from "@/lib/contexts/AnalyticsContext";
 
 export function UserCounter() {
-  const [userCount, setUserCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadUserCount() {
-      try {
-        setLoading(true);
-        setError(null);
-        const count = await getCachedTotalUsers();
-        setUserCount(count);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load user count");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUserCount();
-  }, []);
+  const { data, loading, error } = useAnalytics();
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -55,7 +35,7 @@ export function UserCounter() {
         <div>
           <p className="text-sm font-medium text-gray-600">Total Users</p>
           <p className="text-2xl font-bold text-gray-900">
-            {userCount !== null ? formatNumber(userCount) : "—"}
+            {data?.totalUsers ? formatNumber(data.totalUsers) : "—"}
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
