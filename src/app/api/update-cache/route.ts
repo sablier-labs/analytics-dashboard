@@ -1,32 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import {
-  fetchTotalUsers,
-  fetchTotalTransactions,
-  fetchTimeBasedUserCounts,
-  fetchTimeBasedTransactionCounts,
-  fetchMonthlyUserGrowth,
-  fetchChainDistribution,
-  fetchMonthlyTransactionGrowth,
   fetchAverageTransactionsPerUser,
+  fetchChainDistribution,
   fetchDailyTransactionVolume,
   fetchGrowthRateMetrics,
+  fetchMonthlyTransactionGrowth,
+  fetchMonthlyUserGrowth,
+  fetchTimeBasedTransactionCounts,
+  fetchTimeBasedUserCounts,
+  fetchTotalTransactions,
+  fetchTotalUsers,
 } from "@/lib/services/graphql";
 
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  
+
   // Allow Vercel Cron requests
   if (request.headers.get("x-vercel-cron") === "1") {
     return true;
   }
-  
+
   // Allow requests with correct API key
   if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   try {
     console.log("Starting cache update...");
-    
+
     // Fetch all analytics data in parallel
     const [
       totalUsers,
@@ -52,61 +53,61 @@ export async function POST(request: NextRequest) {
       dailyTransactionVolume,
       growthRateMetrics,
     ] = await Promise.all([
-      fetchTotalUsers().catch(err => {
+      fetchTotalUsers().catch((err) => {
         console.error("Error fetching total users:", err);
         return 0;
       }),
-      fetchTotalTransactions().catch(err => {
+      fetchTotalTransactions().catch((err) => {
         console.error("Error fetching total transactions:", err);
         return 0;
       }),
-      fetchTimeBasedUserCounts().catch(err => {
+      fetchTimeBasedUserCounts().catch((err) => {
         console.error("Error fetching time-based users:", err);
         return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
       }),
-      fetchTimeBasedTransactionCounts().catch(err => {
+      fetchTimeBasedTransactionCounts().catch((err) => {
         console.error("Error fetching time-based transactions:", err);
         return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
       }),
-      fetchMonthlyUserGrowth().catch(err => {
+      fetchMonthlyUserGrowth().catch((err) => {
         console.error("Error fetching monthly user growth:", err);
         return [];
       }),
-      fetchChainDistribution().catch(err => {
+      fetchChainDistribution().catch((err) => {
         console.error("Error fetching chain distribution:", err);
         return [];
       }),
-      fetchMonthlyTransactionGrowth().catch(err => {
+      fetchMonthlyTransactionGrowth().catch((err) => {
         console.error("Error fetching monthly transaction growth:", err);
         return [];
       }),
-      fetchAverageTransactionsPerUser().catch(err => {
+      fetchAverageTransactionsPerUser().catch((err) => {
         console.error("Error fetching average transactions per user:", err);
         return 0;
       }),
-      fetchDailyTransactionVolume(30).catch(err => {
+      fetchDailyTransactionVolume(30).catch((err) => {
         console.error("Error fetching daily transaction volume:", err);
         return [];
       }),
-      fetchGrowthRateMetrics().catch(err => {
+      fetchGrowthRateMetrics().catch((err) => {
         console.error("Error fetching growth rate metrics:", err);
-        return { userGrowthRate: 0, transactionGrowthRate: 0, averageTransactionGrowthRate: 0 };
+        return { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
       }),
     ]);
 
     // Prepare the cached data
     const cachedData = {
-      totalUsers,
-      totalTransactions,
-      timeBasedUsers,
-      timeBasedTransactions,
-      monthlyUserGrowth,
-      chainDistribution,
-      monthlyTransactionGrowth,
       averageTransactionsPerUser,
+      chainDistribution,
       dailyTransactionVolume,
       growthRateMetrics,
       lastUpdated: new Date().toISOString(),
+      monthlyTransactionGrowth,
+      monthlyUserGrowth,
+      timeBasedTransactions,
+      timeBasedUsers,
+      totalTransactions,
+      totalUsers,
     };
 
     // Store in Edge Config using Vercel REST API
@@ -117,25 +118,22 @@ export async function POST(request: NextRequest) {
       throw new Error("EDGE_CONFIG_ID or VERCEL_ACCESS_TOKEN environment variables are not set");
     }
 
-    const response = await fetch(
-      `https://api.vercel.com/v1/edge-config/${edgeConfigId}/items`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${vercelAccessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: [
-            {
-              operation: "upsert",
-              key: "analytics",
-              value: cachedData,
-            },
-          ],
-        }),
-      }
-    );
+    const response = await fetch(`https://api.vercel.com/v1/edge-config/${edgeConfigId}/items`, {
+      body: JSON.stringify({
+        items: [
+          {
+            key: "analytics",
+            operation: "upsert",
+            value: cachedData,
+          },
+        ],
+      }),
+      headers: {
+        Authorization: `Bearer ${vercelAccessToken}`,
+        "Content-Type": "application/json",
+      },
+      method: "PATCH",
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -146,31 +144,31 @@ export async function POST(request: NextRequest) {
     if (result.status !== "ok") {
       throw new Error(`Edge Config update failed: ${JSON.stringify(result)}`);
     }
-    
+
     console.log("Cache update completed successfully");
-    
+
     return NextResponse.json({
-      success: true,
-      message: "Cache updated successfully",
-      lastUpdated: cachedData.lastUpdated,
       dataPoints: {
-        totalUsers,
-        totalTransactions,
         chainDistribution: chainDistribution.length,
-        monthlyUserGrowth: monthlyUserGrowth.length,
-        monthlyTransactionGrowth: monthlyTransactionGrowth.length,
         dailyTransactionVolume: dailyTransactionVolume.length,
+        monthlyTransactionGrowth: monthlyTransactionGrowth.length,
+        monthlyUserGrowth: monthlyUserGrowth.length,
+        totalTransactions,
+        totalUsers,
       },
+      lastUpdated: cachedData.lastUpdated,
+      message: "Cache updated successfully",
+      success: true,
     });
   } catch (error) {
     console.error("Error updating cache:", error);
     return NextResponse.json(
       {
-        success: false,
-        error: "Failed to update cache",
         details: error instanceof Error ? error.message : "Unknown error",
+        error: "Failed to update cache",
+        success: false,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

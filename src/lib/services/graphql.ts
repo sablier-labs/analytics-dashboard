@@ -765,7 +765,6 @@ export async function fetchDailyTransactionVolume(
   }
 }
 
-
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   const now = new Date();
   const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);

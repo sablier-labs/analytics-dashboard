@@ -1,22 +1,24 @@
 import { get } from "@vercel/edge-config";
+import type {
+  ChainDistribution,
+  DailyTransactionVolume,
+  GrowthRateMetrics,
+  MonthlyTransactionGrowth,
+  MonthlyUserGrowth,
+  TimeBasedTransactionCounts,
+  TimeBasedUserCounts,
+} from "./graphql";
 import {
-  fetchTotalUsers,
-  fetchTotalTransactions,
-  fetchTimeBasedUserCounts,
-  fetchTimeBasedTransactionCounts,
-  fetchMonthlyUserGrowth,
-  fetchChainDistribution,
-  fetchMonthlyTransactionGrowth,
   fetchAverageTransactionsPerUser,
+  fetchChainDistribution,
   fetchDailyTransactionVolume,
   fetchGrowthRateMetrics,
-  type TimeBasedUserCounts,
-  type TimeBasedTransactionCounts,
-  type MonthlyUserGrowth,
-  type ChainDistribution,
-  type MonthlyTransactionGrowth,
-  type DailyTransactionVolume,
-  type GrowthRateMetrics,
+  fetchMonthlyTransactionGrowth,
+  fetchMonthlyUserGrowth,
+  fetchTimeBasedTransactionCounts,
+  fetchTimeBasedUserCounts,
+  fetchTotalTransactions,
+  fetchTotalUsers,
 } from "./graphql";
 
 export interface CachedAnalyticsData {
@@ -115,7 +117,9 @@ export async function getCachedAverageTransactionsPerUser(): Promise<number> {
   return fetchAverageTransactionsPerUser();
 }
 
-export async function getCachedDailyTransactionVolume(days: number = 30): Promise<DailyTransactionVolume[]> {
+export async function getCachedDailyTransactionVolume(
+  days: number = 30,
+): Promise<DailyTransactionVolume[]> {
   const cached = await getCachedData();
   if (cached?.dailyTransactionVolume) {
     // If we have cached data, use it regardless of the days parameter
@@ -141,18 +145,18 @@ export async function getCacheInfo(): Promise<{
   age?: string;
 }> {
   const cached = await getCachedData();
-  
+
   if (!cached?.lastUpdated) {
     return { isCached: false };
   }
-  
+
   const lastUpdated = new Date(cached.lastUpdated);
   const now = new Date();
   const ageInHours = Math.floor((now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60));
-  
+
   return {
+    age: ageInHours < 24 ? `${ageInHours} hours ago` : `${Math.floor(ageInHours / 24)} days ago`,
     isCached: true,
     lastUpdated: cached.lastUpdated,
-    age: ageInHours < 24 ? `${ageInHours} hours ago` : `${Math.floor(ageInHours / 24)} days ago`,
   };
 }

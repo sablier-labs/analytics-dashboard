@@ -11,8 +11,8 @@ import {
 } from "chart.js";
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
-import type { DailyTransactionVolume } from "@/lib/services/graphql";
 import { getCachedDailyTransactionVolume } from "@/lib/services/cache";
+import type { DailyTransactionVolume } from "@/lib/services/graphql";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

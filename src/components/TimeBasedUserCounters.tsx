@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { TimeBasedUserCounts } from "@/lib/services/graphql";
 import { getCachedTimeBasedUserCounts } from "@/lib/services/cache";
+import type { TimeBasedUserCounts } from "@/lib/services/graphql";
 
 export function TimeBasedUserCounters() {
   const [userCounts, setUserCounts] = useState<TimeBasedUserCounts | null>(null);

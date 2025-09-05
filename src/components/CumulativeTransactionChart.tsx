@@ -13,8 +13,8 @@ import {
 } from "chart.js";
 import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
 import { getCachedMonthlyTransactionGrowth } from "@/lib/services/cache";
+import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
 
 ChartJS.register(
   CategoryScale,

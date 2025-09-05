@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { GrowthRateMetrics } from "@/lib/services/graphql";
 import { getCachedGrowthRateMetrics } from "@/lib/services/cache";
+import type { GrowthRateMetrics } from "@/lib/services/graphql";
 
 export function GrowthRateIndicators() {
   const [growthMetrics, setGrowthMetrics] = useState<GrowthRateMetrics | null>(null);

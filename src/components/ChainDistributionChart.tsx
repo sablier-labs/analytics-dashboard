@@ -3,8 +3,8 @@
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import type { ChainDistribution } from "@/lib/services/graphql";
 import { getCachedChainDistribution } from "@/lib/services/cache";
+import type { ChainDistribution } from "@/lib/services/graphql";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
