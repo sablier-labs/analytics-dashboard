@@ -23,6 +23,11 @@ export function DailyTransactionVolumeChart() {
   
   // Filter data based on selected period  
   const volumeData = data?.dailyTransactionVolume?.slice(-period) || null;
+  
+  // Debug logging
+  console.log("DailyTransactionVolumeChart - period:", period);
+  console.log("DailyTransactionVolumeChart - total data length:", data?.dailyTransactionVolume?.length);
+  console.log("DailyTransactionVolumeChart - filtered data length:", volumeData?.length);
 
   if (loading) {
     return (
