@@ -184,7 +184,7 @@ export function CumulativeUserChart() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative User Growth</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={503} tooltip="View fetchMonthlyUserGrowth source" />
+          <SourceCodeLink fileName="graphql.ts" lineNumber={381} tooltip="View fetchMonthlyUserGrowth source" />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Monthly user acquisition and cumulative growth since inception

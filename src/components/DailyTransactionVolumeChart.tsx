@@ -173,7 +173,7 @@ export function DailyTransactionVolumeChart() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Daily Transaction Volume</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={588} tooltip="View fetchDailyTransactionVolume source" />
+            <SourceCodeLink fileName="graphql.ts" lineNumber={690} tooltip="View fetchDailyTransactionVolume source" />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300">Number of transactions processed each day</p>
         </div>
