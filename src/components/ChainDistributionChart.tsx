@@ -324,6 +324,7 @@ export function ChainDistributionChart() {
 
               return {
                 fillStyle: data.datasets[0].backgroundColor[index],
+                fontColor: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(55, 65, 81)',
                 hidden: false,
                 index: index,
                 lineWidth: 0,
