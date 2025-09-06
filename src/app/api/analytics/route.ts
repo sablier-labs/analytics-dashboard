@@ -64,6 +64,5 @@ export async function GET() {
   }
 }
 
-// Add cache headers for better performance
-export const runtime = "edge";
-export const revalidate = 300; // Cache for 5 minutes
+// Cache for better performance
+export const revalidate = 300;
