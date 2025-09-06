@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCachedAverageTransactionsPerUser } from "@/lib/services/cache";
 
 export function AverageTransactionsPerUser() {
   const [averageTransactions, setAverageTransactions] = useState<number | null>(null);
@@ -13,8 +12,12 @@ export function AverageTransactionsPerUser() {
       try {
         setLoading(true);
         setError(null);
-        const average = await getCachedAverageTransactionsPerUser();
-        setAverageTransactions(average);
+        const response = await fetch("/api/analytics");
+        if (!response.ok) {
+          throw new Error("Failed to fetch analytics data");
+        }
+        const data = await response.json();
+        setAverageTransactions(data.averageTransactionsPerUser);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load average transactions per user",
@@ -24,7 +27,7 @@ export function AverageTransactionsPerUser() {
       }
     }
 
-    loadAverageTransactions();
+    void loadAverageTransactions();
   }, []);
 
   const formatNumber = (num: number) => {

@@ -18,10 +18,6 @@ export default function Home() {
           <p className="text-xl text-gray-600">
             Protocol metrics for token distribution, vesting, payroll, and more
           </p>
-          <div className="bg-red-100 border border-red-200 rounded-lg p-4 mt-4">
-            <p className="text-red-800 font-medium">🔧 ISSUE: Edge Config environment variable not set properly</p>
-            <p className="text-red-600 text-sm">The EDGE_CONFIG connection string is missing from your Vercel project.</p>
-          </div>
         </div>
 
         <div className="max-w-6xl mx-auto space-y-12">
