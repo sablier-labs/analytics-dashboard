@@ -5,6 +5,7 @@ import { Pie } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { ChainDistribution } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { useTheme } from "@/contexts/ThemeContext";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -246,6 +247,7 @@ function generateChainColors(chainData: ChainDistribution[]): string[] {
 
 export function ChainDistributionChart() {
   const { data, loading, error } = useAnalytics();
+  const { theme } = useTheme();
   
   // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
   const chainData = data?.chainDistribution?.filter(
@@ -303,7 +305,7 @@ export function ChainDistributionChart() {
     plugins: {
       legend: {
         labels: {
-          color: document.documentElement.classList.contains('dark') ? 'rgb(255, 255, 255)' : 'rgb(55, 65, 81)',
+          color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(55, 65, 81)',
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
