@@ -21,13 +21,12 @@ export function DailyTransactionVolumeChart() {
   const { data, loading, error } = useAnalytics();
   const [period, setPeriod] = useState<30 | 90>(30);
   
-  // Filter data based on selected period  
-  const volumeData = data?.dailyTransactionVolume?.slice(-period) || null;
-  
-  // Debug logging
-  console.log("DailyTransactionVolumeChart - period:", period);
-  console.log("DailyTransactionVolumeChart - total data length:", data?.dailyTransactionVolume?.length);
-  console.log("DailyTransactionVolumeChart - filtered data length:", volumeData?.length);
+  // Filter data based on selected period
+  // If we need 90 days but only have 30 days cached, use all available data
+  const availableData = data?.dailyTransactionVolume || [];
+  const volumeData = availableData.length >= period 
+    ? availableData.slice(-period) 
+    : availableData;
 
   if (loading) {
     return (
@@ -180,7 +179,14 @@ export function DailyTransactionVolumeChart() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Daily Transaction Volume</h2>
             <SourceCodeLink fileName="graphql.ts" lineNumber={690} tooltip="View fetchDailyTransactionVolume source" />
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Number of transactions processed each day</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Number of transactions processed each day
+            {period === 90 && volumeData && volumeData.length < 90 && (
+              <span className="text-orange-600 dark:text-orange-400 ml-2">
+                (Showing {volumeData.length} days of available data)
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
           <button
