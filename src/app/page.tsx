@@ -72,10 +72,21 @@ function StatCard({ title, value, icon }: { title: string; value: string; icon: 
 export default async function Home() {
   // Try to get cached data, fallback to showing basic info
   let cachedData: CachedAnalyticsData | null = null;
+  let debugInfo = {
+    edgeConfigEnv: !!process.env.EDGE_CONFIG,
+    edgeConfigValue: process.env.EDGE_CONFIG?.substring(0, 50) + "...",
+    error: null as string | null,
+    hasData: false,
+  };
   
   try {
+    console.log("Attempting to read from Edge Config...");
+    console.log("EDGE_CONFIG env var exists:", !!process.env.EDGE_CONFIG);
     cachedData = await get<CachedAnalyticsData>("analytics");
+    debugInfo.hasData = !!cachedData;
+    console.log("Edge Config data received:", !!cachedData);
   } catch (error) {
+    debugInfo.error = error instanceof Error ? error.message : "Unknown error";
     console.error("Error reading from Edge Config:", error);
   }
 
@@ -109,6 +120,17 @@ export default async function Home() {
           <p className="text-xl text-gray-600">
             Protocol metrics for token distribution, vesting, payroll, and more
           </p>
+          {/* Debug info */}
+          <div className="bg-gray-100 rounded-lg p-4 mt-4 text-left max-w-2xl mx-auto">
+            <h3 className="font-bold text-gray-800 mb-2">🔧 Edge Config Debug Info</h3>
+            <div className="text-sm text-gray-700 space-y-1">
+              <p>• Environment variable set: {debugInfo.edgeConfigEnv ? "✅ Yes" : "❌ No"}</p>
+              <p>• Edge Config URL: {debugInfo.edgeConfigValue || "Not set"}</p>
+              <p>• Has cached data: {debugInfo.hasData ? "✅ Yes" : "❌ No"}</p>
+              <p>• Error: {debugInfo.error || "None"}</p>
+            </div>
+          </div>
+          
           {cachedData && (
             <p className="text-sm text-gray-500 mt-2">
               ⚡ Powered by Edge Config - Last updated: {new Date(cachedData.lastUpdated || "").toLocaleString()}
