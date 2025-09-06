@@ -254,10 +254,10 @@ export function ChainDistributionChart() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -265,17 +265,17 @@ export function ChainDistributionChart() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading chain distribution</p>
-        <p className="text-xs text-red-500">{error}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading chain distribution</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
   }
 
   if (!chainData || chainData.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <p className="text-gray-600">No chain distribution data available</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <p className="text-gray-600 dark:text-gray-300">No chain distribution data available</p>
       </div>
     );
   }
@@ -303,6 +303,7 @@ export function ChainDistributionChart() {
     plugins: {
       legend: {
         labels: {
+          color: document.documentElement.classList.contains('dark') ? 'rgb(255, 255, 255)' : 'rgb(55, 65, 81)',
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
