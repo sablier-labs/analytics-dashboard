@@ -183,7 +183,7 @@ export function DailyTransactionVolumeChart() {
             Number of transactions processed each day
             {period === 90 && volumeData && volumeData.length < 90 && (
               <span className="text-orange-600 dark:text-orange-400 ml-2">
-                (Showing {volumeData.length} days of available data)
+                (Showing {volumeData.length} of {period} requested days - cache updating soon)
               </span>
             )}
           </p>
