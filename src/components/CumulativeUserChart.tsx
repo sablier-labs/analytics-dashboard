@@ -14,6 +14,7 @@ import {
 import { Line } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(
   CategoryScale,
@@ -70,32 +71,19 @@ export function CumulativeUserChart() {
   const chartData = {
     datasets: [
       {
-        backgroundColor: "rgba(226, 92, 49, 0.1)",
-        borderColor: "rgb(226, 92, 49)",
-        borderWidth: 3,
+        backgroundColor: "rgba(255, 80, 1, 0.1)",
+        borderColor: "rgb(255, 80, 1)",
+        borderWidth: 2,
         data: userGrowthData.map((data) => data.cumulativeUsers),
         fill: true,
         label: "Cumulative Users",
-        pointBackgroundColor: "rgb(226, 92, 49)",
+        pointBackgroundColor: "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
         pointHoverRadius: 6,
-        pointRadius: 4,
-        tension: 0.1,
-      },
-      {
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
-        borderColor: "rgb(59, 130, 246)",
-        borderWidth: 2,
-        data: userGrowthData.map((data) => data.newUsers),
-        fill: false,
-        label: "New Users",
-        pointBackgroundColor: "rgb(59, 130, 246)",
-        pointBorderColor: "rgb(255, 255, 255)",
-        pointBorderWidth: 2,
-        pointHoverRadius: 5,
-        pointRadius: 3,
-        tension: 0.1,
+        pointRadius: 0,
+        pointHoverBackgroundColor: "rgb(255, 80, 1)",
+        tension: 0.4,
       },
     ],
     labels: userGrowthData.map((data) => formatMonth(data.month)),
@@ -103,93 +91,102 @@ export function CumulativeUserChart() {
 
   const options = {
     interaction: {
-      axis: "x" as const,
       intersect: false,
-      mode: "nearest" as const,
+      mode: "index" as const,
     },
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        labels: {
-          font: {
-            size: 12,
-          },
-          padding: 20,
-          usePointStyle: true,
-        },
-        position: "top" as const,
-      },
-      title: {
         display: false,
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
-        borderColor: "rgba(255, 255, 255, 0.2)",
-        borderWidth: 1,
+        borderWidth: 0,
         callbacks: {
           label: (context: any) => {
-            const label = context.dataset.label || "";
             const value = new Intl.NumberFormat().format(context.parsed.y);
-            return `${label}: ${value}`;
+            return `${value} users`;
+          },
+          title: (context: any) => {
+            const dataIndex = context[0].dataIndex;
+            return userGrowthData[dataIndex].month;
           },
         },
-        cornerRadius: 8,
-        displayColors: true,
-        intersect: false,
-        mode: "index" as const,
+        cornerRadius: 6,
+        displayColors: false,
+        padding: 12,
         titleColor: "rgb(255, 255, 255)",
+        titleFont: {
+          size: 13,
+          weight: "bold" as const,
+        },
+        bodyFont: {
+          size: 12,
+        },
       },
     },
     responsive: true,
     scales: {
       x: {
-        display: true,
+        border: {
+          display: false,
+        },
         grid: {
           display: false,
         },
         ticks: {
+          color: "rgb(107, 114, 128)",
           font: {
+            family: "Inter, system-ui, sans-serif",
             size: 11,
+            weight: "normal" as const,
           },
-          maxTicksLimit: 12,
-        },
-        title: {
-          display: true,
-          font: {
-            size: 12,
-          },
-          text: "Month",
+          maxTicksLimit: 8,
+          padding: 8,
         },
       },
       y: {
         beginAtZero: true,
-        display: true,
+        border: {
+          display: false,
+        },
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: "rgba(229, 231, 235, 0.5)",
+          drawBorder: false,
         },
         ticks: {
-          callback: (value: any) => new Intl.NumberFormat().format(value),
+          callback: (value: any) => {
+            const num = Number(value);
+            if (num >= 1000000) {
+              return (num / 1000000).toFixed(1) + "M";
+            }
+            if (num >= 1000) {
+              return (num / 1000).toFixed(0) + "k";
+            }
+            return new Intl.NumberFormat().format(num);
+          },
+          color: "rgb(107, 114, 128)",
           font: {
+            family: "Inter, system-ui, sans-serif",
             size: 11,
+            weight: "normal" as const,
           },
-        },
-        title: {
-          display: true,
-          font: {
-            size: 12,
-          },
-          text: "Number of Users",
+          maxTicksLimit: 6,
+          padding: 12,
         },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Cumulative User Growth</h2>
-        <p className="text-sm text-gray-600">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative User Growth</h2>
+          <SourceCodeLink fileName="graphql.ts" lineNumber={503} tooltip="View fetchMonthlyUserGrowth source" />
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Monthly user acquisition and cumulative growth since inception
         </p>
       </div>

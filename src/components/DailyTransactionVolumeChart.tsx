@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { DailyTransactionVolume } from "@/lib/services/graphql";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -54,8 +55,8 @@ export function DailyTransactionVolumeChart() {
   const chartData = {
     datasets: [
       {
-        backgroundColor: "rgba(59, 130, 246, 0.8)",
-        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: "rgba(255, 80, 1, 0.8)",
+        borderColor: "rgb(255, 80, 1)",
         borderRadius: 4,
         borderSkipped: false,
         borderWidth: 1,
@@ -80,10 +81,9 @@ export function DailyTransactionVolumeChart() {
         display: false,
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
-        borderColor: "rgba(255, 255, 255, 0.2)",
-        borderWidth: 1,
+        borderWidth: 0,
         callbacks: {
           label: (context: any) => {
             const value = new Intl.NumberFormat().format(context.parsed.y);
@@ -95,14 +95,21 @@ export function DailyTransactionVolumeChart() {
             return date.toLocaleDateString("en-US", {
               day: "numeric",
               month: "long",
-              weekday: "long",
               year: "numeric",
             });
           },
         },
-        cornerRadius: 8,
+        cornerRadius: 6,
         displayColors: false,
+        padding: 12,
         titleColor: "rgb(255, 255, 255)",
+        titleFont: {
+          size: 13,
+          weight: "bold" as const,
+        },
+        bodyFont: {
+          size: 12,
+        },
       },
     },
     responsive: true,
@@ -117,9 +124,12 @@ export function DailyTransactionVolumeChart() {
         ticks: {
           color: "rgb(107, 114, 128)",
           font: {
-            size: 12,
+            family: "Inter, system-ui, sans-serif",
+            size: 11,
+            weight: "normal" as const,
           },
-          maxTicksLimit: period === 30 ? 10 : 15,
+          maxTicksLimit: period === 30 ? 8 : 12,
+          padding: 8,
         },
       },
       y: {
@@ -128,12 +138,17 @@ export function DailyTransactionVolumeChart() {
           display: false,
         },
         grid: {
-          color: "rgba(229, 231, 235, 0.8)",
+          color: "rgba(229, 231, 235, 0.5)",
           drawBorder: false,
+          lineWidth: 1,
         },
+        position: "left" as const,
         ticks: {
           callback: (tickValue: any) => {
             const value = Number(tickValue);
+            if (value >= 1000000) {
+              return (value / 1000000).toFixed(1) + "M";
+            }
             if (value >= 1000) {
               return (value / 1000).toFixed(0) + "k";
             }
@@ -141,26 +156,33 @@ export function DailyTransactionVolumeChart() {
           },
           color: "rgb(107, 114, 128)",
           font: {
-            size: 12,
+            family: "Inter, system-ui, sans-serif",
+            size: 11,
+            weight: "normal" as const,
           },
+          maxTicksLimit: 6,
+          padding: 12,
         },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Daily Transaction Volume</h2>
-          <p className="text-sm text-gray-600">Number of transactions processed each day</p>
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Daily Transaction Volume</h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={588} tooltip="View fetchDailyTransactionVolume source" />
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Number of transactions processed each day</p>
         </div>
-        <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+        <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
           <button
             type="button"
             onClick={() => setPeriod(30)}
             className={`px-3 py-1 text-sm font-medium transition-colors ${
-              period === 30 ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-50"
+              period === 30 ? "bg-sablier-100 text-sablier-700 dark:bg-sablier-900 dark:text-sablier-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
             30 days
@@ -169,7 +191,7 @@ export function DailyTransactionVolumeChart() {
             type="button"
             onClick={() => setPeriod(90)}
             className={`px-3 py-1 text-sm font-medium transition-colors ${
-              period === 90 ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-50"
+              period === 90 ? "bg-sablier-100 text-sablier-700 dark:bg-sablier-900 dark:text-sablier-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
             90 days

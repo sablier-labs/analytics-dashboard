@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         console.error("Error fetching average transactions per user:", err);
         return 0;
       }),
-      fetchDailyTransactionVolume(30).catch((err) => {
+      fetchDailyTransactionVolume(90).catch((err) => {
         console.error("Error fetching daily transaction volume:", err);
         return [];
       }),

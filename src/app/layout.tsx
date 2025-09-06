@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export const metadata: Metadata = {
   description:
@@ -14,7 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <ThemeProvider>
+          <ThemeToggle />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

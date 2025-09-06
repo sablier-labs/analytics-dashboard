@@ -122,9 +122,8 @@ export async function getCachedDailyTransactionVolume(
 ): Promise<DailyTransactionVolume[]> {
   const cached = await getCachedData();
   if (cached?.dailyTransactionVolume) {
-    // If we have cached data, use it regardless of the days parameter
-    // The cache is updated with 30 days by default
-    return cached.dailyTransactionVolume;
+    // The cache now contains 90 days of data, slice as needed
+    return cached.dailyTransactionVolume.slice(-days);
   }
   console.log("Cache miss - fetching daily transaction volume from GraphQL");
   return fetchDailyTransactionVolume(days);

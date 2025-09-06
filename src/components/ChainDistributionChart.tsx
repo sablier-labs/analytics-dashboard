@@ -4,6 +4,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { Pie } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { ChainDistribution } from "@/lib/services/graphql";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -210,48 +211,37 @@ const chainNames: Record<string, string> = {
   "836542336838601": "curio",
 };
 
-// Generate vibrant colors for pie chart
+// Generate brand-based colors for pie chart
 function generateChainColors(chainData: ChainDistribution[]): string[] {
-  const colors = [
-    "#FF6384",
-    "#36A2EB",
-    "#FFCE56",
-    "#4BC0C0",
-    "#9966FF",
-    "#FF9F40",
-    "#FF6384",
-    "#C9CBCF",
-    "#4BC0C0",
-    "#FF6384",
-    "#36A2EB",
-    "#FFCE56",
-    "#9966FF",
-    "#FF9F40",
-    "#FF6384",
-    "#36A2EB",
-    "#4BC0C0",
-    "#FFCE56",
-    "#C9CBCF",
-    "#9966FF",
-    "#FF9F40",
-    "#FF6384",
-    "#36A2EB",
-    "#FFCE56",
-    "#4BC0C0",
-    "#9966FF",
-    "#FF9F40",
-    "#C9CBCF",
-    "#FF6384",
-    "#36A2EB",
-    "#FFCE56",
-    "#4BC0C0",
-    "#9966FF",
-    "#FF9F40",
-    "#C9CBCF",
-    "#FF6384",
+  const brandColors = [
+    "#FF5001", // Primary brand orange
+    "#ea580c", // Orange 600
+    "#fb923c", // Orange 400
+    "#fdba74", // Orange 300
+    "#fed7aa", // Orange 200
+    "#c2410c", // Orange 700
+    "#9a3412", // Orange 800
+    "#f97316", // Orange 500 variant
+    "#ff6b35", // Orange variant
+    "#ff8566", // Orange tint
+    "#ff9f80", // Orange light
+    "#ffb399", // Orange lighter
+    "#ffc7b3", // Orange lightest
+    "#e55100", // Deep orange
+    "#ff7043", // Orange accent
+    "#ff8a65", // Orange light accent
+    "#ffab91", // Orange very light
+    "#ffccbc", // Orange pale
+    "#d84315", // Red orange
+    "#ff5722", // Deep orange material
+    "#ff6f00", // Amber orange
+    "#ff8f00", // Amber
+    "#ffa000", // Amber dark
+    "#ffb300", // Amber darker
+    "#ffc107", // Amber yellow
   ];
 
-  return chainData.map((_, index) => colors[index % colors.length]);
+  return chainData.map((_, index) => brandColors[index % brandColors.length]);
 }
 
 export function ChainDistributionChart() {
@@ -294,11 +284,12 @@ export function ChainDistributionChart() {
     datasets: [
       {
         backgroundColor: generateChainColors(chainData),
-        borderColor: "#ffffff",
-        borderWidth: 2,
+        borderColor: "transparent",
+        borderWidth: 0,
         data: chainData.map((chain) => chain.userCount),
-        hoverBackgroundColor: generateChainColors(chainData).map((color) => color + "CC"), // Add transparency on hover
-        hoverBorderWidth: 3,
+        hoverBackgroundColor: generateChainColors(chainData),
+        hoverBorderColor: "#ffffff",
+        hoverBorderWidth: 2,
       },
     ],
     labels: chainData.map((chain) => {
@@ -313,7 +304,9 @@ export function ChainDistributionChart() {
       legend: {
         labels: {
           font: {
-            size: 12,
+            family: "Inter, system-ui, sans-serif",
+            size: 11,
+            weight: "normal" as const,
           },
           generateLabels: (chart: any) => {
             const data = chart.data;
@@ -322,7 +315,7 @@ export function ChainDistributionChart() {
               0,
             );
 
-            return data.labels.map((label: string, index: number) => {
+            return data.labels.slice(0, 10).map((label: string, index: number) => {
               const value = data.datasets[0].data[index];
               const percentage = ((value / total) * 100).toFixed(1);
 
@@ -330,23 +323,24 @@ export function ChainDistributionChart() {
                 fillStyle: data.datasets[0].backgroundColor[index],
                 hidden: false,
                 index: index,
-                lineWidth: data.datasets[0].borderWidth,
+                lineWidth: 0,
                 pointStyle: "circle",
-                strokeStyle: data.datasets[0].borderColor,
+                strokeStyle: "transparent",
                 text: `${label} (${percentage}%)`,
               };
             });
           },
-          padding: 20,
+          padding: 16,
           usePointStyle: true,
+          boxWidth: 12,
+          boxHeight: 12,
         },
         position: "right" as const,
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
-        borderColor: "rgba(255, 255, 255, 0.2)",
-        borderWidth: 1,
+        borderWidth: 0,
         callbacks: {
           label: (context: any) => {
             const label = context.label || "";
@@ -356,19 +350,30 @@ export function ChainDistributionChart() {
             return `${label}: ${value} users (${percentage}%)`;
           },
         },
-        cornerRadius: 8,
-        displayColors: true,
+        cornerRadius: 6,
+        displayColors: false,
+        padding: 12,
         titleColor: "rgb(255, 255, 255)",
+        titleFont: {
+          size: 13,
+          weight: "bold" as const,
+        },
+        bodyFont: {
+          size: 12,
+        },
       },
     },
     responsive: true,
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">User Distribution by Chain</h2>
-        <p className="text-sm text-gray-600">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Distribution by Chain</h2>
+          <SourceCodeLink fileName="graphql.ts" lineNumber={432} tooltip="View fetchChainDistribution source" />
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Distribution of active users across different blockchain networks
         </p>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function UserCounter() {
   const { data, loading, error } = useAnalytics();
@@ -31,17 +32,20 @@ export function UserCounter() {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">Total Users</p>
-          <p className="text-2xl font-bold text-gray-900">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Users</p>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={135} tooltip="View fetchTotalUsers source" />
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {userCount !== null ? formatNumber(userCount) : "—"}
           </p>
         </div>
-        <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
+        <div className="flex items-center justify-center w-12 h-12 bg-sablier-100 dark:bg-sablier-900 rounded-lg">
           <svg
-            className="w-6 h-6 text-blue-600"
+            className="w-6 h-6 text-sablier-600 dark:text-sablier-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
