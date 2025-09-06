@@ -2,6 +2,7 @@
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function GrowthRateIndicators() {
   const { data, loading, error } = useAnalytics();
@@ -13,16 +14,16 @@ export function GrowthRateIndicators() {
   };
 
   const getGrowthColor = (value: number) => {
-    if (value > 0) return "text-green-600";
-    if (value < 0) return "text-red-600";
-    return "text-gray-600";
+    if (value > 0) return "text-green-600 dark:text-green-400";
+    if (value < 0) return "text-red-600 dark:text-red-400";
+    return "text-gray-600 dark:text-gray-300";
   };
 
   const getGrowthIcon = (value: number) => {
     if (value > 0) {
       return (
         <svg
-          className="w-4 h-4 text-green-600"
+          className="w-4 h-4 text-green-600 dark:text-green-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -38,7 +39,7 @@ export function GrowthRateIndicators() {
     }
     if (value < 0) {
       return (
-        <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -49,7 +50,7 @@ export function GrowthRateIndicators() {
       );
     }
     return (
-      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
       </svg>
     );
@@ -57,14 +58,14 @@ export function GrowthRateIndicators() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-20"></div>
-                <div className="h-6 bg-gray-200 rounded w-16"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
               </div>
             ))}
           </div>
@@ -75,17 +76,17 @@ export function GrowthRateIndicators() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading growth metrics</p>
-        <p className="text-xs text-red-500">{error}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading growth metrics</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
   }
 
   if (!growthMetrics) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <p className="text-gray-600">No growth metrics available</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <p className="text-gray-600 dark:text-gray-300">No growth metrics available</p>
       </div>
     );
   }
@@ -95,41 +96,63 @@ export function GrowthRateIndicators() {
       description: "Month-over-month",
       label: "User Growth",
       value: growthMetrics.userGrowthRate,
+      hasSourceLink: true,
     },
     {
       description: "Month-over-month",
       label: "Transaction Growth",
       value: growthMetrics.transactionGrowthRate,
+      hasSourceLink: false,
     },
     {
       description: "Month-over-month",
       label: "Avg Tx/User Growth",
       value: growthMetrics.averageTransactionGrowthRate,
+      hasSourceLink: false,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {metrics.map((metric, index) => (
-        <div key={index} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">{metric.label}</p>
-              <p className={`text-2xl font-bold ${getGrowthColor(metric.value)}`}>
-                {formatPercentage(metric.value)}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">{metric.description}</p>
-            </div>
-            <div
-              className={`flex items-center justify-center w-12 h-12 rounded-lg ${
-                metric.value > 0 ? "bg-green-100" : metric.value < 0 ? "bg-red-100" : "bg-gray-100"
-              }`}
-            >
-              {getGrowthIcon(metric.value)}
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Growth Rate Indicators</h2>
+          <SourceCodeLink fileName="graphql.ts" lineNumber={688} tooltip="View fetchGrowthRateMetrics source" />
+        </div>
+        <p className="text-gray-600 dark:text-gray-300">Month-over-month growth metrics</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {metrics.map((metric, index) => (
+          <div key={index} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{metric.label}</p>
+                  {metric.hasSourceLink && (
+                    <SourceCodeLink fileName="graphql.ts" lineNumber={688} tooltip="View growth metrics source" />
+                  )}
+                </div>
+                <p className={`text-2xl font-bold ${getGrowthColor(metric.value)}`}>
+                  {formatPercentage(metric.value)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{metric.description}</p>
+              </div>
+              <div
+                className={`flex items-center justify-center w-12 h-12 rounded-lg ${
+                  metric.value > 0 
+                    ? "bg-green-100 dark:bg-green-900/20" 
+                    : metric.value < 0 
+                    ? "bg-red-100 dark:bg-red-900/20" 
+                    : "bg-gray-100 dark:bg-gray-700"
+                }`}
+              >
+                {getGrowthIcon(metric.value)}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

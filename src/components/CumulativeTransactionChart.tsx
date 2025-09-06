@@ -14,6 +14,7 @@ import {
 import { Line } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(
   CategoryScale,
@@ -32,10 +33,10 @@ export function CumulativeTransactionChart() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-64 mb-4"></div>
-          <div className="h-80 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-4"></div>
+          <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -43,17 +44,17 @@ export function CumulativeTransactionChart() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading transaction growth chart</p>
-        <p className="text-xs text-red-500">{error}</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading transaction growth chart</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
   }
 
   if (!transactionData || transactionData.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <p className="text-gray-600">No transaction growth data available</p>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+        <p className="text-gray-600 dark:text-gray-300">No transaction growth data available</p>
       </div>
     );
   }
@@ -70,32 +71,19 @@ export function CumulativeTransactionChart() {
   const chartData = {
     datasets: [
       {
-        backgroundColor: "rgba(34, 197, 94, 0.1)",
-        borderColor: "rgb(34, 197, 94)",
-        borderWidth: 3,
+        backgroundColor: "rgba(255, 80, 1, 0.1)",
+        borderColor: "rgb(255, 80, 1)",
+        borderWidth: 2,
         data: transactionData.map((item) => item.cumulativeTransactions),
         fill: true,
         label: "Cumulative Transactions",
-        pointBackgroundColor: "rgb(34, 197, 94)",
+        pointBackgroundColor: "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
         pointHoverRadius: 6,
-        pointRadius: 4,
-        tension: 0.1,
-      },
-      {
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
-        borderColor: "rgb(59, 130, 246)",
-        borderWidth: 2,
-        data: transactionData.map((item) => item.newTransactions),
-        fill: false,
-        label: "New Transactions",
-        pointBackgroundColor: "rgb(59, 130, 246)",
-        pointBorderColor: "rgb(255, 255, 255)",
-        pointBorderWidth: 2,
-        pointHoverRadius: 5,
-        pointRadius: 3,
-        tension: 0.1,
+        pointRadius: 0,
+        pointHoverBackgroundColor: "rgb(255, 80, 1)",
+        tension: 0.4,
       },
     ],
     labels: transactionData.map((item) => formatMonth(item.month)),
@@ -103,101 +91,102 @@ export function CumulativeTransactionChart() {
 
   const options = {
     interaction: {
-      axis: "x" as const,
       intersect: false,
-      mode: "nearest" as const,
+      mode: "index" as const,
     },
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        labels: {
-          font: {
-            size: 12,
-          },
-          padding: 20,
-          usePointStyle: true,
-        },
-        position: "top" as const,
-      },
-      title: {
         display: false,
       },
       tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
-        borderColor: "rgba(255, 255, 255, 0.2)",
-        borderWidth: 1,
+        borderWidth: 0,
         callbacks: {
           label: (context: any) => {
-            const label = context.dataset.label || "";
             const value = new Intl.NumberFormat().format(context.parsed.y);
-            return `${label}: ${value}`;
+            return `${value} transactions`;
+          },
+          title: (context: any) => {
+            const dataIndex = context[0].dataIndex;
+            return transactionData[dataIndex].month;
           },
         },
-        cornerRadius: 8,
-        displayColors: true,
-        intersect: false,
-        mode: "index" as const,
+        cornerRadius: 6,
+        displayColors: false,
+        padding: 12,
         titleColor: "rgb(255, 255, 255)",
+        titleFont: {
+          size: 13,
+          weight: "bold" as const,
+        },
+        bodyFont: {
+          size: 12,
+        },
       },
     },
     responsive: true,
     scales: {
       x: {
-        display: true,
+        border: {
+          display: false,
+        },
         grid: {
           display: false,
         },
         ticks: {
+          color: "rgb(107, 114, 128)",
           font: {
+            family: "Inter, system-ui, sans-serif",
             size: 11,
+            weight: "normal" as const,
           },
-          maxTicksLimit: 12,
-        },
-        title: {
-          display: true,
-          font: {
-            size: 12,
-          },
-          text: "Month",
+          maxTicksLimit: 8,
+          padding: 8,
         },
       },
       y: {
         beginAtZero: true,
-        display: true,
+        border: {
+          display: false,
+        },
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: "rgba(229, 231, 235, 0.5)",
+          drawBorder: false,
         },
         ticks: {
           callback: (value: any) => {
-            const numValue = Number(value);
-            if (numValue >= 1000000) {
-              return (numValue / 1000000).toFixed(1) + "M";
-            } else if (numValue >= 1000) {
-              return (numValue / 1000).toFixed(0) + "k";
+            const num = Number(value);
+            if (num >= 1000000) {
+              return (num / 1000000).toFixed(1) + "M";
             }
-            return new Intl.NumberFormat().format(numValue);
+            if (num >= 1000) {
+              return (num / 1000).toFixed(0) + "k";
+            }
+            return new Intl.NumberFormat().format(num);
           },
+          color: "rgb(107, 114, 128)",
           font: {
+            family: "Inter, system-ui, sans-serif",
             size: 11,
+            weight: "normal" as const,
           },
-        },
-        title: {
-          display: true,
-          font: {
-            size: 12,
-          },
-          text: "Number of Transactions",
+          maxTicksLimit: 6,
+          padding: 12,
         },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Cumulative Transaction Growth</h2>
-        <p className="text-sm text-gray-600">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative Transaction Growth</h2>
+          <SourceCodeLink fileName="graphql.ts" lineNumber={552} tooltip="View fetchMonthlyTransactionGrowth source" />
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           Monthly transaction growth and cumulative transaction volume since inception
         </p>
       </div>
