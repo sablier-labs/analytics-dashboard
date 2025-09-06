@@ -1,32 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getCachedTimeBasedTransactionCounts } from "@/lib/services/cache";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedTransactionCounts } from "@/lib/services/graphql";
 
 export function TimeBasedTransactionCounters() {
-  const [transactionCounts, setTransactionCounts] = useState<TimeBasedTransactionCounts | null>(
-    null,
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadTransactionCounts() {
-      try {
-        setLoading(true);
-        setError(null);
-        const counts = await getCachedTimeBasedTransactionCounts();
-        setTransactionCounts(counts);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load transaction counts");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadTransactionCounts();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const transactionCounts = data?.timeBasedTransactions || null;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);

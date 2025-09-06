@@ -1,34 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export function AverageTransactionsPerUser() {
-  const [averageTransactions, setAverageTransactions] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadAverageTransactions() {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch("/api/analytics");
-        if (!response.ok) {
-          throw new Error("Failed to fetch analytics data");
-        }
-        const data = await response.json();
-        setAverageTransactions(data.averageTransactionsPerUser);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load average transactions per user",
-        );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadAverageTransactions();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const averageTransactions = data?.averageTransactionsPerUser || null;
 
   const formatNumber = (num: number) => {
     return num.toFixed(1);

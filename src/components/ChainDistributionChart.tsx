@@ -1,9 +1,8 @@
 "use client";
 
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import { getCachedChainDistribution } from "@/lib/services/cache";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { ChainDistribution } from "@/lib/services/graphql";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -256,30 +255,12 @@ function generateChainColors(chainData: ChainDistribution[]): string[] {
 }
 
 export function ChainDistributionChart() {
-  const [chainData, setChainData] = useState<ChainDistribution[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadChainData() {
-      try {
-        setLoading(true);
-        setError(null);
-        const rawData = await getCachedChainDistribution();
-        // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
-        const filteredData = rawData.filter(
-          (chain) => chain.chainId !== "11155111" && chain.chainId !== "84532",
-        );
-        setChainData(filteredData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load chain distribution");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadChainData();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  
+  // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
+  const chainData = data?.chainDistribution?.filter(
+    (chain) => chain.chainId !== "11155111" && chain.chainId !== "84532",
+  ) || null;
 
   if (loading) {
     return (

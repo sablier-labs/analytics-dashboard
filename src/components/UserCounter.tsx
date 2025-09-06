@@ -1,32 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export function UserCounter() {
-  const [userCount, setUserCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadUserCount() {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch("/api/analytics/users");
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-        const data = await response.json();
-        setUserCount(data.totalUsers);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load user count");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadUserCount();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const userCount = data?.totalUsers || null;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);

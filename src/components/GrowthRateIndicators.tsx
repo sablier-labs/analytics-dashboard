@@ -1,30 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getCachedGrowthRateMetrics } from "@/lib/services/cache";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
 
 export function GrowthRateIndicators() {
-  const [growthMetrics, setGrowthMetrics] = useState<GrowthRateMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadGrowthMetrics() {
-      try {
-        setLoading(true);
-        setError(null);
-        const metrics = await getCachedGrowthRateMetrics();
-        setGrowthMetrics(metrics);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load growth metrics");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadGrowthMetrics();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const growthMetrics = data?.growthRateMetrics || null;
 
   const formatPercentage = (value: number) => {
     const sign = value >= 0 ? "+" : "";

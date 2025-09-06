@@ -1,32 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export function TransactionCounter() {
-  const [transactionCount, setTransactionCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadTransactionCount() {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch("/api/analytics/transactions");
-        if (!response.ok) {
-          throw new Error("Failed to fetch transaction data");
-        }
-        const data = await response.json();
-        setTransactionCount(data.totalTransactions);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load transaction count");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void loadTransactionCount();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const transactionCount = data?.totalTransactions || null;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);

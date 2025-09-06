@@ -11,9 +11,8 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { getCachedMonthlyUserGrowth } from "@/lib/services/cache";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
 
 ChartJS.register(
@@ -28,30 +27,12 @@ ChartJS.register(
 );
 
 export function CumulativeUserChart() {
-  const [userGrowthData, setUserGrowthData] = useState<MonthlyUserGrowth[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadUserGrowthData() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getCachedMonthlyUserGrowth();
-        setUserGrowthData(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load user growth data");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUserGrowthData();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const userGrowthData = data?.monthlyUserGrowth || null;
 
   const formatMonth = (monthString: string) => {
     const [year, month] = monthString.split("-");
-    const date = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
     return date.toLocaleDateString("en-US", {
       month: "short",
       year: "numeric",

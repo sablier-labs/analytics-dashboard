@@ -9,35 +9,19 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Bar } from "react-chartjs-2";
-import { getCachedDailyTransactionVolume } from "@/lib/services/cache";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { DailyTransactionVolume } from "@/lib/services/graphql";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export function DailyTransactionVolumeChart() {
-  const [volumeData, setVolumeData] = useState<DailyTransactionVolume[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error } = useAnalytics();
   const [period, setPeriod] = useState<30 | 90>(30);
-
-  useEffect(() => {
-    async function loadVolumeData() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getCachedDailyTransactionVolume(period);
-        setVolumeData(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load transaction volume data");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadVolumeData();
-  }, [period]);
+  
+  // Filter data based on selected period  
+  const volumeData = data?.dailyTransactionVolume?.slice(-period) || null;
 
   if (loading) {
     return (
@@ -173,6 +157,7 @@ export function DailyTransactionVolumeChart() {
         </div>
         <div className="flex rounded-lg border border-gray-200 overflow-hidden">
           <button
+            type="button"
             onClick={() => setPeriod(30)}
             className={`px-3 py-1 text-sm font-medium transition-colors ${
               period === 30 ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-50"
@@ -181,6 +166,7 @@ export function DailyTransactionVolumeChart() {
             30 days
           </button>
           <button
+            type="button"
             onClick={() => setPeriod(90)}
             className={`px-3 py-1 text-sm font-medium transition-colors ${
               period === 90 ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-50"
