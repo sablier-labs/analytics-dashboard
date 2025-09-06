@@ -1,30 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getCachedTimeBasedUserCounts } from "@/lib/services/cache";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedUserCounts } from "@/lib/services/graphql";
 
 export function TimeBasedUserCounters() {
-  const [userCounts, setUserCounts] = useState<TimeBasedUserCounts | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadUserCounts() {
-      try {
-        setLoading(true);
-        setError(null);
-        const counts = await getCachedTimeBasedUserCounts();
-        setUserCounts(counts);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load user counts");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUserCounts();
-  }, []);
+  const { data, loading, error } = useAnalytics();
+  const userCounts = data?.timeBasedUsers || null;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
