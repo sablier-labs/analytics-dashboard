@@ -37,7 +37,7 @@ export function AverageTransactionsPerUser() {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Transactions Per User</p>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={572} tooltip="View fetchAverageTransactionsPerUser source" />
+            <SourceCodeLink fileName="graphql.ts" lineNumber={642} tooltip="View fetchAverageTransactionsPerUser source" />
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {averageTransactions !== null ? formatNumber(averageTransactions) : "—"}

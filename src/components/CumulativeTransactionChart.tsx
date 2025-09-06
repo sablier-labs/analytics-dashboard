@@ -184,7 +184,7 @@ export function CumulativeTransactionChart() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative Transaction Growth</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={552} tooltip="View fetchMonthlyTransactionGrowth source" />
+          <SourceCodeLink fileName="graphql.ts" lineNumber={565} tooltip="View fetchMonthlyTransactionGrowth source" />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Monthly transaction growth and cumulative transaction volume since inception

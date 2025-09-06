@@ -117,7 +117,7 @@ export function GrowthRateIndicators() {
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Growth Rate Indicators</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={688} tooltip="View fetchGrowthRateMetrics source" />
+          <SourceCodeLink fileName="graphql.ts" lineNumber={768} tooltip="View fetchGrowthRateMetrics source" />
         </div>
         <p className="text-gray-600 dark:text-gray-300">Month-over-month growth metrics</p>
       </div>
@@ -130,7 +130,7 @@ export function GrowthRateIndicators() {
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{metric.label}</p>
                   {metric.hasSourceLink && (
-                    <SourceCodeLink fileName="graphql.ts" lineNumber={688} tooltip="View growth metrics source" />
+                    <SourceCodeLink fileName="graphql.ts" lineNumber={768} tooltip="View growth metrics source" />
                   )}
                 </div>
                 <p className={`text-2xl font-bold ${getGrowthColor(metric.value)}`}>

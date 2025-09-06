@@ -64,7 +64,7 @@ export function TimeBasedUserCounters() {
       <div className="text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Active Users by Time Period</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={215} tooltip="View fetchTimeBasedUserCounts source" />
+          <SourceCodeLink fileName="graphql.ts" lineNumber={213} tooltip="View fetchTimeBasedUserCounts source" />
         </div>
         <p className="text-gray-600 dark:text-gray-300">Users who have made transactions within each time range</p>
       </div>

@@ -66,7 +66,7 @@ export function TimeBasedTransactionCounters() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Transaction Activity by Time Period
           </h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={268} tooltip="View fetchTimeBasedTransactionCounts source" />
+          <SourceCodeLink fileName="graphql.ts" lineNumber={301} tooltip="View fetchTimeBasedTransactionCounts source" />
         </div>
         <p className="text-gray-600 dark:text-gray-300">Number of transactions processed within each time range</p>
       </div>

@@ -375,7 +375,7 @@ export function ChainDistributionChart() {
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Distribution by Chain</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={432} tooltip="View fetchChainDistribution source" />
+          <SourceCodeLink fileName="graphql.ts" lineNumber={466} tooltip="View fetchChainDistribution source" />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Distribution of active users across different blockchain networks
