@@ -32,8 +32,10 @@ function verifyRequest(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // TEMPORARY: Allow all requests for manual cache update - REMOVE THIS ASAP!
-  console.log("Cache update requested - bypassing auth temporarily");
+  // Verify the request is authorized
+  if (!verifyRequest(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     console.log("Starting cache update...");
