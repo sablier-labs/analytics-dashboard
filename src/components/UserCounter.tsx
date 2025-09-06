@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCachedTotalUsers } from "@/lib/services/cache";
 
 export function UserCounter() {
   const [userCount, setUserCount] = useState<number | null>(null);
@@ -13,8 +12,12 @@ export function UserCounter() {
       try {
         setLoading(true);
         setError(null);
-        const count = await getCachedTotalUsers();
-        setUserCount(count);
+        const response = await fetch("/api/analytics/users");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+        const data = await response.json();
+        setUserCount(data.totalUsers);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user count");
       } finally {
@@ -22,7 +25,7 @@ export function UserCounter() {
       }
     }
 
-    loadUserCount();
+    void loadUserCount();
   }, []);
 
   const formatNumber = (num: number) => {

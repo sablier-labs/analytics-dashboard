@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCachedTotalTransactions } from "@/lib/services/cache";
 
 export function TransactionCounter() {
   const [transactionCount, setTransactionCount] = useState<number | null>(null);
@@ -13,8 +12,12 @@ export function TransactionCounter() {
       try {
         setLoading(true);
         setError(null);
-        const count = await getCachedTotalTransactions();
-        setTransactionCount(count);
+        const response = await fetch("/api/analytics/transactions");
+        if (!response.ok) {
+          throw new Error("Failed to fetch transaction data");
+        }
+        const data = await response.json();
+        setTransactionCount(data.totalTransactions);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load transaction count");
       } finally {
@@ -22,7 +25,7 @@ export function TransactionCounter() {
       }
     }
 
-    loadTransactionCount();
+    void loadTransactionCount();
   }, []);
 
   const formatNumber = (num: number) => {
