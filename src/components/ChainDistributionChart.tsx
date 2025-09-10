@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef } from "react";
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { Pie } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { ChainDistribution } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
 import { useTheme } from "@/contexts/ThemeContext";
+import { SharePanel } from "./SharePanel";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -248,6 +250,7 @@ function generateChainColors(chainData: ChainDistribution[]): string[] {
 export function ChainDistributionChart() {
   const { data, loading, error } = useAnalytics();
   const { theme } = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Filter out unwanted chains: 11155111 (Sepolia testnet) and 84532 (Base Sepolia)
   const chainData = data?.chainDistribution?.filter(
@@ -371,7 +374,17 @@ export function ChainDistributionChart() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+    <div 
+      ref={containerRef}
+      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+    >
+      <div className="absolute top-3 right-3">
+        <SharePanel 
+          title="User Distribution by Chain"
+          elementRef={containerRef}
+          description="Distribution of active users across different blockchain networks"
+        />
+      </div>
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Distribution by Chain</h2>

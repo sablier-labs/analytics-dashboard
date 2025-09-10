@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -15,6 +16,7 @@ import { Line } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { SharePanel } from "./SharePanel";
 
 ChartJS.register(
   CategoryScale,
@@ -30,6 +32,7 @@ ChartJS.register(
 export function CumulativeUserChart() {
   const { data, loading, error } = useAnalytics();
   const userGrowthData = data?.monthlyUserGrowth || null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const formatMonth = (monthString: string) => {
     const [year, month] = monthString.split("-");
@@ -180,7 +183,17 @@ export function CumulativeUserChart() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+    <div 
+      ref={containerRef}
+      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+    >
+      <div className="absolute top-3 right-3">
+        <SharePanel 
+          title="Cumulative User Growth"
+          elementRef={containerRef}
+          description="Monthly user acquisition and cumulative growth since inception"
+        />
+      </div>
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative User Growth</h2>

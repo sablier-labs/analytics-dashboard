@@ -1,11 +1,14 @@
 "use client";
 
+import { useRef } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { SharePanel } from "./SharePanel";
 
 export function TransactionCounter() {
   const { data, loading, error } = useAnalytics();
   const transactionCount = data?.totalTransactions || null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -32,7 +35,17 @@ export function TransactionCounter() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+    <div 
+      ref={containerRef}
+      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+    >
+      <div className="absolute top-3 right-3">
+        <SharePanel 
+          title="Total Transactions"
+          elementRef={containerRef}
+          description="Total number of transactions on the Sablier protocol"
+        />
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
