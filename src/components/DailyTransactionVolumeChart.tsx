@@ -53,20 +53,26 @@ export function DailyTransactionVolumeChart() {
   const now = new Date();
   const cutoffDate = new Date(now.getTime() - period * 24 * 60 * 60 * 1000);
   
-  // First, try to get data from the requested date range
-  let volumeData = availableData
+  // Sort all available data by date (newest first for processing)
+  const sortedData = availableData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  
+  // First, try to get data from the requested date range (last N days from today)
+  let volumeData = sortedData
     .filter(item => new Date(item.date) >= cutoffDate)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
-  // If no data in the requested range, show the most recent available data
   let isShowingStaleData = false;
   let actualDateRange = { start: "", end: "" };
   
-  if (volumeData.length === 0 && availableData.length > 0) {
-    // Take the most recent N days from available data
-    volumeData = availableData
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, Math.min(period, availableData.length))
+  // If no data in the requested range, show the last N days from available data
+  if (volumeData.length === 0 && sortedData.length > 0) {
+    // Instead of taking the most recent N items, take the actual last N days
+    // from the available date range
+    const newestDate = new Date(sortedData[0].date);
+    const oldestNeededDate = new Date(newestDate.getTime() - (period - 1) * 24 * 60 * 60 * 1000);
+    
+    volumeData = sortedData
+      .filter(item => new Date(item.date) >= oldestNeededDate)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     isShowingStaleData = true;
