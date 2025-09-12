@@ -750,18 +750,20 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
 }
 
 export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
-  // First, let's try a simpler approach - get all assets and then count their streams
+  // Use aggregation to get accurate stream counts without array limits
   const query = `
     query GetTopAssets {
-      Asset(limit: 50) {
+      Asset {
         id
         address
         symbol
         name
         chainId
         decimals
-        streams {
-          id
+        streams_aggregate {
+          aggregate {
+            count
+          }
         }
       }
     }
@@ -788,7 +790,11 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
         name: string;
         chainId: string;
         decimals: string;
-        streams: Array<{ id: string }>;
+        streams_aggregate: {
+          aggregate: {
+            count: number;
+          };
+        };
       }>;
     }> = await response.json();
 
@@ -807,13 +813,15 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
         symbol: asset.symbol,
         name: asset.name,
         chainId: asset.chainId,
-        streamCount: asset.streams.length,
+        streamCount: asset.streams_aggregate.aggregate.count,
         decimals: parseInt(asset.decimals, 10),
       }))
       .sort((a, b) => b.streamCount - a.streamCount) // Sort by stream count desc
       .slice(0, 10); // Take top 10
 
-    console.log(`Top assets:`, topAssets.slice(0, 3)); // Log first 3 for debugging
+    const totalStreams = result.data.Asset.reduce((sum, asset) => sum + asset.streams_aggregate.aggregate.count, 0);
+    console.log(`Processing ${result.data.Asset.length} assets with ${totalStreams} total streams`);
+    console.log(`Top assets:`, topAssets.slice(0, 5).map(a => `${a.symbol}: ${a.streamCount} streams`));
 
     return topAssets;
   } catch (error) {
