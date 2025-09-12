@@ -23,12 +23,15 @@ export function DailyTransactionVolumeChart() {
   const [period, setPeriod] = useState<30 | 90>(30);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Filter data based on selected period
-  // If we need 90 days but only have 30 days cached, use all available data
+  // Filter data based on selected period using actual dates
   const availableData = data?.dailyTransactionVolume || [];
-  const volumeData = availableData.length >= period 
-    ? availableData.slice(-period) 
-    : availableData;
+  const now = new Date();
+  const cutoffDate = new Date(now.getTime() - period * 24 * 60 * 60 * 1000);
+  
+  // Filter by actual dates and sort by date
+  const volumeData = availableData
+    .filter(item => new Date(item.date) >= cutoffDate)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   if (loading) {
     return (
@@ -193,9 +196,9 @@ export function DailyTransactionVolumeChart() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Number of transactions processed each day
-            {period === 90 && volumeData && volumeData.length < 90 && (
+            {volumeData && volumeData.length < period && (
               <span className="text-orange-600 dark:text-orange-400 ml-2">
-                (Showing {volumeData.length} of {period} requested days - cache updating soon)
+                (Showing {volumeData.length} of {period} requested days - limited by available data)
               </span>
             )}
           </p>
