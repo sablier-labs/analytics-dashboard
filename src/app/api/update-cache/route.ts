@@ -1,9 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {
-  fetchAverageTransactionsPerUser,
   fetchChainDistribution,
-  fetchDailyTransactionVolume,
   fetchGrowthRateMetrics,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
@@ -49,8 +47,6 @@ export async function POST(request: NextRequest) {
       monthlyUserGrowth,
       chainDistribution,
       monthlyTransactionGrowth,
-      averageTransactionsPerUser,
-      dailyTransactionVolume,
       growthRateMetrics,
     ] = await Promise.all([
       fetchTotalUsers().catch((err) => {
@@ -81,14 +77,6 @@ export async function POST(request: NextRequest) {
         console.error("Error fetching monthly transaction growth:", err);
         return [];
       }),
-      fetchAverageTransactionsPerUser().catch((err) => {
-        console.error("Error fetching average transactions per user:", err);
-        return 0;
-      }),
-      fetchDailyTransactionVolume(90).catch((err) => {
-        console.error("Error fetching daily transaction volume:", err);
-        return [];
-      }),
       fetchGrowthRateMetrics().catch((err) => {
         console.error("Error fetching growth rate metrics:", err);
         return { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
@@ -97,9 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Prepare the cached data
     const cachedData = {
-      averageTransactionsPerUser,
       chainDistribution,
-      dailyTransactionVolume,
       growthRateMetrics,
       lastUpdated: new Date().toISOString(),
       monthlyTransactionGrowth,
@@ -150,7 +136,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       dataPoints: {
         chainDistribution: chainDistribution.length,
-        dailyTransactionVolume: dailyTransactionVolume.length,
         monthlyTransactionGrowth: monthlyTransactionGrowth.length,
         monthlyUserGrowth: monthlyUserGrowth.length,
         totalTransactions,

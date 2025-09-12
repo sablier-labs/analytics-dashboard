@@ -107,10 +107,6 @@ export interface MonthlyTransactionGrowth {
   newTransactions: number;
 }
 
-export interface DailyTransactionVolume {
-  date: string;
-  count: number;
-}
 
 export interface UserTransactionDistribution {
   label: string;
@@ -639,131 +635,7 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
   }
 }
 
-export async function fetchAverageTransactionsPerUser(): Promise<number> {
-  const query = `
-    query GetAverageTransactionsPerUser {
-      totalUsers: User_aggregate(where: { transactions: {} }) {
-        aggregate {
-          count
-        }
-      }
-      totalTransactions: UserTransaction_aggregate {
-        aggregate {
-          count
-        }
-      }
-    }
-  `;
 
-  try {
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: GraphQLResponse<{
-      totalUsers: { aggregate: { count: number } };
-      totalTransactions: { aggregate: { count: number } };
-    }> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const totalUsers = result.data.totalUsers.aggregate.count;
-    const totalTransactions = result.data.totalTransactions.aggregate.count;
-
-    return totalUsers > 0 ? totalTransactions / totalUsers : 0;
-  } catch (error) {
-    console.error("Error fetching average transactions per user:", error);
-    throw error;
-  }
-}
-
-export async function fetchDailyTransactionVolume(
-  days: number = 30,
-): Promise<DailyTransactionVolume[]> {
-  const now = new Date();
-  const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-
-  // Generate date ranges for each day
-  const dateRanges: Array<{ date: string; start: string; end: string }> = [];
-
-  for (let i = 0; i < days; i++) {
-    const currentDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
-    const nextDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
-
-    dateRanges.push({
-      date: currentDate.toISOString().split("T")[0], // YYYY-MM-DD format
-      end: nextDate.toISOString(),
-      start: currentDate.toISOString(),
-    });
-  }
-
-  const queries = dateRanges.map((range, index) => {
-    return `
-      day_${index}: UserTransaction_aggregate(
-        where: {
-          timestamp: { _gte: "${range.start}", _lt: "${range.end}" }
-        }
-      ) {
-        aggregate {
-          count
-        }
-      }
-    `;
-  });
-
-  const query = `
-    query GetDailyTransactionVolume {
-      ${queries.join("\n")}
-    }
-  `;
-
-  try {
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: GraphQLResponse<any> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const dailyData: DailyTransactionVolume[] = [];
-
-    dateRanges.forEach((range, index) => {
-      const key = `day_${index}`;
-      const count = result.data[key].aggregate.count;
-
-      dailyData.push({
-        count: count,
-        date: range.date,
-      });
-    });
-
-    return dailyData;
-  } catch (error) {
-    console.error("Error fetching daily transaction volume:", error);
-    throw error;
-  }
-}
 
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   const now = new Date();

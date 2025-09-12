@@ -1,7 +1,6 @@
 import { get } from "@vercel/edge-config";
 import type {
   ChainDistribution,
-  DailyTransactionVolume,
   GrowthRateMetrics,
   MonthlyTransactionGrowth,
   MonthlyUserGrowth,
@@ -9,9 +8,7 @@ import type {
   TimeBasedUserCounts,
 } from "./graphql";
 import {
-  fetchAverageTransactionsPerUser,
   fetchChainDistribution,
-  fetchDailyTransactionVolume,
   fetchGrowthRateMetrics,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
@@ -29,8 +26,6 @@ export interface CachedAnalyticsData {
   monthlyUserGrowth: MonthlyUserGrowth[];
   chainDistribution: ChainDistribution[];
   monthlyTransactionGrowth: MonthlyTransactionGrowth[];
-  averageTransactionsPerUser: number;
-  dailyTransactionVolume: DailyTransactionVolume[];
   growthRateMetrics: GrowthRateMetrics;
   lastUpdated: string;
 }
@@ -108,26 +103,7 @@ export async function getCachedMonthlyTransactionGrowth(): Promise<MonthlyTransa
   return fetchMonthlyTransactionGrowth();
 }
 
-export async function getCachedAverageTransactionsPerUser(): Promise<number> {
-  const cached = await getCachedData();
-  if (cached?.averageTransactionsPerUser !== undefined) {
-    return cached.averageTransactionsPerUser;
-  }
-  console.log("Cache miss - fetching average transactions per user from GraphQL");
-  return fetchAverageTransactionsPerUser();
-}
 
-export async function getCachedDailyTransactionVolume(
-  days: number = 30,
-): Promise<DailyTransactionVolume[]> {
-  const cached = await getCachedData();
-  if (cached?.dailyTransactionVolume) {
-    // The cache now contains 90 days of data, slice as needed
-    return cached.dailyTransactionVolume.slice(-days);
-  }
-  console.log("Cache miss - fetching daily transaction volume from GraphQL");
-  return fetchDailyTransactionVolume(days);
-}
 
 export async function getCachedGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   const cached = await getCachedData();
