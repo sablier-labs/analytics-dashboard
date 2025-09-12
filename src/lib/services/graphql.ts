@@ -750,22 +750,18 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
 }
 
 export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
+  // First, let's try a simpler approach - get all assets and then count their streams
   const query = `
     query GetTopAssets {
-      Asset(
-        order_by: { streams_aggregate: { count: desc } }
-        limit: 10
-      ) {
+      Asset(limit: 50) {
         id
         address
         symbol
         name
         chainId
         decimals
-        streams_aggregate {
-          aggregate {
-            count
-          }
+        streams {
+          id
         }
       }
     }
@@ -792,27 +788,34 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
         name: string;
         chainId: string;
         decimals: string;
-        streams_aggregate: {
-          aggregate: {
-            count: number;
-          };
-        };
+        streams: Array<{ id: string }>;
       }>;
     }> = await response.json();
 
     if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    return result.data.Asset.map((asset) => ({
-      assetId: asset.id,
-      address: asset.address,
-      symbol: asset.symbol,
-      name: asset.name,
-      chainId: asset.chainId,
-      streamCount: asset.streams_aggregate.aggregate.count,
-      decimals: parseInt(asset.decimals, 10),
-    }));
+    console.log(`Fetched ${result.data.Asset.length} assets from GraphQL`);
+
+    // Convert to TopAsset format and sort by stream count
+    const topAssets = result.data.Asset
+      .map((asset) => ({
+        assetId: asset.id,
+        address: asset.address,
+        symbol: asset.symbol,
+        name: asset.name,
+        chainId: asset.chainId,
+        streamCount: asset.streams.length,
+        decimals: parseInt(asset.decimals, 10),
+      }))
+      .sort((a, b) => b.streamCount - a.streamCount) // Sort by stream count desc
+      .slice(0, 10); // Take top 10
+
+    console.log(`Top assets:`, topAssets.slice(0, 3)); // Log first 3 for debugging
+
+    return topAssets;
   } catch (error) {
     console.error("Error fetching top assets by stream count:", error);
     throw error;

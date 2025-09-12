@@ -46,10 +46,17 @@ export function TopAssetsChart() {
 
   const topAssets = data?.topAssets || [];
 
+  console.log("TopAssetsChart data:", { data: !!data, topAssets: topAssets.length }); // Debug log
+
   if (topAssets.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <p className="text-gray-600 dark:text-gray-300">No top assets data available</p>
+        {data && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Debug: Data loaded but topAssets is empty. Available keys: {Object.keys(data).join(', ')}
+          </p>
+        )}
       </div>
     );
   }
