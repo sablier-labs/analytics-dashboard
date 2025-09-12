@@ -1,12 +1,15 @@
 "use client";
 
+import { useRef } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedUserCounts } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { SharePanel } from "./SharePanel";
 
 export function TimeBasedUserCounters() {
   const { data, loading, error } = useAnalytics();
   const userCounts = data?.timeBasedUsers || null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -60,11 +63,21 @@ export function TimeBasedUserCounters() {
   }
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       <div className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Active Users by Time Period</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={213} tooltip="View fetchTimeBasedUserCounts source" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex-1"></div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Active Users by Time Period</h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={213} tooltip="View fetchTimeBasedUserCounts source" />
+          </div>
+          <div className="flex-1 flex justify-end">
+            <SharePanel 
+              title="Active Users by Time Period"
+              elementRef={containerRef}
+              description="Users who have made transactions within each time range"
+            />
+          </div>
         </div>
         <p className="text-gray-600 dark:text-gray-300">Users who have made transactions within each time range</p>
       </div>

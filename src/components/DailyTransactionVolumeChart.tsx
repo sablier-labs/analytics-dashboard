@@ -9,17 +9,19 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { DailyTransactionVolume } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { SharePanel } from "./SharePanel";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export function DailyTransactionVolumeChart() {
   const { data, loading, error } = useAnalytics();
   const [period, setPeriod] = useState<30 | 90>(30);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Filter data based on selected period
   // If we need 90 days but only have 30 days cached, use all available data
@@ -172,13 +174,23 @@ export function DailyTransactionVolumeChart() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
+    <div 
+      ref={containerRef}
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+    >
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Daily Transaction Volume</h2>
             <SourceCodeLink fileName="graphql.ts" lineNumber={690} tooltip="View fetchDailyTransactionVolume source" />
           </div>
+          <SharePanel 
+            title="Daily Transaction Volume"
+            elementRef={containerRef}
+            description="Number of transactions processed each day across different time periods"
+          />
+        </div>
+        <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Number of transactions processed each day
             {period === 90 && volumeData && volumeData.length < 90 && (
@@ -187,26 +199,26 @@ export function DailyTransactionVolumeChart() {
               </span>
             )}
           </p>
-        </div>
-        <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setPeriod(30)}
-            className={`px-3 py-1 text-sm font-medium transition-colors ${
-              period === 30 ? "bg-sablier-100 text-sablier-700 dark:bg-sablier-900 dark:text-sablier-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            30 days
-          </button>
-          <button
-            type="button"
-            onClick={() => setPeriod(90)}
-            className={`px-3 py-1 text-sm font-medium transition-colors ${
-              period === 90 ? "bg-sablier-100 text-sablier-700 dark:bg-sablier-900 dark:text-sablier-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            90 days
-          </button>
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setPeriod(30)}
+              className={`px-3 py-1 text-sm font-medium transition-colors ${
+                period === 30 ? "bg-sablier-100 text-sablier-700 dark:bg-sablier-900 dark:text-sablier-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              30 days
+            </button>
+            <button
+              type="button"
+              onClick={() => setPeriod(90)}
+              className={`px-3 py-1 text-sm font-medium transition-colors ${
+                period === 90 ? "bg-sablier-100 text-sablier-700 dark:bg-sablier-900 dark:text-sablier-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              90 days
+            </button>
+          </div>
         </div>
       </div>
       <div className="h-80">

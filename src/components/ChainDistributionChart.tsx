@@ -376,19 +376,19 @@ export function ChainDistributionChart() {
   return (
     <div 
       ref={containerRef}
-      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
-      <div className="absolute top-3 right-3">
-        <SharePanel 
-          title="User Distribution by Chain"
-          elementRef={containerRef}
-          description="Distribution of active users across different blockchain networks"
-        />
-      </div>
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Distribution by Chain</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={466} tooltip="View fetchChainDistribution source" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Distribution by Chain</h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={466} tooltip="View fetchChainDistribution source" />
+          </div>
+          <SharePanel 
+            title="User Distribution by Chain"
+            elementRef={containerRef}
+            description="Distribution of active users across different blockchain networks"
+          />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Distribution of active users across different blockchain networks

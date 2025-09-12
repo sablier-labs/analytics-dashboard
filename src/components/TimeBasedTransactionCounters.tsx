@@ -1,12 +1,15 @@
 "use client";
 
+import { useRef } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedTransactionCounts } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { SharePanel } from "./SharePanel";
 
 export function TimeBasedTransactionCounters() {
   const { data, loading, error } = useAnalytics();
   const transactionCounts = data?.timeBasedTransactions || null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -60,13 +63,23 @@ export function TimeBasedTransactionCounters() {
   }
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       <div className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Transaction Activity by Time Period
-          </h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={301} tooltip="View fetchTimeBasedTransactionCounts source" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex-1"></div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Transaction Activity by Time Period
+            </h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={301} tooltip="View fetchTimeBasedTransactionCounts source" />
+          </div>
+          <div className="flex-1 flex justify-end">
+            <SharePanel 
+              title="Transaction Activity by Time Period"
+              elementRef={containerRef}
+              description="Number of transactions processed within each time range"
+            />
+          </div>
         </div>
         <p className="text-gray-600 dark:text-gray-300">Number of transactions processed within each time range</p>
       </div>

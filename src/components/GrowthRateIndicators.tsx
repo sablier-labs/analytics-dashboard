@@ -1,12 +1,15 @@
 "use client";
 
+import { useRef } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { SharePanel } from "./SharePanel";
 
 export function GrowthRateIndicators() {
   const { data, loading, error } = useAnalytics();
   const growthMetrics = data?.growthRateMetrics || null;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const formatPercentage = (value: number) => {
     const sign = value >= 0 ? "+" : "";
@@ -113,11 +116,21 @@ export function GrowthRateIndicators() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       <div className="text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Growth Rate Indicators</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={768} tooltip="View fetchGrowthRateMetrics source" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex-1"></div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Growth Rate Indicators</h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={768} tooltip="View fetchGrowthRateMetrics source" />
+          </div>
+          <div className="flex-1 flex justify-end">
+            <SharePanel 
+              title="Growth Rate Indicators"
+              elementRef={containerRef}
+              description="Month-over-month growth metrics for users, transactions, and average activity"
+            />
+          </div>
         </div>
         <p className="text-gray-600 dark:text-gray-300">Month-over-month growth metrics</p>
       </div>

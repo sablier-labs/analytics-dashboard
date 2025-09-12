@@ -185,19 +185,19 @@ export function CumulativeTransactionChart() {
   return (
     <div 
       ref={containerRef}
-      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
-      <div className="absolute top-3 right-3">
-        <SharePanel 
-          title="Cumulative Transaction Growth"
-          elementRef={containerRef}
-          description="Monthly transaction growth and cumulative transactions since inception"
-        />
-      </div>
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative Transaction Growth</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={565} tooltip="View fetchMonthlyTransactionGrowth source" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative Transaction Growth</h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={565} tooltip="View fetchMonthlyTransactionGrowth source" />
+          </div>
+          <SharePanel 
+            title="Cumulative Transaction Growth"
+            elementRef={containerRef}
+            description="Monthly transaction growth and cumulative transactions since inception"
+          />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Monthly transaction growth and cumulative transaction volume since inception

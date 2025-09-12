@@ -37,9 +37,13 @@ export function AverageTransactionsPerUser() {
   return (
     <div 
       ref={containerRef}
-      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
-      <div className="absolute top-3 right-3">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Transactions Per User</p>
+          <SourceCodeLink fileName="graphql.ts" lineNumber={642} tooltip="View fetchAverageTransactionsPerUser source" />
+        </div>
         <SharePanel 
           title="Average Transactions Per User"
           elementRef={containerRef}
@@ -48,10 +52,6 @@ export function AverageTransactionsPerUser() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Transactions Per User</p>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={642} tooltip="View fetchAverageTransactionsPerUser source" />
-          </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
             {averageTransactions !== null ? formatNumber(averageTransactions) : "—"}
           </p>

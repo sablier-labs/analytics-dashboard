@@ -185,19 +185,19 @@ export function CumulativeUserChart() {
   return (
     <div 
       ref={containerRef}
-      className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 relative"
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
-      <div className="absolute top-3 right-3">
-        <SharePanel 
-          title="Cumulative User Growth"
-          elementRef={containerRef}
-          description="Monthly user acquisition and cumulative growth since inception"
-        />
-      </div>
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative User Growth</h2>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={381} tooltip="View fetchMonthlyUserGrowth source" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative User Growth</h2>
+            <SourceCodeLink fileName="graphql.ts" lineNumber={381} tooltip="View fetchMonthlyUserGrowth source" />
+          </div>
+          <SharePanel 
+            title="Cumulative User Growth"
+            elementRef={containerRef}
+            description="Monthly user acquisition and cumulative growth since inception"
+          />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Monthly user acquisition and cumulative growth since inception
