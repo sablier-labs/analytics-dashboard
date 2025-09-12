@@ -48,37 +48,22 @@ export function DailyTransactionVolumeChart() {
     }
   };
   
-  // Filter data based on selected period using actual dates
+  // Filter data based on selected period using simple array slicing
   const availableData = data?.dailyTransactionVolume || [];
+  
+  // Sort all available data by date (oldest first for chronological display)
+  const sortedData = availableData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  // Use simple array slicing to get the most recent N data points
+  const volumeData = sortedData.slice(-Math.min(period, sortedData.length));
+  
+  // Check if we're showing stale data (last data point is more than 2 days old)
   const now = new Date();
-  const cutoffDate = new Date(now.getTime() - period * 24 * 60 * 60 * 1000);
-  
-  // Sort all available data by date (newest first for processing)
-  const sortedData = availableData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  
-  // First, try to get data from the requested date range (last N days from today)
-  let volumeData = sortedData
-    .filter(item => new Date(item.date) >= cutoffDate)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
-  let isShowingStaleData = false;
-  let actualDateRange = { start: "", end: "" };
-  
-  // If no data in the requested range, show the last N days from available data
-  if (volumeData.length === 0 && sortedData.length > 0) {
-    // Instead of taking the most recent N items, take the actual last N days
-    // from the available date range
-    const newestDate = new Date(sortedData[0].date);
-    const oldestNeededDate = new Date(newestDate.getTime() - (period - 1) * 24 * 60 * 60 * 1000);
-    
-    volumeData = sortedData
-      .filter(item => new Date(item.date) >= oldestNeededDate)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    isShowingStaleData = true;
-  }
+  const lastDataDate = volumeData.length > 0 ? new Date(volumeData[volumeData.length - 1].date) : null;
+  const isShowingStaleData = lastDataDate ? (now.getTime() - lastDataDate.getTime()) > (2 * 24 * 60 * 60 * 1000) : false;
   
   // Calculate actual date range being shown
+  let actualDateRange = { start: "", end: "" };
   if (volumeData.length > 0) {
     actualDateRange.start = volumeData[0].date;
     actualDateRange.end = volumeData[volumeData.length - 1].date;
