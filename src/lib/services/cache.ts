@@ -6,6 +6,7 @@ import type {
   MonthlyUserGrowth,
   TimeBasedTransactionCounts,
   TimeBasedUserCounts,
+  TopAsset,
 } from "./graphql";
 import {
   fetchChainDistribution,
@@ -14,6 +15,7 @@ import {
   fetchMonthlyUserGrowth,
   fetchTimeBasedTransactionCounts,
   fetchTimeBasedUserCounts,
+  fetchTopAssetsByStreamCount,
   fetchTotalTransactions,
   fetchTotalUsers,
 } from "./graphql";
@@ -26,6 +28,7 @@ export interface CachedAnalyticsData {
   monthlyUserGrowth: MonthlyUserGrowth[];
   chainDistribution: ChainDistribution[];
   monthlyTransactionGrowth: MonthlyTransactionGrowth[];
+  topAssets: TopAsset[];
   growthRateMetrics: GrowthRateMetrics;
   lastUpdated: string;
 }
@@ -103,7 +106,14 @@ export async function getCachedMonthlyTransactionGrowth(): Promise<MonthlyTransa
   return fetchMonthlyTransactionGrowth();
 }
 
-
+export async function getCachedTopAssets(): Promise<TopAsset[]> {
+  const cached = await getCachedData();
+  if (cached?.topAssets) {
+    return cached.topAssets;
+  }
+  console.log("Cache miss - fetching top assets from GraphQL");
+  return fetchTopAssetsByStreamCount();
+}
 
 export async function getCachedGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   const cached = await getCachedData();

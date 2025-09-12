@@ -1,4 +1,4 @@
-const GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/7672d32/v1/graphql";
+const GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/53b7e25/v1/graphql";
 
 export interface GraphQLResponse<T> {
   data: T;
@@ -117,6 +117,16 @@ export interface GrowthRateMetrics {
   userGrowthRate: number;
   transactionGrowthRate: number;
   averageTransactionGrowthRate: number;
+}
+
+export interface TopAsset {
+  assetId: string;
+  address: string;
+  symbol: string;
+  name: string;
+  chainId: string;
+  streamCount: number;
+  decimals: number;
 }
 
 export interface MonthlyUserGrowthResponse {
@@ -735,6 +745,76 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
     };
   } catch (error) {
     console.error("Error fetching growth rate metrics:", error);
+    throw error;
+  }
+}
+
+export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
+  const query = `
+    query GetTopAssets {
+      Asset(
+        order_by: { streams_aggregate: { count: desc } }
+        limit: 10
+      ) {
+        id
+        address
+        symbol
+        name
+        chainId
+        decimals
+        streams_aggregate {
+          aggregate {
+            count
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      Asset: Array<{
+        id: string;
+        address: string;
+        symbol: string;
+        name: string;
+        chainId: string;
+        decimals: string;
+        streams_aggregate: {
+          aggregate: {
+            count: number;
+          };
+        };
+      }>;
+    }> = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    return result.data.Asset.map((asset) => ({
+      assetId: asset.id,
+      address: asset.address,
+      symbol: asset.symbol,
+      name: asset.name,
+      chainId: asset.chainId,
+      streamCount: asset.streams_aggregate.aggregate.count,
+      decimals: parseInt(asset.decimals, 10),
+    }));
+  } catch (error) {
+    console.error("Error fetching top assets by stream count:", error);
     throw error;
   }
 }

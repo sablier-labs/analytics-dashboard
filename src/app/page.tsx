@@ -4,6 +4,7 @@ import { CumulativeUserChart } from "@/components/CumulativeUserChart";
 import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
 import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
+import { TopAssetsChart } from "@/components/TopAssetsChart";
 import { TransactionCounter } from "@/components/TransactionCounter";
 import { UserCounter } from "@/components/UserCounter";
 
@@ -35,7 +36,10 @@ export default function Home() {
             <CumulativeTransactionChart />
           </div>
 
-          <ChainDistributionChart />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <ChainDistributionChart />
+            <TopAssetsChart />
+          </div>
         </div>
       </div>
     </div>

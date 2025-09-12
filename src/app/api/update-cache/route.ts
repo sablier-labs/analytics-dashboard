@@ -7,6 +7,7 @@ import {
   fetchMonthlyUserGrowth,
   fetchTimeBasedTransactionCounts,
   fetchTimeBasedUserCounts,
+  fetchTopAssetsByStreamCount,
   fetchTotalTransactions,
   fetchTotalUsers,
 } from "@/lib/services/graphql";
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       monthlyUserGrowth,
       chainDistribution,
       monthlyTransactionGrowth,
+      topAssets,
       growthRateMetrics,
     ] = await Promise.all([
       fetchTotalUsers().catch((err) => {
@@ -77,6 +79,10 @@ export async function POST(request: NextRequest) {
         console.error("Error fetching monthly transaction growth:", err);
         return [];
       }),
+      fetchTopAssetsByStreamCount().catch((err) => {
+        console.error("Error fetching top assets:", err);
+        return [];
+      }),
       fetchGrowthRateMetrics().catch((err) => {
         console.error("Error fetching growth rate metrics:", err);
         return { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
@@ -92,6 +98,7 @@ export async function POST(request: NextRequest) {
       monthlyUserGrowth,
       timeBasedTransactions,
       timeBasedUsers,
+      topAssets,
       totalTransactions,
       totalUsers,
     };
@@ -138,6 +145,7 @@ export async function POST(request: NextRequest) {
         chainDistribution: chainDistribution.length,
         monthlyTransactionGrowth: monthlyTransactionGrowth.length,
         monthlyUserGrowth: monthlyUserGrowth.length,
+        topAssets: topAssets.length,
         totalTransactions,
         totalUsers,
       },
