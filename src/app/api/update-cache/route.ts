@@ -27,6 +27,17 @@ function verifyRequest(request: NextRequest) {
     return true;
   }
 
+  // Allow internal requests (for manual refresh)
+  const userAgent = request.headers.get("user-agent");
+  if (userAgent && userAgent.includes("undici")) {
+    return true;
+  }
+
+  // In development, allow all requests
+  if (process.env.NODE_ENV === "development") {
+    return true;
+  }
+
   return false;
 }
 
