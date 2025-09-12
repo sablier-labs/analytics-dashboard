@@ -13,6 +13,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TopAsset } from "@/lib/services/graphql";
+import { useState, useEffect } from "react";
 import { SourceCodeLink } from "./SourceCodeLink";
 import { useTheme } from "@/contexts/ThemeContext";
 import { SharePanel } from "./SharePanel";
@@ -23,8 +24,26 @@ export function TopAssetsChart() {
   const { data, loading, error } = useAnalytics();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fallbackData, setFallbackData] = useState<TopAsset[]>([]);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  if (loading) {
+  // If cache doesn't have topAssets, fetch directly
+  useEffect(() => {
+    if (!loading && data && !data.topAssets && fallbackData.length === 0 && !fallbackLoading) {
+      setFallbackLoading(true);
+      fetch('/api/test-assets')
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setFallbackData(result.data);
+          }
+        })
+        .catch(err => console.error('Failed to fetch fallback data:', err))
+        .finally(() => setFallbackLoading(false));
+    }
+  }, [data, loading, fallbackData.length, fallbackLoading]);
+
+  if (loading || fallbackLoading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
@@ -44,9 +63,15 @@ export function TopAssetsChart() {
     );
   }
 
-  const topAssets = data?.topAssets || [];
+  // Use cached data if available, otherwise use fallback data
+  const topAssets = data?.topAssets || fallbackData;
 
-  console.log("TopAssetsChart data:", { data: !!data, topAssets: topAssets.length }); // Debug log
+  console.log("TopAssetsChart data:", { 
+    data: !!data, 
+    cachedAssets: data?.topAssets?.length || 0, 
+    fallbackAssets: fallbackData.length,
+    totalAssets: topAssets.length 
+  });
 
   if (topAssets.length === 0) {
     return (
