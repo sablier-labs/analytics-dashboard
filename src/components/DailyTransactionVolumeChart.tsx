@@ -19,7 +19,7 @@ import { SharePanel } from "./SharePanel";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export function DailyTransactionVolumeChart() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error, isRefreshing } = useAnalytics();
   const [period, setPeriod] = useState<30 | 90>(30);
   const [refreshing, setRefreshing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -69,13 +69,18 @@ export function DailyTransactionVolumeChart() {
     actualDateRange.end = volumeData[volumeData.length - 1].date;
   }
 
-  if (loading) {
+  if (loading || isRefreshing) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded w-64 mb-4"></div>
           <div className="h-80 bg-gray-200 rounded"></div>
         </div>
+        {isRefreshing && (
+          <div className="mt-4 text-center text-sm text-blue-600">
+            🔄 Updating with latest data...
+          </div>
+        )}
       </div>
     );
   }
