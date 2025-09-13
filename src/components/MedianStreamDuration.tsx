@@ -72,9 +72,14 @@ export function MedianStreamDuration() {
         .then(result => {
           if (result.success) {
             setFallbackData(result.data);
+            console.log(`Stream duration stats loaded via fallback: median ${Math.round(result.data.median / 86400)} days`);
           }
         })
-        .catch(err => console.error('Failed to fetch fallback duration stats:', err))
+        .catch(err => {
+          console.error('Failed to fetch fallback duration stats:', err);
+          // In case of error, set a default object to prevent infinite loading
+          setFallbackData({ median: 0, average: 0, min: 0, max: 0 });
+        })
         .finally(() => setFallbackLoading(false));
     }
   }, [data, loading, fallbackData, fallbackLoading]);

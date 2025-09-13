@@ -41,14 +41,20 @@ export function MonthlyStreamCreationChart() {
   useEffect(() => {
     if (!loading && data && !data.monthlyStreamCreation && fallbackData.length === 0 && !fallbackLoading) {
       setFallbackLoading(true);
+      // Use direct GraphQL function for faster response
       fetch('/api/test-monthly-streams')
         .then(res => res.json())
         .then(result => {
           if (result.success) {
             setFallbackData(result.data);
+            console.log(`Monthly stream data loaded via fallback: ${result.data.length} months`);
           }
         })
-        .catch(err => console.error('Failed to fetch fallback monthly stream data:', err))
+        .catch(err => {
+          console.error('Failed to fetch fallback monthly stream data:', err);
+          // In case of error, set empty array to prevent infinite loading
+          setFallbackData([]);
+        })
         .finally(() => setFallbackLoading(false));
     }
   }, [data, loading, fallbackData.length, fallbackLoading]);
