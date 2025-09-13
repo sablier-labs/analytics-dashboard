@@ -912,7 +912,7 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
     });
 
     console.log(`Fetched monthly stream creation data for ${monthlyData.length} months`);
-    console.log(`Sample data:`, monthlyData.slice(-3)); // Last 3 months
+    console.log(`Latest data:`, monthlyData.slice(-3));
 
     return monthlyData;
   } catch (error) {
