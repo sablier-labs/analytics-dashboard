@@ -203,11 +203,11 @@ export function TopAssetsChart() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Top Assets by Stream Count</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Top Assets by Vesting Stream Count</h2>
             <SourceCodeLink fileName="graphql.ts" lineNumber={752} tooltip="View fetchTopAssetsByStreamCount source" />
           </div>
           <SharePanel 
-            title="Top Assets by Stream Count"
+            title="Top Assets by Vesting Stream Count"
             elementRef={containerRef}
             description="Most popular ERC-20 tokens being used for streaming, ranked by total number of streams"
           />
@@ -216,7 +216,6 @@ export function TopAssetsChart() {
           Most popular ERC-20 tokens being used for streaming
         </p>
         <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-          <span>Total streams: {new Intl.NumberFormat().format(totalStreams)}</span>
           <span>Top {topAssets.length} assets shown</span>
         </div>
       </div>
