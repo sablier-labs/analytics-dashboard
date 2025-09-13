@@ -129,6 +129,18 @@ export interface TopAsset {
   decimals: number;
 }
 
+export interface MonthlyStreamCreation {
+  month: string;
+  count: number;
+}
+
+export interface StreamDurationStats {
+  median: number;
+  average: number;
+  min: number;
+  max: number;
+}
+
 export interface MonthlyUserGrowthResponse {
   User: Array<{
     address: string;
@@ -826,6 +838,179 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
     return topAssets;
   } catch (error) {
     console.error("Error fetching top assets by stream count:", error);
+    throw error;
+  }
+}
+
+export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreation[]> {
+  // Generate last 12 months of time ranges
+  const timeRanges: Array<{ label: string; startTimestamp: string; endTimestamp: string }> = [];
+  const now = new Date();
+  
+  for (let i = 11; i >= 0; i--) {
+    const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const startOfMonth = new Date(current.getFullYear(), current.getMonth(), 1);
+    const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59);
+    
+    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+    const startTimestamp = Math.floor(startOfMonth.getTime() / 1000).toString();
+    const endTimestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
+    
+    timeRanges.push({ label, startTimestamp, endTimestamp });
+  }
+
+  // Create aggregation queries for each month
+  const queries = timeRanges.map((range, index) => {
+    return `
+      month_${index}: Stream_aggregate(
+        where: {
+          timestamp: { _gte: "${range.startTimestamp}", _lte: "${range.endTimestamp}" }
+        }
+      ) {
+        aggregate {
+          count
+        }
+      }
+    `;
+  });
+
+  const query = `
+    query GetMonthlyStreamCreation {
+      ${queries.join("\n")}
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<any> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const monthlyData: MonthlyStreamCreation[] = [];
+
+    timeRanges.forEach((range, index) => {
+      const key = `month_${index}`;
+      const count = result.data[key]?.aggregate?.count || 0;
+      monthlyData.push({
+        month: range.label,
+        count,
+      });
+    });
+
+    console.log(`Fetched monthly stream creation data for ${monthlyData.length} months`);
+    console.log(`Sample data:`, monthlyData.slice(-3)); // Last 3 months
+
+    return monthlyData;
+  } catch (error) {
+    console.error("Error fetching monthly stream creation:", error);
+    throw error;
+  }
+}
+
+export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
+  // First, get basic aggregation stats
+  const query = `
+    query GetStreamDurationStats {
+      Stream_aggregate {
+        aggregate {
+          avg {
+            duration
+          }
+          min {
+            duration
+          }
+          max {
+            duration
+          }
+          count
+        }
+      }
+      # Get middle values for median calculation - fetch ordered durations
+      Stream(
+        order_by: { duration: asc }
+        limit: 1000
+        offset: 0
+      ) {
+        duration
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      Stream_aggregate: {
+        aggregate: {
+          avg: { duration: string };
+          min: { duration: string };
+          max: { duration: string };
+          count: number;
+        };
+      };
+      Stream: Array<{ duration: string }>;
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const { aggregate } = result.data.Stream_aggregate;
+    const durations = result.data.Stream.map(s => parseInt(s.duration, 10)).sort((a, b) => a - b);
+
+    // Calculate median from sorted sample
+    let median: number;
+    if (durations.length === 0) {
+      median = 0;
+    } else if (durations.length % 2 === 0) {
+      median = (durations[Math.floor(durations.length / 2) - 1] + durations[Math.floor(durations.length / 2)]) / 2;
+    } else {
+      median = durations[Math.floor(durations.length / 2)];
+    }
+
+    const stats: StreamDurationStats = {
+      median,
+      average: parseFloat(aggregate.avg.duration || "0"),
+      min: parseInt(aggregate.min.duration || "0", 10),
+      max: parseInt(aggregate.max.duration || "0", 10),
+    };
+
+    console.log(`Fetched stream duration stats:`, {
+      median: `${Math.round(stats.median / 86400)} days`,
+      average: `${Math.round(stats.average / 86400)} days`,
+      min: `${Math.round(stats.min / 86400)} days`,
+      max: `${Math.round(stats.max / 86400)} days`,
+      sampleSize: durations.length
+    });
+
+    return stats;
+  } catch (error) {
+    console.error("Error fetching stream duration stats:", error);
     throw error;
   }
 }

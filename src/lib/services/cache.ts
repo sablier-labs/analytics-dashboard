@@ -2,8 +2,10 @@ import { get } from "@vercel/edge-config";
 import type {
   ChainDistribution,
   GrowthRateMetrics,
+  MonthlyStreamCreation,
   MonthlyTransactionGrowth,
   MonthlyUserGrowth,
+  StreamDurationStats,
   TimeBasedTransactionCounts,
   TimeBasedUserCounts,
   TopAsset,
@@ -11,8 +13,10 @@ import type {
 import {
   fetchChainDistribution,
   fetchGrowthRateMetrics,
+  fetchMonthlyStreamCreation,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
+  fetchStreamDurationStats,
   fetchTimeBasedTransactionCounts,
   fetchTimeBasedUserCounts,
   fetchTopAssetsByStreamCount,
@@ -30,6 +34,8 @@ export interface CachedAnalyticsData {
   monthlyTransactionGrowth: MonthlyTransactionGrowth[];
   topAssets: TopAsset[];
   growthRateMetrics: GrowthRateMetrics;
+  monthlyStreamCreation: MonthlyStreamCreation[];
+  streamDurationStats: StreamDurationStats;
   lastUpdated: string;
 }
 
@@ -144,4 +150,22 @@ export async function getCacheInfo(): Promise<{
     isCached: true,
     lastUpdated: cached.lastUpdated,
   };
+}
+
+export async function getCachedMonthlyStreamCreation(): Promise<MonthlyStreamCreation[]> {
+  const cached = await getCachedData();
+  if (cached?.monthlyStreamCreation) {
+    return cached.monthlyStreamCreation;
+  }
+  console.log("Cache miss - fetching monthly stream creation from GraphQL");
+  return fetchMonthlyStreamCreation();
+}
+
+export async function getCachedStreamDurationStats(): Promise<StreamDurationStats> {
+  const cached = await getCachedData();
+  if (cached?.streamDurationStats) {
+    return cached.streamDurationStats;
+  }
+  console.log("Cache miss - fetching stream duration stats from GraphQL");
+  return fetchStreamDurationStats();
 }

@@ -2,6 +2,8 @@ import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
 import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
+import { MedianStreamDuration } from "@/components/MedianStreamDuration";
+import { MonthlyStreamCreationChart } from "@/components/MonthlyStreamCreationChart";
 import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
 import { TopAssetsChart } from "@/components/TopAssetsChart";
@@ -31,10 +33,14 @@ export default function Home() {
 
           <GrowthRateIndicators />
 
+          <MedianStreamDuration />
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CumulativeUserChart />
             <CumulativeTransactionChart />
           </div>
+
+          <MonthlyStreamCreationChart />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <ChainDistributionChart />

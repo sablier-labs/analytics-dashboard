@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 import {
   fetchChainDistribution,
   fetchGrowthRateMetrics,
+  fetchMonthlyStreamCreation,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
+  fetchStreamDurationStats,
   fetchTimeBasedTransactionCounts,
   fetchTimeBasedUserCounts,
   fetchTopAssetsByStreamCount,
@@ -61,6 +63,8 @@ export async function POST(request: NextRequest) {
       monthlyTransactionGrowth,
       topAssets,
       growthRateMetrics,
+      monthlyStreamCreation,
+      streamDurationStats,
     ] = await Promise.all([
       fetchTotalUsers().catch((err) => {
         console.error("Error fetching total users:", err);
@@ -98,6 +102,14 @@ export async function POST(request: NextRequest) {
         console.error("Error fetching growth rate metrics:", err);
         return { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
       }),
+      fetchMonthlyStreamCreation().catch((err) => {
+        console.error("Error fetching monthly stream creation:", err);
+        return [];
+      }),
+      fetchStreamDurationStats().catch((err) => {
+        console.error("Error fetching stream duration stats:", err);
+        return { median: 0, average: 0, min: 0, max: 0 };
+      }),
     ]);
 
     // Prepare the cached data
@@ -105,8 +117,10 @@ export async function POST(request: NextRequest) {
       chainDistribution,
       growthRateMetrics,
       lastUpdated: new Date().toISOString(),
+      monthlyStreamCreation,
       monthlyTransactionGrowth,
       monthlyUserGrowth,
+      streamDurationStats,
       timeBasedTransactions,
       timeBasedUsers,
       topAssets,
