@@ -56,12 +56,6 @@ function formatDuration(seconds: number): { value: string; unit: string } {
   return { value: seconds.toString(), unit: seconds === 1 ? "second" : "seconds" };
 }
 
-// Helper function to get short duration format
-function getShortDuration(seconds: number): string {
-  const { value, unit } = formatDuration(seconds);
-  const shortUnit = unit.charAt(0); // y, m, w, d, h, m, s
-  return `${value}${shortUnit}`;
-}
 
 export function MedianStreamDuration() {
   const { data, loading, error } = useAnalytics();
@@ -122,9 +116,6 @@ export function MedianStreamDuration() {
   }
 
   const medianDuration = formatDuration(durationStats.median);
-  const averageDuration = formatDuration(durationStats.average);
-  const minDuration = formatDuration(durationStats.min);
-  const maxDuration = formatDuration(durationStats.max);
 
   return (
     <div
@@ -148,62 +139,13 @@ export function MedianStreamDuration() {
         </p>
       </div>
 
-      {/* Main Median Display */}
-      <div className="mb-8 text-center">
+      {/* Simple Median Display */}
+      <div className="text-center">
         <div className="text-5xl font-bold text-gray-900 dark:text-white mb-2">
           {medianDuration.value}
         </div>
         <div className="text-lg text-gray-600 dark:text-gray-300 capitalize">
           {medianDuration.unit}
-        </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-          Median duration
-        </div>
-      </div>
-
-      {/* Supporting Statistics Grid */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-            {averageDuration.value}
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-300 capitalize mb-1">
-            {averageDuration.unit}
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Average
-          </div>
-        </div>
-
-        <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-            {minDuration.value}
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-300 capitalize mb-1">
-            {minDuration.unit}
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Minimum
-          </div>
-        </div>
-
-        <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-          <div className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-            {maxDuration.value}
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-300 capitalize mb-1">
-            {maxDuration.unit}
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Maximum
-          </div>
-        </div>
-      </div>
-
-      {/* Range Summary */}
-      <div className="mt-4 text-center">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          Range: {getShortDuration(durationStats.min)} - {getShortDuration(durationStats.max)}
         </div>
       </div>
     </div>

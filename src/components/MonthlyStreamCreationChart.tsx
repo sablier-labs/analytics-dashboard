@@ -207,13 +207,6 @@ export function MonthlyStreamCreationChart() {
     },
   };
 
-  // Calculate total streams created across all months
-  const totalStreams = monthlyStreamData.reduce((sum, item) => sum + item.count, 0);
-  
-  // Calculate trend (percentage change from first to last month)
-  const firstMonth = monthlyStreamData[0]?.count || 0;
-  const lastMonth = monthlyStreamData[monthlyStreamData.length - 1]?.count || 0;
-  const trendPercentage = firstMonth > 0 ? ((lastMonth - firstMonth) / firstMonth * 100) : 0;
 
   return (
     <div
@@ -236,13 +229,7 @@ export function MonthlyStreamCreationChart() {
           Streams created per month over the past 12 months
         </p>
         <div className="flex items-center gap-6 text-xs text-gray-500 dark:text-gray-400">
-          <span>Total: {new Intl.NumberFormat().format(totalStreams)} streams</span>
           <span>12-month period</span>
-          {trendPercentage !== 0 && (
-            <span className={trendPercentage > 0 ? "text-green-600" : "text-red-600"}>
-              {trendPercentage > 0 ? "+" : ""}{trendPercentage.toFixed(1)}% trend
-            </span>
-          )}
         </div>
       </div>
       
