@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -15,6 +15,7 @@ import {
 import { Line } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTheme } from "@/contexts/ThemeContext";
+import type { MonthlyStreamCreation } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
 
@@ -32,10 +33,30 @@ ChartJS.register(
 export function MonthlyStreamCreationChart() {
   const { data, loading, error } = useAnalytics();
   const { theme } = useTheme();
-  const monthlyStreamData = data?.monthlyStreamCreation || [];
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fallbackData, setFallbackData] = useState<MonthlyStreamCreation[]>([]);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  if (loading) {
+  // If cache doesn't have monthlyStreamCreation, fetch directly
+  useEffect(() => {
+    if (!loading && data && !data.monthlyStreamCreation && fallbackData.length === 0 && !fallbackLoading) {
+      setFallbackLoading(true);
+      fetch('/api/test-monthly-streams')
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setFallbackData(result.data);
+          }
+        })
+        .catch(err => console.error('Failed to fetch fallback monthly stream data:', err))
+        .finally(() => setFallbackLoading(false));
+    }
+  }, [data, loading, fallbackData.length, fallbackLoading]);
+
+  // Use cached data if available, otherwise use fallback data
+  const monthlyStreamData = data?.monthlyStreamCreation || fallbackData;
+
+  if (loading || fallbackLoading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
