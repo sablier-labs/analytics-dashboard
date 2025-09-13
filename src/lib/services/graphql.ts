@@ -941,14 +941,11 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
           count
         }
       }
-      # Get middle values for median calculation - fetch ordered durations (24+ hours only)
-      Stream(
-        where: { duration: { _gte: "${minDuration}" } }
-        order_by: { duration: asc }
-        limit: 1000
-        offset: 0
-      ) {
-        duration
+      # Get total count for median calculation
+      totalCount: Stream_aggregate(where: { duration: { _gte: "${minDuration}" } }) {
+        aggregate {
+          count
+        }
       }
     }
   `;
@@ -975,7 +972,11 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
           count: number;
         };
       };
-      Stream: Array<{ duration: string }>;
+      totalCount: {
+        aggregate: {
+          count: number;
+        };
+      };
     }> = await response.json();
 
     if (result.errors) {
@@ -984,17 +985,47 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
     }
 
     const { aggregate } = result.data.Stream_aggregate;
-    const durations = result.data.Stream.map(s => parseInt(s.duration, 10)).sort((a, b) => a - b);
+    const totalCount = result.data.totalCount.aggregate.count;
 
-    // Calculate median from sorted sample
-    let median: number;
-    if (durations.length === 0) {
-      median = 0;
-    } else if (durations.length % 2 === 0) {
-      median = (durations[Math.floor(durations.length / 2) - 1] + durations[Math.floor(durations.length / 2)]) / 2;
-    } else {
-      median = durations[Math.floor(durations.length / 2)];
+    // Calculate median position
+    const medianPosition = Math.floor(totalCount / 2);
+    
+    // Make another query to get the median value
+    const medianQuery = `
+      query GetMedianValue {
+        Stream(
+          where: { duration: { _gte: "${minDuration}" } }
+          order_by: { duration: asc }
+          limit: 1
+          offset: ${medianPosition}
+        ) {
+          duration
+        }
+      }
+    `;
+
+    const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: medianQuery }),
+    });
+
+    if (!medianResponse.ok) {
+      throw new Error(`HTTP error! status: ${medianResponse.status}`);
     }
+
+    const medianResult: GraphQLResponse<{
+      Stream: Array<{ duration: string }>;
+    }> = await medianResponse.json();
+
+    if (medianResult.errors) {
+      console.error("GraphQL errors:", medianResult.errors);
+      throw new Error(`GraphQL error: ${medianResult.errors[0]?.message}`);
+    }
+
+    const median = medianResult.data.Stream[0] ? parseInt(medianResult.data.Stream[0].duration, 10) : 0;
 
     const stats: StreamDurationStats = {
       median,
@@ -1008,7 +1039,8 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
       average: `${Math.round(stats.average / 86400)} days`,
       min: `${Math.round(stats.min / 86400)} days`,
       max: `${Math.round(stats.max / 86400)} days`,
-      sampleSize: durations.length
+      totalCount,
+      medianPosition
     });
 
     return stats;
