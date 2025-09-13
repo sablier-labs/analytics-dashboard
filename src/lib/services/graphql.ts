@@ -922,10 +922,12 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
 }
 
 export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
-  // First, get basic aggregation stats
+  // Filter out streams shorter than 24 hours (86400 seconds)
+  const minDuration = "86400"; // 24 hours in seconds
+  
   const query = `
     query GetStreamDurationStats {
-      Stream_aggregate {
+      Stream_aggregate(where: { duration: { _gte: "${minDuration}" } }) {
         aggregate {
           avg {
             duration
@@ -939,8 +941,9 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
           count
         }
       }
-      # Get middle values for median calculation - fetch ordered durations
+      # Get middle values for median calculation - fetch ordered durations (24+ hours only)
       Stream(
+        where: { duration: { _gte: "${minDuration}" } }
         order_by: { duration: asc }
         limit: 1000
         offset: 0

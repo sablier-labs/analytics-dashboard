@@ -125,17 +125,17 @@ export function MedianStreamDuration() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Median Stream Duration</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Median Vesting Stream Duration</h2>
             <SourceCodeLink fileName="graphql.ts" lineNumber={924} tooltip="View fetchStreamDurationStats source" />
           </div>
           <SharePanel 
-            title="Median Stream Duration"
+            title="Median Vesting Stream Duration"
             elementRef={containerRef}
-            description="Statistical analysis of vesting stream durations showing median, average, and range"
+            description="Median duration of vesting streams longer than 24 hours"
           />
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Duration statistics for all vesting streams
+          Median duration for vesting streams longer than 24 hours
         </p>
       </div>
 
