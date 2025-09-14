@@ -6,6 +6,7 @@ import type {
   MonthlyTransactionGrowth,
   MonthlyUserGrowth,
   StreamDurationStats,
+  StreamProperties,
   TimeBasedTransactionCounts,
   TimeBasedUserCounts,
   TopAsset,
@@ -17,6 +18,7 @@ import {
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
   fetchStreamDurationStats,
+  fetchStreamProperties,
   fetchTimeBasedTransactionCounts,
   fetchTimeBasedUserCounts,
   fetchTopAssetsByStreamCount,
@@ -36,6 +38,7 @@ export interface CachedAnalyticsData {
   growthRateMetrics: GrowthRateMetrics;
   monthlyStreamCreation: MonthlyStreamCreation[];
   streamDurationStats: StreamDurationStats;
+  streamProperties: StreamProperties;
   lastUpdated: string;
 }
 
@@ -168,4 +171,13 @@ export async function getCachedStreamDurationStats(): Promise<StreamDurationStat
   }
   console.log("Cache miss - fetching stream duration stats from GraphQL");
   return fetchStreamDurationStats();
+}
+
+export async function getCachedStreamProperties(): Promise<StreamProperties> {
+  const cached = await getCachedData();
+  if (cached?.streamProperties) {
+    return cached.streamProperties;
+  }
+  console.log("Cache miss - fetching stream properties from GraphQL");
+  return fetchStreamProperties();
 }

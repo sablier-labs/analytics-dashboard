@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import {
   fetchMonthlyStreamCreation,
   fetchStreamDurationStats,
+  fetchStreamProperties,
 } from "@/lib/services/graphql";
 
 // Verify the request is from Vercel Cron or has correct API key
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     console.log("Starting new metrics cache update...");
 
     // Fetch only the new metrics in parallel
-    const [monthlyStreamCreation, streamDurationStats] = await Promise.all([
+    const [monthlyStreamCreation, streamDurationStats, streamProperties] = await Promise.all([
       fetchMonthlyStreamCreation().catch((err) => {
         console.error("Error fetching monthly stream creation:", err);
         return [];
@@ -40,6 +41,10 @@ export async function POST(request: NextRequest) {
       fetchStreamDurationStats().catch((err) => {
         console.error("Error fetching stream duration stats:", err);
         return { median: 0, average: 0, min: 0, max: 0 };
+      }),
+      fetchStreamProperties().catch((err) => {
+        console.error("Error fetching stream properties:", err);
+        return { cancelable: 0, transferable: 0, both: 0, total: 0 };
       }),
     ]);
 
@@ -72,6 +77,7 @@ export async function POST(request: NextRequest) {
       ...existingData,
       monthlyStreamCreation,
       streamDurationStats,
+      streamProperties,
       lastUpdated: new Date().toISOString(),
     };
 
@@ -105,7 +111,8 @@ export async function POST(request: NextRequest) {
       message: "New metrics cache updated successfully",
       metrics: {
         monthlyStreamCreation: monthlyStreamCreation.length + " months",
-        streamDurationStats: "median " + Math.round(streamDurationStats.median / 86400) + " days"
+        streamDurationStats: "median " + Math.round(streamDurationStats.median / 86400) + " days",
+        streamProperties: `cancelable: ${streamProperties.cancelable}, transferable: ${streamProperties.transferable}, both: ${streamProperties.both}`
       }
     });
   } catch (error) {

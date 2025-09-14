@@ -141,6 +141,13 @@ export interface StreamDurationStats {
   max: number;
 }
 
+export interface StreamProperties {
+  cancelable: number;
+  transferable: number;
+  both: number;
+  total: number;
+}
+
 export interface MonthlyUserGrowthResponse {
   User: Array<{
     address: string;
@@ -1046,6 +1053,83 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
     return stats;
   } catch (error) {
     console.error("Error fetching stream duration stats:", error);
+    throw error;
+  }
+}
+
+export async function fetchStreamProperties(): Promise<StreamProperties> {
+  const query = `
+    query GetStreamProperties {
+      totalStreams: Stream_aggregate {
+        aggregate {
+          count
+        }
+      }
+      cancelableStreams: Stream_aggregate(where: { cancelable: { _eq: true } }) {
+        aggregate {
+          count
+        }
+      }
+      transferableStreams: Stream_aggregate(where: { transferable: { _eq: true } }) {
+        aggregate {
+          count
+        }
+      }
+      bothProperties: Stream_aggregate(where: { 
+        cancelable: { _eq: true }, 
+        transferable: { _eq: true } 
+      }) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      totalStreams: { aggregate: { count: number } };
+      cancelableStreams: { aggregate: { count: number } };
+      transferableStreams: { aggregate: { count: number } };
+      bothProperties: { aggregate: { count: number } };
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const { totalStreams, cancelableStreams, transferableStreams, bothProperties } = result.data;
+
+    const properties: StreamProperties = {
+      total: totalStreams.aggregate.count,
+      cancelable: cancelableStreams.aggregate.count,
+      transferable: transferableStreams.aggregate.count,
+      both: bothProperties.aggregate.count,
+    };
+
+    console.log(`Fetched stream properties:`, {
+      total: properties.total,
+      cancelable: `${properties.cancelable} (${((properties.cancelable / properties.total) * 100).toFixed(1)}%)`,
+      transferable: `${properties.transferable} (${((properties.transferable / properties.total) * 100).toFixed(1)}%)`,
+      both: `${properties.both} (${((properties.both / properties.total) * 100).toFixed(1)}%)`
+    });
+
+    return properties;
+  } catch (error) {
+    console.error("Error fetching stream properties:", error);
     throw error;
   }
 }
