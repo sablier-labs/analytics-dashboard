@@ -7,6 +7,7 @@ import {
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
   fetchStreamDurationStats,
+  fetchStreamProperties,
   fetchTimeBasedTransactionCounts,
   fetchTimeBasedUserCounts,
   fetchTopAssetsByStreamCount,
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
       growthRateMetrics,
       monthlyStreamCreation,
       streamDurationStats,
+      streamProperties,
     ] = await Promise.all([
       fetchTotalUsers().catch((err) => {
         console.error("Error fetching total users:", err);
@@ -110,6 +112,10 @@ export async function POST(request: NextRequest) {
         console.error("Error fetching stream duration stats:", err);
         return { median: 0, average: 0, min: 0, max: 0 };
       }),
+      fetchStreamProperties().catch((err) => {
+        console.error("Error fetching stream properties:", err);
+        return { cancelable: 0, transferable: 0, both: 0, total: 0 };
+      }),
     ]);
 
     // Prepare the cached data
@@ -121,6 +127,7 @@ export async function POST(request: NextRequest) {
       monthlyTransactionGrowth,
       monthlyUserGrowth,
       streamDurationStats,
+      streamProperties,
       timeBasedTransactions,
       timeBasedUsers,
       topAssets,
