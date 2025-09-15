@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -31,10 +31,34 @@ ChartJS.register(
 
 export function CumulativeTransactionChart() {
   const { data, loading, error } = useAnalytics();
-  const transactionData = data?.monthlyTransactionGrowth || null;
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fallbackData, setFallbackData] = useState<MonthlyTransactionGrowth[] | null>(null);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  if (loading) {
+  // If cache doesn't have monthlyTransactionGrowth, fetch directly
+  useEffect(() => {
+    if (!loading && data && (!data.monthlyTransactionGrowth || data.monthlyTransactionGrowth.length === 0) && !fallbackData && !fallbackLoading) {
+      setFallbackLoading(true);
+      fetch('/api/fallback-monthly-transactions')
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setFallbackData(result.data);
+            console.log('Monthly transaction growth loaded via fallback');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch fallback monthly transaction data:', err);
+          setFallbackData([]);
+        })
+        .finally(() => setFallbackLoading(false));
+    }
+  }, [data, loading, fallbackData, fallbackLoading]);
+
+  // Use cached data if available, otherwise use fallback data
+  const transactionData = data?.monthlyTransactionGrowth || fallbackData;
+
+  if (loading || fallbackLoading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

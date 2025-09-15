@@ -14,7 +14,7 @@ export function GrowthRateIndicators() {
 
   // If cache doesn't have growthRateMetrics, fetch directly
   useEffect(() => {
-    if (!loading && data && !data.growthRateMetrics && !fallbackData && !fallbackLoading) {
+    if (!loading && data && (!data.growthRateMetrics || Object.values(data.growthRateMetrics).every(v => v === 0)) && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
       fetch('/api/fallback-growth-metrics')
         .then(res => res.json())

@@ -14,7 +14,7 @@ export function TimeBasedUserCounters() {
 
   // If cache doesn't have timeBasedUsers, fetch directly
   useEffect(() => {
-    if (!loading && data && !data.timeBasedUsers && !fallbackData && !fallbackLoading) {
+    if (!loading && data && (!data.timeBasedUsers || Object.values(data.timeBasedUsers).every(v => v === 0)) && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
       fetch('/api/fallback-time-users')
         .then(res => res.json())

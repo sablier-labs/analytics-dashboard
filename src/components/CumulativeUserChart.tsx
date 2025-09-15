@@ -36,7 +36,7 @@ export function CumulativeUserChart() {
 
   // If cache doesn't have monthlyUserGrowth, fetch directly
   useEffect(() => {
-    if (!loading && data && !data.monthlyUserGrowth && !fallbackData && !fallbackLoading) {
+    if (!loading && data && (!data.monthlyUserGrowth || data.monthlyUserGrowth.length === 0) && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
       fetch('/api/fallback-monthly-users')
         .then(res => res.json())

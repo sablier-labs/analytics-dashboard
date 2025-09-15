@@ -14,7 +14,7 @@ export function TimeBasedTransactionCounters() {
 
   // If cache doesn't have timeBasedTransactions, fetch directly
   useEffect(() => {
-    if (!loading && data && !data.timeBasedTransactions && !fallbackData && !fallbackLoading) {
+    if (!loading && data && (!data.timeBasedTransactions || Object.values(data.timeBasedTransactions).every(v => v === 0)) && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
       fetch('/api/fallback-time-transactions')
         .then(res => res.json())
