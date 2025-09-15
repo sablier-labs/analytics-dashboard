@@ -12,7 +12,7 @@ export async function GET() {
       data
     });
   } catch (error) {
-    console.error("Error in test-stream-properties:", error);
+    console.error("Error in fallback-stream-properties:", error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error"

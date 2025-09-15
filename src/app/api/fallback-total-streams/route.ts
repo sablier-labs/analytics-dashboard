@@ -12,7 +12,7 @@ export async function GET() {
       data
     });
   } catch (error) {
-    console.error("Error in test-total-streams:", error);
+    console.error("Error in fallback-total-streams:", error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error"

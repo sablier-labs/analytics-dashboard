@@ -12,7 +12,7 @@ export async function GET() {
       data
     });
   } catch (error) {
-    console.error("Error in test-category-distribution:", error);
+    console.error("Error in fallback-category-distribution:", error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error"

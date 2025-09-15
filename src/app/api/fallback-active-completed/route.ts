@@ -12,7 +12,7 @@ export async function GET() {
       data
     });
   } catch (error) {
-    console.error("Error in test-active-completed:", error);
+    console.error("Error in fallback-active-completed:", error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error"
