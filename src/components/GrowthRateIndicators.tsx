@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -8,8 +8,33 @@ import { SharePanel } from "./SharePanel";
 
 export function GrowthRateIndicators() {
   const { data, loading, error } = useAnalytics();
-  const growthMetrics = data?.growthRateMetrics || null;
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fallbackData, setFallbackData] = useState<GrowthRateMetrics | null>(null);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
+
+  // If cache doesn't have growthRateMetrics, fetch directly
+  useEffect(() => {
+    if (!loading && data && !data.growthRateMetrics && !fallbackData && !fallbackLoading) {
+      setFallbackLoading(true);
+      fetch('/api/test-growth-metrics')
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setFallbackData(result.data);
+            console.log('Growth rate metrics loaded via fallback');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch fallback growth metrics:', err);
+          // In case of error, set a default object to prevent infinite loading
+          setFallbackData({ averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 });
+        })
+        .finally(() => setFallbackLoading(false));
+    }
+  }, [data, loading, fallbackData, fallbackLoading]);
+
+  // Use cached data if available, otherwise use fallback data
+  const growthMetrics = data?.growthRateMetrics || fallbackData;
 
   const formatPercentage = (value: number) => {
     const sign = value >= 0 ? "+" : "";
@@ -59,7 +84,7 @@ export function GrowthRateIndicators() {
     );
   };
 
-  if (loading) {
+  if (loading || fallbackLoading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedTransactionCounts } from "@/lib/services/graphql";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -8,8 +8,32 @@ import { SharePanel } from "./SharePanel";
 
 export function TimeBasedTransactionCounters() {
   const { data, loading, error } = useAnalytics();
-  const transactionCounts = data?.timeBasedTransactions || null;
   const containerRef = useRef<HTMLDivElement>(null);
+  const [fallbackData, setFallbackData] = useState<TimeBasedTransactionCounts | null>(null);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
+
+  // If cache doesn't have timeBasedTransactions, fetch directly
+  useEffect(() => {
+    if (!loading && data && !data.timeBasedTransactions && !fallbackData && !fallbackLoading) {
+      setFallbackLoading(true);
+      fetch('/api/test-time-transactions')
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setFallbackData(result.data);
+            console.log('Time-based transactions loaded via fallback');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch fallback time-based transactions:', err);
+          setFallbackData({ past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 });
+        })
+        .finally(() => setFallbackLoading(false));
+    }
+  }, [data, loading, fallbackData, fallbackLoading]);
+
+  // Use cached data if available, otherwise use fallback data
+  const transactionCounts = data?.timeBasedTransactions || fallbackData;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -38,7 +62,7 @@ export function TimeBasedTransactionCounters() {
     },
   ];
 
-  if (loading) {
+  if (loading || fallbackLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {timeRanges.map((range) => (

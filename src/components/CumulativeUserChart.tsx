@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -31,7 +31,31 @@ ChartJS.register(
 
 export function CumulativeUserChart() {
   const { data, loading, error } = useAnalytics();
-  const userGrowthData = data?.monthlyUserGrowth || null;
+  const [fallbackData, setFallbackData] = useState<MonthlyUserGrowth[] | null>(null);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
+
+  // If cache doesn't have monthlyUserGrowth, fetch directly
+  useEffect(() => {
+    if (!loading && data && !data.monthlyUserGrowth && !fallbackData && !fallbackLoading) {
+      setFallbackLoading(true);
+      fetch('/api/test-monthly-users')
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            setFallbackData(result.data);
+            console.log('Monthly user growth loaded via fallback');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch fallback monthly user growth:', err);
+          setFallbackData([]);
+        })
+        .finally(() => setFallbackLoading(false));
+    }
+  }, [data, loading, fallbackData, fallbackLoading]);
+
+  // Use cached data if available, otherwise use fallback data
+  const userGrowthData = data?.monthlyUserGrowth || fallbackData;
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatMonth = (monthString: string) => {
@@ -43,7 +67,7 @@ export function CumulativeUserChart() {
     });
   };
 
-  if (loading) {
+  if (loading || fallbackLoading) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="animate-pulse">
