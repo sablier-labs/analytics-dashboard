@@ -31,7 +31,7 @@ export function TopAssetsChart() {
   useEffect(() => {
     if (!loading && data && !data.topAssets && fallbackData.length === 0 && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-assets')
+      fetch('/api/fallback-assets')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

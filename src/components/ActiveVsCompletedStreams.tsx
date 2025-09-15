@@ -22,7 +22,7 @@ export function ActiveVsCompletedStreams() {
   useEffect(() => {
     if (!loading && data && !data.activeVsCompletedStreams && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-active-completed')
+      fetch('/api/fallback-active-completed')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

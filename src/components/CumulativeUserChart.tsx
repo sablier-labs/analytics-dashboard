@@ -38,7 +38,7 @@ export function CumulativeUserChart() {
   useEffect(() => {
     if (!loading && data && !data.monthlyUserGrowth && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-monthly-users')
+      fetch('/api/fallback-monthly-users')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

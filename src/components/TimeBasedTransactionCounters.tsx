@@ -16,7 +16,7 @@ export function TimeBasedTransactionCounters() {
   useEffect(() => {
     if (!loading && data && !data.timeBasedTransactions && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-time-transactions')
+      fetch('/api/fallback-time-transactions')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

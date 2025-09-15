@@ -42,7 +42,7 @@ export function MonthlyStreamCreationChart() {
     if (!loading && data && !data.monthlyStreamCreation && fallbackData.length === 0 && !fallbackLoading) {
       setFallbackLoading(true);
       // Use direct GraphQL function for faster response
-      fetch('/api/test-monthly-streams')
+      fetch('/api/fallback-monthly-streams')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

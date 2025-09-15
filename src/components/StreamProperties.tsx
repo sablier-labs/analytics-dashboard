@@ -16,7 +16,7 @@ export function StreamProperties() {
   useEffect(() => {
     if (!loading && data && !data.streamProperties && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-stream-properties')
+      fetch('/api/fallback-stream-properties')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

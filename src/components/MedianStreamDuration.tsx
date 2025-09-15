@@ -67,7 +67,7 @@ export function MedianStreamDuration() {
   useEffect(() => {
     if (!loading && data && !data.streamDurationStats && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-duration-stats')
+      fetch('/api/fallback-duration-stats')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

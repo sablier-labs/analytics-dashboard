@@ -16,7 +16,7 @@ export function TimeBasedUserCounters() {
   useEffect(() => {
     if (!loading && data && !data.timeBasedUsers && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-time-users')
+      fetch('/api/fallback-time-users')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

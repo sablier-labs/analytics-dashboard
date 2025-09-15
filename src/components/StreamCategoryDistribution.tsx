@@ -22,7 +22,7 @@ export function StreamCategoryDistribution() {
   useEffect(() => {
     if (!loading && data && !data.streamCategoryDistribution && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-category-distribution')
+      fetch('/api/fallback-category-distribution')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

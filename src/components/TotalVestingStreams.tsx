@@ -15,7 +15,7 @@ export function TotalVestingStreams() {
   useEffect(() => {
     if (!loading && data && !data.totalVestingStreams && fallbackData === null && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-total-streams')
+      fetch('/api/fallback-total-streams')
         .then(res => res.json())
         .then(result => {
           if (result.success) {

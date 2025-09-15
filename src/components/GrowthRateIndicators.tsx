@@ -16,7 +16,7 @@ export function GrowthRateIndicators() {
   useEffect(() => {
     if (!loading && data && !data.growthRateMetrics && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/test-growth-metrics')
+      fetch('/api/fallback-growth-metrics')
         .then(res => res.json())
         .then(result => {
           if (result.success) {
