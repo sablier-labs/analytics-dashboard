@@ -249,19 +249,19 @@ export async function fetchTotalTransactions(): Promise<number> {
 }
 
 export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
-  // Calculate timestamps for different periods as ISO date strings
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  const oneHundredEightyDaysAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+  // Calculate timestamps for different periods as Unix timestamp strings
+  const now = Date.now();
+  const thirtyDaysAgo = Math.floor((now - 30 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const ninetyDaysAgo = Math.floor((now - 90 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const oneHundredEightyDaysAgo = Math.floor((now - 180 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const oneYearAgo = Math.floor((now - 365 * 24 * 60 * 60 * 1000) / 1000).toString();
 
   const query = `
     query GetTimeBasedUserCounts {
       past30Days: User_aggregate(
         where: {
           transactions: {
-            timestamp: { _gte: "${thirtyDaysAgo.toISOString()}" }
+            timestamp: { _gte: "${thirtyDaysAgo}" }
           }
         }
       ) {
@@ -272,7 +272,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       past90Days: User_aggregate(
         where: {
           transactions: {
-            timestamp: { _gte: "${ninetyDaysAgo.toISOString()}" }
+            timestamp: { _gte: "${ninetyDaysAgo}" }
           }
         }
       ) {
@@ -283,7 +283,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       past180Days: User_aggregate(
         where: {
           transactions: {
-            timestamp: { _gte: "${oneHundredEightyDaysAgo.toISOString()}" }
+            timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
           }
         }
       ) {
@@ -294,7 +294,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       pastYear: User_aggregate(
         where: {
           transactions: {
-            timestamp: { _gte: "${oneYearAgo.toISOString()}" }
+            timestamp: { _gte: "${oneYearAgo}" }
           }
         }
       ) {
@@ -337,18 +337,18 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
 }
 
 export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransactionCounts> {
-  // Calculate timestamps for different periods as ISO date strings
-  const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-  const oneHundredEightyDaysAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-  const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+  // Calculate timestamps for different periods as Unix timestamp strings
+  const now = Date.now();
+  const thirtyDaysAgo = Math.floor((now - 30 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const ninetyDaysAgo = Math.floor((now - 90 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const oneHundredEightyDaysAgo = Math.floor((now - 180 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const oneYearAgo = Math.floor((now - 365 * 24 * 60 * 60 * 1000) / 1000).toString();
 
   const query = `
     query GetTimeBasedTransactionCounts {
       past30Days: UserTransaction_aggregate(
         where: {
-          timestamp: { _gte: "${thirtyDaysAgo.toISOString()}" }
+          timestamp: { _gte: "${thirtyDaysAgo}" }
         }
       ) {
         aggregate {
@@ -357,7 +357,7 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       }
       past90Days: UserTransaction_aggregate(
         where: {
-          timestamp: { _gte: "${ninetyDaysAgo.toISOString()}" }
+          timestamp: { _gte: "${ninetyDaysAgo}" }
         }
       ) {
         aggregate {
@@ -366,7 +366,7 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       }
       past180Days: UserTransaction_aggregate(
         where: {
-          timestamp: { _gte: "${oneHundredEightyDaysAgo.toISOString()}" }
+          timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
         }
       ) {
         aggregate {
@@ -375,7 +375,7 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       }
       pastYear: UserTransaction_aggregate(
         where: {
-          timestamp: { _gte: "${oneYearAgo.toISOString()}" }
+          timestamp: { _gte: "${oneYearAgo}" }
         }
       ) {
         aggregate {
@@ -418,18 +418,18 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
 
 export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
   // Extended approach: get cumulative counts from Sablier's inception
-  const now = new Date();
+  const now = Date.now();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
 
-  // Start from when Sablier began
+  // Start from when Sablier began (July 1, 2023)
   const startDate = new Date("2023-07-01");
   const current = new Date(startDate);
 
   // Generate monthly timestamps from start date to now
-  while (current <= now) {
+  while (current.getTime() <= now) {
     // Use end of month instead of beginning to capture all users in that month
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
-    const timestamp = endOfMonth.toISOString();
+    const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
     const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
 
@@ -601,15 +601,15 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 }
 
 export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactionGrowth[]> {
-  const now = new Date();
+  const now = Date.now();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
 
   const startDate = new Date("2023-07-01");
   const current = new Date(startDate);
 
-  while (current <= now) {
+  while (current.getTime() <= now) {
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
-    const timestamp = endOfMonth.toISOString();
+    const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
     const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
 
@@ -680,16 +680,26 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
 
 
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
-  const now = new Date();
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  const now = Date.now();
+  const lastMonth = new Date();
+  lastMonth.setMonth(lastMonth.getMonth() - 1);
+  lastMonth.setDate(1);
+  lastMonth.setHours(0, 0, 0, 0);
+  
+  const twoMonthsAgo = new Date();
+  twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+  twoMonthsAgo.setDate(1);
+  twoMonthsAgo.setHours(0, 0, 0, 0);
+
+  const lastMonthTimestamp = Math.floor(lastMonth.getTime() / 1000).toString();
+  const twoMonthsAgoTimestamp = Math.floor(twoMonthsAgo.getTime() / 1000).toString();
 
   const query = `
     query GetGrowthRateMetrics {
       currentMonthUsers: User_aggregate(
         where: {
           transactions: {
-            timestamp: { _gte: "${lastMonth.toISOString()}" }
+            timestamp: { _gte: "${lastMonthTimestamp}" }
           }
         }
       ) {
@@ -700,7 +710,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       previousMonthUsers: User_aggregate(
         where: {
           transactions: {
-            timestamp: { _gte: "${twoMonthsAgo.toISOString()}", _lt: "${lastMonth.toISOString()}" }
+            timestamp: { _gte: "${twoMonthsAgoTimestamp}", _lt: "${lastMonthTimestamp}" }
           }
         }
       ) {
@@ -710,7 +720,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       }
       currentMonthTransactions: UserTransaction_aggregate(
         where: {
-          timestamp: { _gte: "${lastMonth.toISOString()}" }
+          timestamp: { _gte: "${lastMonthTimestamp}" }
         }
       ) {
         aggregate {
@@ -719,7 +729,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       }
       previousMonthTransactions: UserTransaction_aggregate(
         where: {
-          timestamp: { _gte: "${twoMonthsAgo.toISOString()}", _lt: "${lastMonth.toISOString()}" }
+          timestamp: { _gte: "${twoMonthsAgoTimestamp}", _lt: "${lastMonthTimestamp}" }
         }
       ) {
         aggregate {
