@@ -80,17 +80,17 @@ export function ActiveVsCompletedStreams() {
       {
         data: [streamsData.active, streamsData.completed],
         backgroundColor: [
-          "rgba(34, 197, 94, 0.8)",    // Green for Active
-          "rgba(107, 114, 128, 0.8)",  // Gray for Completed
+          "rgba(255, 80, 1, 0.8)",     // Primary brand orange for Active
+          "rgba(234, 88, 12, 0.8)",    // Orange 600 for Completed
         ],
         borderColor: [
-          "rgb(34, 197, 94)",
-          "rgb(107, 114, 128)",
+          "rgb(255, 80, 1)",
+          "rgb(234, 88, 12)",
         ],
         borderWidth: 2,
         hoverBackgroundColor: [
-          "rgba(34, 197, 94, 0.9)",
-          "rgba(107, 114, 128, 0.9)",
+          "rgba(255, 80, 1, 0.9)",
+          "rgba(234, 88, 12, 0.9)",
         ],
         cutout: "60%", // This creates the donut effect
       },
@@ -143,11 +143,11 @@ export function ActiveVsCompletedStreams() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Active vs Completed Streams</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Active vs Completed Vesting Streams</h2>
             <SourceCodeLink fileName="graphql.ts" lineNumber={1268} tooltip="View fetchActiveVsCompletedStreams source" />
           </div>
           <SharePanel 
-            title="Active vs Completed Streams"
+            title="Active vs Completed Vesting Streams"
             elementRef={containerRef}
             description="Current status of all vesting streams on the protocol"
           />
@@ -178,10 +178,10 @@ export function ActiveVsCompletedStreams() {
         {/* Active Streams */}
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "rgb(255, 80, 1)" }}></div>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Active</span>
           </div>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+          <div className="text-2xl font-bold mb-1" style={{ color: "rgb(255, 80, 1)" }}>
             {formatNumber(streamsData.active)}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -192,10 +192,10 @@ export function ActiveVsCompletedStreams() {
         {/* Completed Streams */}
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 bg-gray-500 rounded-full mr-2"></div>
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "rgb(234, 88, 12)" }}></div>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</span>
           </div>
-          <div className="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-1">
+          <div className="text-2xl font-bold mb-1" style={{ color: "rgb(234, 88, 12)" }}>
             {formatNumber(streamsData.completed)}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">

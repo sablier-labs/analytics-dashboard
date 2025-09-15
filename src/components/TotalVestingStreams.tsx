@@ -84,15 +84,28 @@ export function TotalVestingStreams() {
         />
       </div>
       
-      <div className="flex items-baseline">
-        <span className="text-3xl font-bold text-gray-900 dark:text-white">
-          {formatNumber(totalStreams)}
-        </span>
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            {formatNumber(totalStreams)}
+          </p>
+        </div>
+        <div className="flex items-center justify-center w-12 h-12 bg-sablier-100 dark:bg-sablier-900 rounded-lg">
+          <svg
+            className="w-6 h-6 text-sablier-600 dark:text-sablier-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+            />
+          </svg>
+        </div>
       </div>
-      
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-        Streams created since protocol launch
-      </p>
     </div>
   );
 }
