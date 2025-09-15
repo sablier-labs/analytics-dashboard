@@ -1,10 +1,12 @@
 import { get } from "@vercel/edge-config";
 import type {
+  ActiveVsCompletedStreams,
   ChainDistribution,
   GrowthRateMetrics,
   MonthlyStreamCreation,
   MonthlyTransactionGrowth,
   MonthlyUserGrowth,
+  StreamCategoryDistribution,
   StreamDurationStats,
   StreamProperties,
   TimeBasedTransactionCounts,
@@ -12,11 +14,13 @@ import type {
   TopAsset,
 } from "./graphql";
 import {
+  fetchActiveVsCompletedStreams,
   fetchChainDistribution,
   fetchGrowthRateMetrics,
   fetchMonthlyStreamCreation,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
+  fetchStreamCategoryDistribution,
   fetchStreamDurationStats,
   fetchStreamProperties,
   fetchTimeBasedTransactionCounts,
@@ -24,6 +28,7 @@ import {
   fetchTopAssetsByStreamCount,
   fetchTotalTransactions,
   fetchTotalUsers,
+  fetchTotalVestingStreams,
 } from "./graphql";
 
 export interface CachedAnalyticsData {
@@ -39,6 +44,9 @@ export interface CachedAnalyticsData {
   monthlyStreamCreation: MonthlyStreamCreation[];
   streamDurationStats: StreamDurationStats;
   streamProperties: StreamProperties;
+  streamCategoryDistribution: StreamCategoryDistribution;
+  totalVestingStreams: number;
+  activeVsCompletedStreams: ActiveVsCompletedStreams;
   lastUpdated: string;
 }
 
@@ -180,4 +188,31 @@ export async function getCachedStreamProperties(): Promise<StreamProperties> {
   }
   console.log("Cache miss - fetching stream properties from GraphQL");
   return fetchStreamProperties();
+}
+
+export async function getCachedStreamCategoryDistribution(): Promise<StreamCategoryDistribution> {
+  const cached = await getCachedData();
+  if (cached?.streamCategoryDistribution) {
+    return cached.streamCategoryDistribution;
+  }
+  console.log("Cache miss - fetching stream category distribution from GraphQL");
+  return fetchStreamCategoryDistribution();
+}
+
+export async function getCachedTotalVestingStreams(): Promise<number> {
+  const cached = await getCachedData();
+  if (cached?.totalVestingStreams !== undefined) {
+    return cached.totalVestingStreams;
+  }
+  console.log("Cache miss - fetching total vesting streams from GraphQL");
+  return fetchTotalVestingStreams();
+}
+
+export async function getCachedActiveVsCompletedStreams(): Promise<ActiveVsCompletedStreams> {
+  const cached = await getCachedData();
+  if (cached?.activeVsCompletedStreams) {
+    return cached.activeVsCompletedStreams;
+  }
+  console.log("Cache miss - fetching active vs completed streams from GraphQL");
+  return fetchActiveVsCompletedStreams();
 }

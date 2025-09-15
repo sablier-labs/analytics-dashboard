@@ -1,11 +1,13 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {
+  fetchActiveVsCompletedStreams,
   fetchChainDistribution,
   fetchGrowthRateMetrics,
   fetchMonthlyStreamCreation,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
+  fetchStreamCategoryDistribution,
   fetchStreamDurationStats,
   fetchStreamProperties,
   fetchTimeBasedTransactionCounts,
@@ -13,6 +15,7 @@ import {
   fetchTopAssetsByStreamCount,
   fetchTotalTransactions,
   fetchTotalUsers,
+  fetchTotalVestingStreams,
 } from "@/lib/services/graphql";
 
 // Verify the request is from Vercel Cron or has correct API key
@@ -67,6 +70,9 @@ export async function POST(request: NextRequest) {
       monthlyStreamCreation,
       streamDurationStats,
       streamProperties,
+      streamCategoryDistribution,
+      totalVestingStreams,
+      activeVsCompletedStreams,
     ] = await Promise.all([
       fetchTotalUsers().catch((err) => {
         console.error("Error fetching total users:", err);
@@ -116,16 +122,30 @@ export async function POST(request: NextRequest) {
         console.error("Error fetching stream properties:", err);
         return { cancelable: 0, transferable: 0, both: 0, total: 0 };
       }),
+      fetchStreamCategoryDistribution().catch((err) => {
+        console.error("Error fetching stream category distribution:", err);
+        return { linear: 0, dynamic: 0, tranched: 0, total: 0 };
+      }),
+      fetchTotalVestingStreams().catch((err) => {
+        console.error("Error fetching total vesting streams:", err);
+        return 0;
+      }),
+      fetchActiveVsCompletedStreams().catch((err) => {
+        console.error("Error fetching active vs completed streams:", err);
+        return { active: 0, completed: 0, total: 0 };
+      }),
     ]);
 
     // Prepare the cached data
     const cachedData = {
+      activeVsCompletedStreams,
       chainDistribution,
       growthRateMetrics,
       lastUpdated: new Date().toISOString(),
       monthlyStreamCreation,
       monthlyTransactionGrowth,
       monthlyUserGrowth,
+      streamCategoryDistribution,
       streamDurationStats,
       streamProperties,
       timeBasedTransactions,
@@ -133,6 +153,7 @@ export async function POST(request: NextRequest) {
       topAssets,
       totalTransactions,
       totalUsers,
+      totalVestingStreams,
     };
 
     // Store in Edge Config using Vercel REST API

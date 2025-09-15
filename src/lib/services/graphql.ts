@@ -148,6 +148,19 @@ export interface StreamProperties {
   total: number;
 }
 
+export interface StreamCategoryDistribution {
+  linear: number;
+  dynamic: number;
+  tranched: number;
+  total: number;
+}
+
+export interface ActiveVsCompletedStreams {
+  active: number;
+  completed: number;
+  total: number;
+}
+
 export interface MonthlyUserGrowthResponse {
   User: Array<{
     address: string;
@@ -1130,6 +1143,193 @@ export async function fetchStreamProperties(): Promise<StreamProperties> {
     return properties;
   } catch (error) {
     console.error("Error fetching stream properties:", error);
+    throw error;
+  }
+}
+
+export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryDistribution> {
+  const query = `
+    query GetStreamCategoryDistribution {
+      totalStreams: Stream_aggregate {
+        aggregate {
+          count
+        }
+      }
+      linearStreams: Stream_aggregate(where: { category: { _eq: "LockupLinear" } }) {
+        aggregate {
+          count
+        }
+      }
+      dynamicStreams: Stream_aggregate(where: { category: { _eq: "LockupDynamic" } }) {
+        aggregate {
+          count
+        }
+      }
+      tranchedStreams: Stream_aggregate(where: { category: { _eq: "LockupTranched" } }) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      totalStreams: { aggregate: { count: number } };
+      linearStreams: { aggregate: { count: number } };
+      dynamicStreams: { aggregate: { count: number } };
+      tranchedStreams: { aggregate: { count: number } };
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const { totalStreams, linearStreams, dynamicStreams, tranchedStreams } = result.data;
+
+    const distribution: StreamCategoryDistribution = {
+      total: totalStreams.aggregate.count,
+      linear: linearStreams.aggregate.count,
+      dynamic: dynamicStreams.aggregate.count,
+      tranched: tranchedStreams.aggregate.count,
+    };
+
+    console.log(`Fetched stream category distribution:`, {
+      total: distribution.total,
+      linear: `${distribution.linear} (${((distribution.linear / distribution.total) * 100).toFixed(1)}%)`,
+      dynamic: `${distribution.dynamic} (${((distribution.dynamic / distribution.total) * 100).toFixed(1)}%)`,
+      tranched: `${distribution.tranched} (${((distribution.tranched / distribution.total) * 100).toFixed(1)}%)`
+    });
+
+    return distribution;
+  } catch (error) {
+    console.error("Error fetching stream category distribution:", error);
+    throw error;
+  }
+}
+
+export async function fetchTotalVestingStreams(): Promise<number> {
+  const query = `
+    query GetTotalVestingStreams {
+      totalStreams: Stream_aggregate {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      totalStreams: { aggregate: { count: number } };
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const totalStreams = result.data.totalStreams.aggregate.count;
+
+    console.log(`Fetched total vesting streams: ${totalStreams.toLocaleString()}`);
+
+    return totalStreams;
+  } catch (error) {
+    console.error("Error fetching total vesting streams:", error);
+    throw error;
+  }
+}
+
+export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompletedStreams> {
+  // Get current timestamp for determining active vs completed
+  const currentTimestamp = Math.floor(Date.now() / 1000).toString();
+  
+  const query = `
+    query GetActiveVsCompletedStreams {
+      totalStreams: Stream_aggregate {
+        aggregate {
+          count
+        }
+      }
+      activeStreams: Stream_aggregate(where: { endTime: { _gt: "${currentTimestamp}" } }) {
+        aggregate {
+          count
+        }
+      }
+      completedStreams: Stream_aggregate(where: { endTime: { _lte: "${currentTimestamp}" } }) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      totalStreams: { aggregate: { count: number } };
+      activeStreams: { aggregate: { count: number } };
+      completedStreams: { aggregate: { count: number } };
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const { totalStreams, activeStreams, completedStreams } = result.data;
+
+    const streams: ActiveVsCompletedStreams = {
+      total: totalStreams.aggregate.count,
+      active: activeStreams.aggregate.count,
+      completed: completedStreams.aggregate.count,
+    };
+
+    console.log(`Fetched active vs completed streams:`, {
+      total: streams.total,
+      active: `${streams.active} (${((streams.active / streams.total) * 100).toFixed(1)}%)`,
+      completed: `${streams.completed} (${((streams.completed / streams.total) * 100).toFixed(1)}%)`
+    });
+
+    return streams;
+  } catch (error) {
+    console.error("Error fetching active vs completed streams:", error);
     throw error;
   }
 }

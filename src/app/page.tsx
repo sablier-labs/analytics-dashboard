@@ -1,13 +1,16 @@
+import { ActiveVsCompletedStreams } from "@/components/ActiveVsCompletedStreams";
 import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
 import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
 import { MedianStreamDuration } from "@/components/MedianStreamDuration";
 import { MonthlyStreamCreationChart } from "@/components/MonthlyStreamCreationChart";
+import { StreamCategoryDistribution } from "@/components/StreamCategoryDistribution";
 import { StreamProperties } from "@/components/StreamProperties";
 import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
 import { TopAssetsChart } from "@/components/TopAssetsChart";
+import { TotalVestingStreams } from "@/components/TotalVestingStreams";
 import { TransactionCounter } from "@/components/TransactionCounter";
 import { UserCounter } from "@/components/UserCounter";
 
@@ -23,9 +26,10 @@ export default function Home() {
         </div>
 
         <div className="max-w-6xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
             <UserCounter />
             <TransactionCounter />
+            <TotalVestingStreams />
           </div>
 
           <TimeBasedUserCounters />
@@ -49,6 +53,11 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <ChainDistributionChart />
             <TopAssetsChart />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <StreamCategoryDistribution />
+            <ActiveVsCompletedStreams />
           </div>
         </div>
       </div>
