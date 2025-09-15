@@ -33,8 +33,9 @@ export function GrowthRateIndicators() {
     }
   }, [data, loading, fallbackData, fallbackLoading]);
 
-  // Use cached data if available, otherwise use fallback data
-  const growthMetrics = data?.growthRateMetrics || fallbackData;
+  // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
+  const hasValidCachedData = data?.growthRateMetrics && !Object.values(data.growthRateMetrics).every(v => v === 0);
+  const growthMetrics = fallbackData || (hasValidCachedData ? data.growthRateMetrics : null);
 
   const formatPercentage = (value: number) => {
     const sign = value >= 0 ? "+" : "";

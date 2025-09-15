@@ -32,8 +32,9 @@ export function TimeBasedUserCounters() {
     }
   }, [data, loading, fallbackData, fallbackLoading]);
 
-  // Use cached data if available, otherwise use fallback data
-  const userCounts = data?.timeBasedUsers || fallbackData;
+  // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
+  const hasValidCachedData = data?.timeBasedUsers && !Object.values(data.timeBasedUsers).every(v => v === 0);
+  const userCounts = fallbackData || (hasValidCachedData ? data.timeBasedUsers : null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);

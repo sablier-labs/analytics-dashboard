@@ -55,8 +55,9 @@ export function CumulativeTransactionChart() {
     }
   }, [data, loading, fallbackData, fallbackLoading]);
 
-  // Use cached data if available, otherwise use fallback data
-  const transactionData = data?.monthlyTransactionGrowth || fallbackData;
+  // Use fallback data if available, otherwise use cached data (prefer real data over empty arrays)
+  const hasValidCachedData = data?.monthlyTransactionGrowth && data.monthlyTransactionGrowth.length > 0;
+  const transactionData = fallbackData || (hasValidCachedData ? data.monthlyTransactionGrowth : null);
 
   if (loading || fallbackLoading) {
     return (

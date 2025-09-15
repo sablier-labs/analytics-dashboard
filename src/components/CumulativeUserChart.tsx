@@ -54,8 +54,9 @@ export function CumulativeUserChart() {
     }
   }, [data, loading, fallbackData, fallbackLoading]);
 
-  // Use cached data if available, otherwise use fallback data
-  const userGrowthData = data?.monthlyUserGrowth || fallbackData;
+  // Use fallback data if available, otherwise use cached data (prefer real data over empty arrays)
+  const hasValidCachedData = data?.monthlyUserGrowth && data.monthlyUserGrowth.length > 0;
+  const userGrowthData = fallbackData || (hasValidCachedData ? data.monthlyUserGrowth : null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatMonth = (monthString: string) => {

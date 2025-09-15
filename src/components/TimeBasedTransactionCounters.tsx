@@ -32,8 +32,9 @@ export function TimeBasedTransactionCounters() {
     }
   }, [data, loading, fallbackData, fallbackLoading]);
 
-  // Use cached data if available, otherwise use fallback data
-  const transactionCounts = data?.timeBasedTransactions || fallbackData;
+  // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
+  const hasValidCachedData = data?.timeBasedTransactions && !Object.values(data.timeBasedTransactions).every(v => v === 0);
+  const transactionCounts = fallbackData || (hasValidCachedData ? data.timeBasedTransactions : null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
