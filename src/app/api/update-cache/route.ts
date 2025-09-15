@@ -40,10 +40,6 @@ function verifyRequest(request: NextRequest) {
     return true;
   }
 
-  // Special bypass for immediate production cache update
-  if (url.searchParams.get("trigger") === "timestamp-fix-2025") {
-    return true;
-  }
 
   // In development, allow all requests
   if (process.env.NODE_ENV === "development") {
