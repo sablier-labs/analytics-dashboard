@@ -82,4 +82,4 @@ protocol APIs through the data provider interface.
 
 ## License
 
-This project is part of the Sablier ecosystem.
+This project is part of the Sablier ecosystem. 
