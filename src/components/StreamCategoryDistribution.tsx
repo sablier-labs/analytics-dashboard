@@ -77,19 +77,19 @@ export function StreamCategoryDistribution() {
         data: [categoryData.linear, categoryData.dynamic, categoryData.tranched],
         backgroundColor: [
           "rgba(255, 80, 1, 0.8)",     // Primary brand orange for Linear
-          "rgba(234, 88, 12, 0.8)",    // Orange 600 for Dynamic  
-          "rgba(251, 146, 60, 0.8)",   // Orange 400 for Tranched
+          "rgba(154, 52, 18, 0.8)",    // Sablier-800 (dark brown) for Dynamic  
+          "rgba(253, 186, 116, 0.8)",  // Sablier-300 (light orange) for Tranched
         ],
         borderColor: [
-          "rgb(255, 80, 1)",
-          "rgb(234, 88, 12)",
-          "rgb(251, 146, 60)",
+          "rgb(255, 80, 1)",           // sablier-500
+          "rgb(154, 52, 18)",          // sablier-800
+          "rgb(253, 186, 116)",        // sablier-300
         ],
         borderWidth: 2,
         hoverBackgroundColor: [
           "rgba(255, 80, 1, 0.9)",
-          "rgba(234, 88, 12, 0.9)",
-          "rgba(251, 146, 60, 0.9)",
+          "rgba(154, 52, 18, 0.9)",
+          "rgba(253, 186, 116, 0.9)",
         ],
       },
     ],

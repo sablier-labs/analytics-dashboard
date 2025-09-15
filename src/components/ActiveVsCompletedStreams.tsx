@@ -81,16 +81,16 @@ export function ActiveVsCompletedStreams() {
         data: [streamsData.active, streamsData.completed],
         backgroundColor: [
           "rgba(255, 80, 1, 0.8)",     // Primary brand orange for Active
-          "rgba(234, 88, 12, 0.8)",    // Orange 600 for Completed
+          "rgba(124, 45, 18, 0.8)",    // Sablier-900 (dark brown) for Completed
         ],
         borderColor: [
-          "rgb(255, 80, 1)",
-          "rgb(234, 88, 12)",
+          "rgb(255, 80, 1)",           // sablier-500
+          "rgb(124, 45, 18)",          // sablier-900
         ],
         borderWidth: 2,
         hoverBackgroundColor: [
           "rgba(255, 80, 1, 0.9)",
-          "rgba(234, 88, 12, 0.9)",
+          "rgba(124, 45, 18, 0.9)",
         ],
         cutout: "60%", // This creates the donut effect
       },
@@ -181,7 +181,7 @@ export function ActiveVsCompletedStreams() {
             <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "rgb(255, 80, 1)" }}></div>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Active</span>
           </div>
-          <div className="text-2xl font-bold mb-1" style={{ color: "rgb(255, 80, 1)" }}>
+          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">
             {formatNumber(streamsData.active)}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -192,10 +192,10 @@ export function ActiveVsCompletedStreams() {
         {/* Completed Streams */}
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "rgb(234, 88, 12)" }}></div>
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: "rgb(124, 45, 18)" }}></div>
             <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Completed</span>
           </div>
-          <div className="text-2xl font-bold mb-1" style={{ color: "rgb(234, 88, 12)" }}>
+          <div className="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-1">
             {formatNumber(streamsData.completed)}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
