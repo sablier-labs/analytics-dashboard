@@ -23,6 +23,12 @@ function verifyRequest(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
+  // TEMPORARY: Allow manual trigger for immediate cache update
+  const url = new URL(request.url);
+  if (url.searchParams.get("manual") === "trigger-now-2025") {
+    return true;
+  }
+
   // Allow Vercel Cron requests
   if (request.headers.get("x-vercel-cron") === "1") {
     return true;
