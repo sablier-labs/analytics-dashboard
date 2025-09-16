@@ -58,7 +58,14 @@ export async function POST(request: NextRequest) {
   try {
     console.log("Starting cache update...");
 
-    // Fetch all analytics data in parallel
+    // Get current cached data to preserve on failures
+    const currentCachedData = await fetch(`${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/analytics`)
+      .then(res => res.json())
+      .catch(() => null);
+
+    console.log("Current cached data available:", !!currentCachedData);
+
+    // Fetch all analytics data in parallel, preserving existing data on failure
     const [
       totalUsers,
       totalTransactions,
@@ -78,63 +85,63 @@ export async function POST(request: NextRequest) {
     ] = await Promise.all([
       fetchTotalUsers().catch((err) => {
         console.error("Error fetching total users:", err);
-        return 0;
+        return currentCachedData?.totalUsers ?? 0;
       }),
       fetchTotalTransactions().catch((err) => {
         console.error("Error fetching total transactions:", err);
-        return 0;
+        return currentCachedData?.totalTransactions ?? 0;
       }),
       fetchTimeBasedUserCounts().catch((err) => {
         console.error("Error fetching time-based users:", err);
-        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
+        return currentCachedData?.timeBasedUsers ?? { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
       }),
       fetchTimeBasedTransactionCounts().catch((err) => {
         console.error("Error fetching time-based transactions:", err);
-        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
+        return currentCachedData?.timeBasedTransactions ?? { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
       }),
       fetchMonthlyUserGrowth().catch((err) => {
         console.error("Error fetching monthly user growth:", err);
-        return [];
+        return currentCachedData?.monthlyUserGrowth ?? [];
       }),
       fetchChainDistribution().catch((err) => {
         console.error("Error fetching chain distribution:", err);
-        return [];
+        return currentCachedData?.chainDistribution ?? [];
       }),
       fetchMonthlyTransactionGrowth().catch((err) => {
         console.error("Error fetching monthly transaction growth:", err);
-        return [];
+        return currentCachedData?.monthlyTransactionGrowth ?? [];
       }),
       fetchTopAssetsByStreamCount().catch((err) => {
         console.error("Error fetching top assets:", err);
-        return [];
+        return currentCachedData?.topAssets ?? [];
       }),
       fetchGrowthRateMetrics().catch((err) => {
         console.error("Error fetching growth rate metrics:", err);
-        return { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
+        return currentCachedData?.growthRateMetrics ?? { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
       }),
       fetchMonthlyStreamCreation().catch((err) => {
         console.error("Error fetching monthly stream creation:", err);
-        return [];
+        return currentCachedData?.monthlyStreamCreation ?? [];
       }),
       fetchStreamDurationStats().catch((err) => {
         console.error("Error fetching stream duration stats:", err);
-        return { median: 0, average: 0, min: 0, max: 0 };
+        return currentCachedData?.streamDurationStats ?? { median: 0, average: 0, min: 0, max: 0 };
       }),
       fetchStreamProperties().catch((err) => {
         console.error("Error fetching stream properties:", err);
-        return { cancelable: 0, transferable: 0, both: 0, total: 0 };
+        return currentCachedData?.streamProperties ?? { cancelable: 0, transferable: 0, both: 0, total: 0 };
       }),
       fetchStreamCategoryDistribution().catch((err) => {
         console.error("Error fetching stream category distribution:", err);
-        return { linear: 0, dynamic: 0, tranched: 0, total: 0 };
+        return currentCachedData?.streamCategoryDistribution ?? { linear: 0, dynamic: 0, tranched: 0, total: 0 };
       }),
       fetchTotalVestingStreams().catch((err) => {
         console.error("Error fetching total vesting streams:", err);
-        return 0;
+        return currentCachedData?.totalVestingStreams ?? 0;
       }),
       fetchActiveVsCompletedStreams().catch((err) => {
         console.error("Error fetching active vs completed streams:", err);
-        return { active: 0, completed: 0, total: 0 };
+        return currentCachedData?.activeVsCompletedStreams ?? { active: 0, completed: 0, total: 0 };
       }),
     ]);
 
