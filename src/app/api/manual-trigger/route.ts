@@ -42,6 +42,6 @@ export async function POST(request: NextRequest) {
 }
 
 // Allow GET for easier testing
-export async function GET() {
-  return POST(new Request("http://localhost:3000/manual-trigger"));
+export async function GET(request: NextRequest) {
+  return POST(request);
 }
