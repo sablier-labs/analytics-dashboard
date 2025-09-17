@@ -6,26 +6,28 @@ export function useAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadAnalytics() {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch("/api/analytics");
-        if (!response.ok) {
-          throw new Error("Failed to fetch analytics data");
-        }
-        const analyticsData = await response.json();
-        setData(analyticsData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load analytics data");
-      } finally {
-        setLoading(false);
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch("/api/analytics");
+      if (!response.ok) {
+        throw new Error("Failed to fetch analytics data");
       }
+      const analyticsData = await response.json();
+      setData(analyticsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load analytics data");
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     void loadAnalytics();
   }, []);
 
-  return { data, error, loading };
+  const refetch = () => loadAnalytics();
+
+  return { data, error, loading, refetch };
 }
