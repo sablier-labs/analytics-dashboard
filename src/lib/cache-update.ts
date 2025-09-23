@@ -14,6 +14,8 @@ import {
   fetchTotalTransactions,
   fetchTotalUsers,
   fetchTotalVestingStreams,
+  fetchLargestStablecoinStreams,
+  fetch24HourMetrics,
 } from "@/lib/services/graphql";
 
 export async function updateAnalyticsCache() {
@@ -42,6 +44,8 @@ export async function updateAnalyticsCache() {
     streamCategoryDistribution,
     totalVestingStreams,
     activeVsCompletedStreams,
+    largestStablecoinStreams,
+    activity24Hours,
   ] = await Promise.all([
     fetchTotalUsers().catch((err) => {
       console.error("Error fetching total users:", err);
@@ -103,13 +107,23 @@ export async function updateAnalyticsCache() {
       console.error("Error fetching active vs completed streams:", err);
       return { active: 0, completed: 0, total: 0 };
     }),
+    fetchLargestStablecoinStreams().catch((err) => {
+      console.error("Error fetching largest stablecoin streams:", err);
+      return [];
+    }),
+    fetch24HourMetrics().catch((err) => {
+      console.error("Error fetching 24-hour metrics:", err);
+      return { streamsCreated: 0, totalTransactions: 0 };
+    }),
   ]);
 
   // Prepare the cached data
   const cachedData = {
     activeVsCompletedStreams,
+    activity24Hours,
     chainDistribution,
     growthRateMetrics,
+    largestStablecoinStreams,
     lastUpdated: new Date().toISOString(),
     monthlyStreamCreation,
     monthlyTransactionGrowth,

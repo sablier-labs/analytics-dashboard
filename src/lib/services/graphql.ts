@@ -1343,3 +1343,139 @@ export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompleted
     throw error;
   }
 }
+
+// New interfaces for additional metrics
+export interface StablecoinStream {
+  id: string;
+  depositAmount: string;
+  sender: string;
+  recipient: string;
+  chainId: string;
+  timestamp: string;
+  asset: {
+    symbol: string;
+    name: string;
+    decimals: string;
+  };
+}
+
+export interface Activity24Hours {
+  streamsCreated: number;
+  totalTransactions: number;
+}
+
+export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[]> {
+  const query = `
+    query GetLargestStablecoinStreams {
+      Stream(
+        where: {
+          asset: {
+            symbol: {
+              _in: ["USDC", "USDT", "DAI", "BUSD", "TUSD", "USDP", "GUSD", "FRAX", "LUSD", "USDD"]
+            }
+          }
+        }
+        order_by: { depositAmount: desc }
+        limit: 10
+      ) {
+        id
+        depositAmount
+        sender
+        recipient
+        chainId
+        timestamp
+        asset {
+          symbol
+          name
+          decimals
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{ Stream: StablecoinStream[] }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    console.log(`Fetched ${result.data.Stream.length} largest stablecoin streams`);
+    return result.data.Stream;
+  } catch (error) {
+    console.error("Error fetching largest stablecoin streams:", error);
+    throw error;
+  }
+}
+
+export async function fetch24HourMetrics(): Promise<Activity24Hours> {
+  // Calculate timestamp for 24 hours ago
+  const twentyFourHoursAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000).toString();
+
+  const query = `
+    query Get24HourMetrics {
+      streams24h: Stream_aggregate(
+        where: { timestamp: { _gte: "${twentyFourHoursAgo}" } }
+      ) {
+        aggregate {
+          count
+        }
+      }
+      transactions24h: UserTransaction_aggregate(
+        where: { timestamp: { _gte: "${twentyFourHoursAgo}" } }
+      ) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      streams24h: { aggregate: { count: number } };
+      transactions24h: { aggregate: { count: number } };
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const metrics: Activity24Hours = {
+      streamsCreated: result.data.streams24h.aggregate.count,
+      totalTransactions: result.data.transactions24h.aggregate.count,
+    };
+
+    console.log(`Fetched 24h metrics:`, metrics);
+    return metrics;
+  } catch (error) {
+    console.error("Error fetching 24-hour metrics:", error);
+    throw error;
+  }
+}
