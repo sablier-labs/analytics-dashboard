@@ -1,3 +1,5 @@
+import { getTestnetChainIds } from "@/lib/constants/chains";
+
 const GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/53b7e25/v1/graphql";
 
 export interface GraphQLResponse<T> {
@@ -171,10 +173,12 @@ export interface MonthlyUserGrowthResponse {
 }
 
 export async function fetchTotalUsers(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetTotalUsers {
       User_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           transactions: {}
         }
       ) {
@@ -212,9 +216,16 @@ export async function fetchTotalUsers(): Promise<number> {
 }
 
 export async function fetchTotalTransactions(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetTotalTransactions {
-      UserTransaction_aggregate {
+      UserTransaction_aggregate(
+        where: {
+          user: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          }
+        }
+      ) {
         aggregate {
           count
         }
@@ -249,6 +260,7 @@ export async function fetchTotalTransactions(): Promise<number> {
 }
 
 export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
+  const testnetChainIds = getTestnetChainIds();
   // Calculate timestamps for different periods as Unix timestamp strings
   const now = Date.now();
   const thirtyDaysAgo = Math.floor((now - 30 * 24 * 60 * 60 * 1000) / 1000).toString();
@@ -260,6 +272,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
     query GetTimeBasedUserCounts {
       past30Days: User_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           transactions: {
             timestamp: { _gte: "${thirtyDaysAgo}" }
           }
@@ -271,6 +284,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       }
       past90Days: User_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           transactions: {
             timestamp: { _gte: "${ninetyDaysAgo}" }
           }
@@ -282,6 +296,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       }
       past180Days: User_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           transactions: {
             timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
           }
@@ -293,6 +308,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       }
       pastYear: User_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           transactions: {
             timestamp: { _gte: "${oneYearAgo}" }
           }
@@ -337,6 +353,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
 }
 
 export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransactionCounts> {
+  const testnetChainIds = getTestnetChainIds();
   // Calculate timestamps for different periods as Unix timestamp strings
   const now = Date.now();
   const thirtyDaysAgo = Math.floor((now - 30 * 24 * 60 * 60 * 1000) / 1000).toString();
@@ -348,6 +365,9 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
     query GetTimeBasedTransactionCounts {
       past30Days: UserTransaction_aggregate(
         where: {
+          user: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          }
           timestamp: { _gte: "${thirtyDaysAgo}" }
         }
       ) {
@@ -357,6 +377,9 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       }
       past90Days: UserTransaction_aggregate(
         where: {
+          user: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          }
           timestamp: { _gte: "${ninetyDaysAgo}" }
         }
       ) {
@@ -366,6 +389,9 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       }
       past180Days: UserTransaction_aggregate(
         where: {
+          user: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          }
           timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
         }
       ) {
@@ -375,6 +401,9 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
       }
       pastYear: UserTransaction_aggregate(
         where: {
+          user: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          }
           timestamp: { _gte: "${oneYearAgo}" }
         }
       ) {
@@ -502,11 +531,13 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
 }
 
 export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
-  // First, get all unique chain IDs
+  const testnetChainIds = getTestnetChainIds();
+  // First, get all unique chain IDs (excluding testnets)
   const chainQuery = `
     query GetUniqueChains {
       User(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           transactions: {}
         }
         distinct_on: [chainId]
@@ -1365,10 +1396,12 @@ export interface Activity24Hours {
 }
 
 export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[]> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetLargestStablecoinStreams {
       Stream(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           asset: {
             symbol: {
               _in: ["USDC", "USDT", "DAI", "BUSD", "TUSD", "USDP", "GUSD", "FRAX", "LUSD", "USDD"]
@@ -1422,20 +1455,29 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
 }
 
 export async function fetch24HourMetrics(): Promise<Activity24Hours> {
+  const testnetChainIds = getTestnetChainIds();
   // Calculate timestamp for 24 hours ago
   const twentyFourHoursAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000).toString();
 
   const query = `
     query Get24HourMetrics {
       streams24h: Stream_aggregate(
-        where: { timestamp: { _gte: "${twentyFourHoursAgo}" } }
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          timestamp: { _gte: "${twentyFourHoursAgo}" }
+        }
       ) {
         aggregate {
           count
         }
       }
       transactions24h: UserTransaction_aggregate(
-        where: { timestamp: { _gte: "${twentyFourHoursAgo}" } }
+        where: {
+          user: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          }
+          timestamp: { _gte: "${twentyFourHoursAgo}" }
+        }
       ) {
         aggregate {
           count

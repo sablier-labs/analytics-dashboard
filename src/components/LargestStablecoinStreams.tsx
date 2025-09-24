@@ -2,23 +2,7 @@
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { StablecoinStream } from "@/lib/services/graphql";
-
-// Chain ID to name mapping
-const CHAIN_NAMES: Record<string, string> = {
-  "1": "Ethereum",
-  "8453": "Base",
-  "42161": "Arbitrum",
-  "137": "Polygon",
-  "10": "Optimism",
-  "56": "BSC",
-  "43114": "Avalanche",
-  "100": "Gnosis",
-  "534352": "Scroll",
-  "59144": "Linea",
-  "11155111": "Sepolia",
-  "2818": "Mode",
-  "34443": "Mode",
-};
+import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
 
 function formatAmount(amount: string, decimals: string): string {
   const divisor = BigInt(10) ** BigInt(decimals);
@@ -64,7 +48,7 @@ export function LargestStablecoinStreams() {
     );
   }
 
-  const streams = data?.largestStablecoinStreams || [];
+  const streams = (data?.largestStablecoinStreams || []).filter(stream => !isTestnetChain(stream.chainId));
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -131,7 +115,7 @@ export function LargestStablecoinStreams() {
                   </td>
                   <td className="py-3 px-2">
                     <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
-                      {CHAIN_NAMES[stream.chainId] || `Chain ${stream.chainId}`}
+                      {getMainnetChainName(stream.chainId)}
                     </span>
                   </td>
                   <td className="py-3 px-2 text-gray-600 dark:text-gray-400">
