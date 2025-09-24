@@ -1378,11 +1378,13 @@ export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompleted
 // New interfaces for additional metrics
 export interface StablecoinStream {
   id: string;
+  tokenId: string;
   depositAmount: string;
   sender: string;
   recipient: string;
   chainId: string;
   timestamp: string;
+  contract: string;
   asset: {
     symbol: string;
     name: string;
@@ -1412,11 +1414,13 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
         limit: 10
       ) {
         id
+        tokenId
         depositAmount
         sender
         recipient
         chainId
         timestamp
+        contract
         asset {
           symbol
           name

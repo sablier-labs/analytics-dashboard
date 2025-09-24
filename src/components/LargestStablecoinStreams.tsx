@@ -3,6 +3,7 @@
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { StablecoinStream } from "@/lib/services/graphql";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
+import { getSablierStreamUrl } from "@/lib/utils/sablier";
 
 function formatAmount(amount: string, decimals: string): string {
   const divisor = BigInt(10) ** BigInt(decimals);
@@ -98,7 +99,22 @@ export function LargestStablecoinStreams() {
                     #{index + 1}
                   </td>
                   <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">
-                    {formatAmount(stream.depositAmount, stream.asset.decimals)}
+                    <a
+                      href={getSablierStreamUrl(stream.chainId, stream.tokenId, stream.contract)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center gap-1"
+                    >
+                      {formatAmount(stream.depositAmount, stream.asset.decimals)}
+                      <svg
+                        className="w-3 h-3 opacity-60 hover:opacity-100 transition-opacity"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
                   </td>
                   <td className="py-3 px-2">
                     <div className="flex items-center space-x-2">
