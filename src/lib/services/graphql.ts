@@ -1409,12 +1409,12 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           asset: {
             symbol: {
-              _in: ["USDC", "USDT", "DAI", "BUSD", "TUSD", "USDP", "GUSD", "FRAX", "LUSD", "USDD"]
+              _in: ["USDC", "USDC.e", "USDT", "DAI", "BUSD", "TUSD", "USDP", "GUSD", "FRAX", "LUSD", "USDD"]
             }
           }
         }
         order_by: { depositAmount: desc }
-        limit: 25
+        limit: 100
       ) {
         id
         tokenId

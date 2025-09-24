@@ -128,3 +128,27 @@ export function getStreamStatus(endTime: string): 'active' | 'completed' {
 
   return now < end ? 'active' : 'completed';
 }
+
+/**
+ * Normalizes amounts to 18 decimals for proper sorting comparison
+ * This fixes the string sorting issue where different decimal places cause incorrect ordering
+ */
+export function normalizeAmount(amount: string, decimals: string): bigint {
+  if (!amount || !decimals) {
+    return BigInt(0);
+  }
+
+  const dec = parseInt(decimals);
+  const targetDecimals = 18;
+  const value = BigInt(amount);
+
+  if (dec < targetDecimals) {
+    // Scale up to 18 decimals
+    return value * BigInt(10 ** (targetDecimals - dec));
+  } else if (dec > targetDecimals) {
+    // Scale down to 18 decimals
+    return value / BigInt(10 ** (dec - targetDecimals));
+  }
+
+  return value;
+}

@@ -3,7 +3,7 @@
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { StablecoinStream } from "@/lib/services/graphql";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
-import { getSablierStreamUrl, formatDuration, getStreamStatus } from "@/lib/utils/sablier";
+import { getSablierStreamUrl, formatDuration, getStreamStatus, normalizeAmount } from "@/lib/utils/sablier";
 import { TokenLogo } from "./TokenLogo";
 
 function formatAmount(amount: string, decimals: string): string {
@@ -46,7 +46,22 @@ export function LargestStablecoinStreams() {
     );
   }
 
-  const streams = (data?.largestStablecoinStreams || []).filter(stream => !isTestnetChain(stream.chainId));
+  // Filter out testnets and normalize amounts for proper sorting
+  const allStreams = (data?.largestStablecoinStreams || []).filter(stream => !isTestnetChain(stream.chainId));
+
+  // Sort by normalized amounts (not string comparison) and take top 25
+  const streams = allStreams
+    .map(stream => ({
+      ...stream,
+      normalizedAmount: normalizeAmount(stream.depositAmount, stream.asset.decimals)
+    }))
+    .sort((a, b) => {
+      // Sort in descending order (largest first)
+      if (a.normalizedAmount > b.normalizedAmount) return -1;
+      if (a.normalizedAmount < b.normalizedAmount) return 1;
+      return 0;
+    })
+    .slice(0, 25);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
