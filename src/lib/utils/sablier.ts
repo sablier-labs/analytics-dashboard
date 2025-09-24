@@ -39,7 +39,12 @@ export function getSablierStreamUrl(
   chainId: string,
   tokenId: string,
   contract: string
-): string {
+): string | null {
+  // Check for required parameters
+  if (!chainId || !tokenId || !contract) {
+    return null;
+  }
+
   // Get contract alias or fallback to contract address
   const contractAlias = SABLIER_CONTRACT_ALIASES[contract.toLowerCase()] || contract;
 
