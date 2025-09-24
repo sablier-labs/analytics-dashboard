@@ -41,15 +41,17 @@ export async function GET() {
       // Provide minimal data for other required fields
       topAssets: [],
       streamCategoryDistribution: { total: 0, linear: 0, dynamic: 0, tranched: 0 },
-      activeCompletedStreams: { total: 0, active: 0, completed: 0 },
+      activeVsCompletedStreams: { total: 0, active: 0, completed: 0 },
       streamProperties: { total: 0, cancelable: 0, transferable: 0, both: 0 },
       streamDurationStats: { median: 0, average: 0, min: 0, max: 0 },
       monthlyStreamCreation: [],
       activity24Hours: { streamsCreated: 0, totalTransactions: 0 },
       chainDistribution: [],
-      timeBasedUserCounts: { today: 0, thisWeek: 0, thisMonth: 0, thisYear: 0 },
-      timeBasedTransactionCounts: { today: 0, thisWeek: 0, thisMonth: 0, thisYear: 0 },
-      userGrowthMetrics: { totalUsers: 0, monthlyGrowth: [] },
+      timeBasedUsers: { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 },
+      timeBasedTransactions: { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 },
+      monthlyUserGrowth: [],
+      monthlyTransactionGrowth: [],
+      growthRateMetrics: { userGrowthRate: 0, transactionGrowthRate: 0, averageTransactionGrowthRate: 0 },
       lastUpdated: new Date().toISOString(),
     };
 

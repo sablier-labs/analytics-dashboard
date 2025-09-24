@@ -1,11 +1,13 @@
 import { get } from "@vercel/edge-config";
 import type {
   ActiveVsCompletedStreams,
+  Activity24Hours,
   ChainDistribution,
   GrowthRateMetrics,
   MonthlyStreamCreation,
   MonthlyTransactionGrowth,
   MonthlyUserGrowth,
+  StablecoinStream,
   StreamCategoryDistribution,
   StreamDurationStats,
   StreamProperties,
@@ -47,6 +49,8 @@ export interface CachedAnalyticsData {
   streamCategoryDistribution: StreamCategoryDistribution;
   totalVestingStreams: number;
   activeVsCompletedStreams: ActiveVsCompletedStreams;
+  largestStablecoinStreams: StablecoinStream[];
+  activity24Hours: Activity24Hours;
   lastUpdated: string;
 }
 
