@@ -67,3 +67,64 @@ export function hasKnownContractAlias(contract: string): boolean {
 export function getContractAlias(contract: string): string {
   return SABLIER_CONTRACT_ALIASES[contract.toLowerCase()] || contract;
 }
+
+/**
+ * Calculates and formats the duration between start and end time
+ */
+export function formatDuration(startTime: string, endTime: string): string {
+  if (!startTime || !endTime) {
+    return "N/A";
+  }
+
+  const start = parseInt(startTime) * 1000;
+  const end = parseInt(endTime) * 1000;
+  const durationMs = end - start;
+
+  if (durationMs <= 0) {
+    return "N/A";
+  }
+
+  const days = Math.floor(durationMs / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((durationMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+  if (days >= 365) {
+    const years = Math.floor(days / 365);
+    const remainingDays = days % 365;
+    if (remainingDays === 0) {
+      return `${years} year${years > 1 ? 's' : ''}`;
+    }
+    return `${years}y ${Math.floor(remainingDays / 30)}m`;
+  }
+
+  if (days >= 30) {
+    const months = Math.floor(days / 30);
+    const remainingDays = days % 30;
+    if (remainingDays === 0) {
+      return `${months} month${months > 1 ? 's' : ''}`;
+    }
+    return `${months}m ${remainingDays}d`;
+  }
+
+  if (days > 0) {
+    if (hours === 0) {
+      return `${days} day${days > 1 ? 's' : ''}`;
+    }
+    return `${days}d ${hours}h`;
+  }
+
+  return `${hours} hour${hours > 1 ? 's' : ''}`;
+}
+
+/**
+ * Determines if a stream is still active or has ended
+ */
+export function getStreamStatus(endTime: string): 'active' | 'completed' {
+  if (!endTime) {
+    return 'active';
+  }
+
+  const end = parseInt(endTime) * 1000;
+  const now = Date.now();
+
+  return now < end ? 'active' : 'completed';
+}

@@ -5,6 +5,7 @@
   "dependencies": {
     "@types/html2canvas": "^0.5.35",
     "@vercel/edge-config": "^1.4.0",
+    "@web3icons/react": "^4.0.25",
     "chart.js": "^4.5.0",
     "html2canvas": "^1.4.1",
     "next": "15.3.3",

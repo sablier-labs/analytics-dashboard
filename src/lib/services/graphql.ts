@@ -1385,6 +1385,9 @@ export interface StablecoinStream {
   chainId: string;
   timestamp: string;
   contract: string;
+  startTime: string;
+  endTime: string;
+  duration: string;
   asset: {
     symbol: string;
     name: string;
@@ -1411,7 +1414,7 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
           }
         }
         order_by: { depositAmount: desc }
-        limit: 10
+        limit: 25
       ) {
         id
         tokenId
@@ -1421,6 +1424,9 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
         chainId
         timestamp
         contract
+        startTime
+        endTime
+        duration
         asset {
           symbol
           name
