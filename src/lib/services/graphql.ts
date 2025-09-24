@@ -1414,7 +1414,7 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
           }
         }
         order_by: { depositAmount: desc }
-        limit: 100
+        limit: 3000
       ) {
         id
         tokenId
