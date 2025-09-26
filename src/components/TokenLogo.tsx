@@ -1,5 +1,5 @@
-import { TokenIcon } from '@web3icons/react';
-import { useState } from 'react';
+import { TokenIcon } from "@web3icons/react";
+import { useState } from "react";
 
 interface TokenLogoProps {
   symbol: string;
@@ -7,7 +7,7 @@ interface TokenLogoProps {
   className?: string;
 }
 
-export function TokenLogo({ symbol, size = 24, className = '' }: TokenLogoProps) {
+export function TokenLogo({ symbol, size = 24, className = "" }: TokenLogoProps) {
   const [hasError, setHasError] = useState(false);
 
   if (hasError) {
@@ -15,9 +15,9 @@ export function TokenLogo({ symbol, size = 24, className = '' }: TokenLogoProps)
     return (
       <div
         className={`bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300 ${className}`}
-        style={{ width: size, height: size }}
+        style={{ height: size, width: size }}
       >
-        {symbol?.charAt(0)?.toUpperCase() || '?'}
+        {symbol?.charAt(0)?.toUpperCase() || "?"}
       </div>
     );
   }
@@ -37,9 +37,9 @@ export function TokenLogo({ symbol, size = 24, className = '' }: TokenLogoProps)
     return (
       <div
         className={`bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-300 ${className}`}
-        style={{ width: size, height: size }}
+        style={{ height: size, width: size }}
       >
-        {symbol?.charAt(0)?.toUpperCase() || '?'}
+        {symbol?.charAt(0)?.toUpperCase() || "?"}
       </div>
     );
   }

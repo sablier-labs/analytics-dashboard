@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -12,11 +11,12 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(
   CategoryScale,
@@ -36,18 +36,24 @@ export function CumulativeUserChart() {
 
   // If cache doesn't have monthlyUserGrowth, fetch directly
   useEffect(() => {
-    if (!loading && data && (!data.monthlyUserGrowth || data.monthlyUserGrowth.length === 0) && !fallbackData && !fallbackLoading) {
+    if (
+      !loading &&
+      data &&
+      (!data.monthlyUserGrowth || data.monthlyUserGrowth.length === 0) &&
+      !fallbackData &&
+      !fallbackLoading
+    ) {
       setFallbackLoading(true);
-      fetch('/api/fallback-monthly-users')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-monthly-users")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log('Monthly user growth loaded via fallback');
+            console.log("Monthly user growth loaded via fallback");
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback monthly user growth:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback monthly user growth:", err);
           setFallbackData([]);
         })
         .finally(() => setFallbackLoading(false));
@@ -108,9 +114,9 @@ export function CumulativeUserChart() {
         pointBackgroundColor: "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
+        pointHoverBackgroundColor: "rgb(255, 80, 1)",
         pointHoverRadius: 6,
         pointRadius: 0,
-        pointHoverBackgroundColor: "rgb(255, 80, 1)",
         tension: 0.4,
       },
     ],
@@ -130,6 +136,9 @@ export function CumulativeUserChart() {
       tooltip: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
+        bodyFont: {
+          size: 12,
+        },
         borderWidth: 0,
         callbacks: {
           label: (context: any) => {
@@ -148,9 +157,6 @@ export function CumulativeUserChart() {
         titleFont: {
           size: 13,
           weight: "bold" as const,
-        },
-        bodyFont: {
-          size: 12,
         },
       },
     },
@@ -208,17 +214,23 @@ export function CumulativeUserChart() {
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative User Growth</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={381} tooltip="View fetchMonthlyUserGrowth source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Cumulative User Growth
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={381}
+              tooltip="View fetchMonthlyUserGrowth source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Cumulative User Growth"
             elementRef={containerRef}
             description="Monthly user acquisition and cumulative growth since inception"

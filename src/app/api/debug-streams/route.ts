@@ -43,34 +43,40 @@ export async function GET() {
     }
 
     const result = await response.json();
-    
+
     if (result.errors) {
       console.error("GraphQL errors:", result.errors);
-      return NextResponse.json({
-        success: false,
-        error: result.errors[0]?.message,
-        errors: result.errors
-      }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: result.errors[0]?.message,
+          errors: result.errors,
+          success: false,
+        },
+        { status: 500 },
+      );
     }
 
     console.log("Debug results:", {
-      totalStreams: result.data.totalStreams.aggregate.count,
       chainIds: result.data.uniqueChains.map((s: any) => s.chainId),
-      recentStreams: result.data.recentStreams
+      recentStreams: result.data.recentStreams,
+      totalStreams: result.data.totalStreams.aggregate.count,
     });
 
     return NextResponse.json({
+      availableChains: result.data.uniqueChains.map((s: any) => s.chainId),
+      raw: result.data,
+      recentStreams: result.data.recentStreams,
       success: true,
       totalStreams: result.data.totalStreams.aggregate.count,
-      availableChains: result.data.uniqueChains.map((s: any) => s.chainId),
-      recentStreams: result.data.recentStreams,
-      raw: result.data
     });
   } catch (error) {
     console.error("Error debugging streams:", error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown error",
+        success: false,
+      },
+      { status: 500 },
+    );
   }
 }

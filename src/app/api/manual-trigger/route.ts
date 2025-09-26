@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { updateAnalyticsCache } from "@/lib/cache-update";
 
 export async function POST(request: NextRequest) {
@@ -11,18 +12,20 @@ export async function POST(request: NextRequest) {
     console.log("Manual cache update successful");
 
     return NextResponse.json({
-      success: true,
+      data: result,
       message: "Cache manually updated successfully",
-      data: result
+      success: true,
     });
-
   } catch (error) {
     console.error("Manual cache trigger failed:", error);
-    return NextResponse.json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-      message: "Manual cache update failed"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown error",
+        message: "Manual cache update failed",
+        success: false,
+      },
+      { status: 500 },
+    );
   }
 }
 

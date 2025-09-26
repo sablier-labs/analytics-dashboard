@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedUserCounts } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function TimeBasedUserCounters() {
   const { data, loading, error } = useAnalytics();
@@ -14,18 +14,24 @@ export function TimeBasedUserCounters() {
 
   // If cache doesn't have timeBasedUsers, fetch directly
   useEffect(() => {
-    if (!loading && data && (!data.timeBasedUsers || Object.values(data.timeBasedUsers).every(v => v === 0)) && !fallbackData && !fallbackLoading) {
+    if (
+      !loading &&
+      data &&
+      (!data.timeBasedUsers || Object.values(data.timeBasedUsers).every((v) => v === 0)) &&
+      !fallbackData &&
+      !fallbackLoading
+    ) {
       setFallbackLoading(true);
-      fetch('/api/fallback-time-users')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-time-users")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log('Time-based users loaded via fallback');
+            console.log("Time-based users loaded via fallback");
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback time-based users:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback time-based users:", err);
           setFallbackData({ past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 });
         })
         .finally(() => setFallbackLoading(false));
@@ -33,7 +39,8 @@ export function TimeBasedUserCounters() {
   }, [data, loading, fallbackData, fallbackLoading]);
 
   // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
-  const hasValidCachedData = data?.timeBasedUsers && !Object.values(data.timeBasedUsers).every(v => v === 0);
+  const hasValidCachedData =
+    data?.timeBasedUsers && !Object.values(data.timeBasedUsers).every((v) => v === 0);
   const userCounts = fallbackData || (hasValidCachedData ? data.timeBasedUsers : null);
 
   const formatNumber = (num: number) => {
@@ -67,7 +74,10 @@ export function TimeBasedUserCounters() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {timeRanges.map((range) => (
-          <div key={range.key} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+          <div
+            key={range.key}
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+          >
             <div className="animate-pulse">
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
@@ -81,7 +91,9 @@ export function TimeBasedUserCounters() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading time-based user counts</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading time-based user counts
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -93,26 +105,39 @@ export function TimeBasedUserCounters() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1"></div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Active Users by Time Period</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={213} tooltip="View fetchTimeBasedUserCounts source" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Active Users by Time Period
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={213}
+              tooltip="View fetchTimeBasedUserCounts source"
+            />
           </div>
           <div className="flex-1 flex justify-end">
-            <SharePanel 
+            <SharePanel
               title="Active Users by Time Period"
               elementRef={containerRef}
               description="Users who have made transactions within each time range"
             />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-300">Users who have made transactions within each time range</p>
+        <p className="text-gray-600 dark:text-gray-300">
+          Users who have made transactions within each time range
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {timeRanges.map((range) => (
-          <div key={range.key} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+          <div
+            key={range.key}
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{range.label}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                  {range.label}
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {userCounts ? formatNumber(userCounts[range.key]) : "—"}
                 </p>

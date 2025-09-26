@@ -2,8 +2,8 @@
 
 import { useRef } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function TransactionCounter() {
   const { data, loading, error } = useAnalytics();
@@ -35,16 +35,20 @@ export function TransactionCounter() {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Transactions</p>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={176} tooltip="View fetchTotalTransactions source" />
+          <SourceCodeLink
+            fileName="graphql.ts"
+            lineNumber={176}
+            tooltip="View fetchTotalTransactions source"
+          />
         </div>
-        <SharePanel 
+        <SharePanel
           title="Total Transactions"
           elementRef={containerRef}
           description="Total number of transactions on the Sablier protocol"

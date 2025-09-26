@@ -1,5 +1,5 @@
-import { Activity24Hours } from "@/components/Activity24Hours";
 import { ActiveVsCompletedStreams } from "@/components/ActiveVsCompletedStreams";
+import { Activity24Hours } from "@/components/Activity24Hours";
 import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
@@ -22,7 +22,9 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <div className="px-8 py-12">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Sablier Analytics</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Sablier Analytics
+          </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
             Protocol metrics for token distribution, vesting, payroll, and more
           </p>

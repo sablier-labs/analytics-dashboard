@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -12,11 +11,12 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(
   CategoryScale,
@@ -37,18 +37,24 @@ export function CumulativeTransactionChart() {
 
   // If cache doesn't have monthlyTransactionGrowth, fetch directly
   useEffect(() => {
-    if (!loading && data && (!data.monthlyTransactionGrowth || data.monthlyTransactionGrowth.length === 0) && !fallbackData && !fallbackLoading) {
+    if (
+      !loading &&
+      data &&
+      (!data.monthlyTransactionGrowth || data.monthlyTransactionGrowth.length === 0) &&
+      !fallbackData &&
+      !fallbackLoading
+    ) {
       setFallbackLoading(true);
-      fetch('/api/fallback-monthly-transactions')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-monthly-transactions")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log('Monthly transaction growth loaded via fallback');
+            console.log("Monthly transaction growth loaded via fallback");
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback monthly transaction data:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback monthly transaction data:", err);
           setFallbackData([]);
         })
         .finally(() => setFallbackLoading(false));
@@ -56,8 +62,10 @@ export function CumulativeTransactionChart() {
   }, [data, loading, fallbackData, fallbackLoading]);
 
   // Use fallback data if available, otherwise use cached data (prefer real data over empty arrays)
-  const hasValidCachedData = data?.monthlyTransactionGrowth && data.monthlyTransactionGrowth.length > 0;
-  const transactionData = fallbackData || (hasValidCachedData ? data.monthlyTransactionGrowth : null);
+  const hasValidCachedData =
+    data?.monthlyTransactionGrowth && data.monthlyTransactionGrowth.length > 0;
+  const transactionData =
+    fallbackData || (hasValidCachedData ? data.monthlyTransactionGrowth : null);
 
   if (loading || fallbackLoading) {
     return (
@@ -73,7 +81,9 @@ export function CumulativeTransactionChart() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading transaction growth chart</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading transaction growth chart
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -108,9 +118,9 @@ export function CumulativeTransactionChart() {
         pointBackgroundColor: "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
+        pointHoverBackgroundColor: "rgb(255, 80, 1)",
         pointHoverRadius: 6,
         pointRadius: 0,
-        pointHoverBackgroundColor: "rgb(255, 80, 1)",
         tension: 0.4,
       },
     ],
@@ -130,6 +140,9 @@ export function CumulativeTransactionChart() {
       tooltip: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
+        bodyFont: {
+          size: 12,
+        },
         borderWidth: 0,
         callbacks: {
           label: (context: any) => {
@@ -148,9 +161,6 @@ export function CumulativeTransactionChart() {
         titleFont: {
           size: 13,
           weight: "bold" as const,
-        },
-        bodyFont: {
-          size: 12,
         },
       },
     },
@@ -208,17 +218,23 @@ export function CumulativeTransactionChart() {
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Cumulative Transaction Growth</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={565} tooltip="View fetchMonthlyTransactionGrowth source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Cumulative Transaction Growth
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={565}
+              tooltip="View fetchMonthlyTransactionGrowth source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Cumulative Transaction Growth"
             elementRef={containerRef}
             description="Monthly transaction growth and cumulative transactions since inception"

@@ -1,14 +1,14 @@
 "use client";
 
-import { useRef } from "react";
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
+import { useRef } from "react";
 import { Pie } from "react-chartjs-2";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import type { ChainDistribution } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { useTheme } from "@/contexts/ThemeContext";
-import { SharePanel } from "./SharePanel";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
+import type { ChainDistribution } from "@/lib/services/graphql";
+import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -49,11 +49,10 @@ export function ChainDistributionChart() {
   const { data, loading, error } = useAnalytics();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Filter out all testnet chains
-  const chainData = data?.chainDistribution?.filter(
-    (chain) => !isTestnetChain(chain.chainId),
-  ) || null;
+  const chainData =
+    data?.chainDistribution?.filter((chain) => !isTestnetChain(chain.chainId)) || null;
 
   if (loading) {
     return (
@@ -69,7 +68,9 @@ export function ChainDistributionChart() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading chain distribution</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading chain distribution
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -106,7 +107,9 @@ export function ChainDistributionChart() {
     plugins: {
       legend: {
         labels: {
-          color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(55, 65, 81)',
+          boxHeight: 12,
+          boxWidth: 12,
+          color: theme === "dark" ? "rgb(255, 255, 255)" : "rgb(55, 65, 81)",
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
@@ -125,7 +128,7 @@ export function ChainDistributionChart() {
 
               return {
                 fillStyle: data.datasets[0].backgroundColor[index],
-                fontColor: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(55, 65, 81)',
+                fontColor: theme === "dark" ? "rgb(255, 255, 255)" : "rgb(55, 65, 81)",
                 hidden: false,
                 index: index,
                 lineWidth: 0,
@@ -137,14 +140,15 @@ export function ChainDistributionChart() {
           },
           padding: 16,
           usePointStyle: true,
-          boxWidth: 12,
-          boxHeight: 12,
         },
         position: "right" as const,
       },
       tooltip: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
+        bodyFont: {
+          size: 12,
+        },
         borderWidth: 0,
         callbacks: {
           label: (context: any) => {
@@ -163,26 +167,29 @@ export function ChainDistributionChart() {
           size: 13,
           weight: "bold" as const,
         },
-        bodyFont: {
-          size: 12,
-        },
       },
     },
     responsive: true,
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">User Distribution by Chain</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={466} tooltip="View fetchChainDistribution source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              User Distribution by Chain
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={466}
+              tooltip="View fetchChainDistribution source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="User Distribution by Chain"
             elementRef={containerRef}
             description="Distribution of active users across different blockchain networks"

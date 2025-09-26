@@ -9,17 +9,17 @@ import {
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
-  
+
   // Allow Vercel Cron requests
   if (authHeader === "Bearer " + process.env.CRON_SECRET) {
     return true;
   }
-  
+
   // Allow requests with the correct API key
   if (authHeader === "Bearer " + process.env.API_SECRET) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
       }),
       fetchStreamDurationStats().catch((err) => {
         console.error("Error fetching stream duration stats:", err);
-        return { median: 0, average: 0, min: 0, max: 0 };
+        return { average: 0, max: 0, median: 0, min: 0 };
       }),
       fetchStreamProperties().catch((err) => {
         console.error("Error fetching stream properties:", err);
-        return { cancelable: 0, transferable: 0, both: 0, total: 0 };
+        return { both: 0, cancelable: 0, total: 0, transferable: 0 };
       }),
     ]);
 
@@ -59,12 +59,15 @@ export async function POST(request: NextRequest) {
     // First, get existing cache data
     let existingData = {};
     try {
-      const getResponse = await fetch(`https://api.vercel.com/v1/edge-config/${edgeConfigId}/item/analytics?slug=sablier-labs`, {
-        headers: {
-          Authorization: `Bearer ${vercelAccessToken}`,
+      const getResponse = await fetch(
+        `https://api.vercel.com/v1/edge-config/${edgeConfigId}/item/analytics?slug=sablier-labs`,
+        {
+          headers: {
+            Authorization: `Bearer ${vercelAccessToken}`,
+          },
         },
-      });
-      
+      );
+
       if (getResponse.ok) {
         existingData = await getResponse.json();
       }
@@ -75,10 +78,10 @@ export async function POST(request: NextRequest) {
     // Merge new metrics with existing data
     const updatedData = {
       ...existingData,
+      lastUpdated: new Date().toISOString(),
       monthlyStreamCreation,
       streamDurationStats,
       streamProperties,
-      lastUpdated: new Date().toISOString(),
     };
 
     // Update Edge Config
@@ -105,23 +108,26 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("New metrics cache updated successfully");
-    
+
     return NextResponse.json({
-      success: true,
       message: "New metrics cache updated successfully",
       metrics: {
         monthlyStreamCreation: monthlyStreamCreation.length + " months",
         streamDurationStats: "median " + Math.round(streamDurationStats.median / 86400) + " days",
-        streamProperties: `cancelable: ${streamProperties.cancelable}, transferable: ${streamProperties.transferable}, both: ${streamProperties.both}`
-      }
+        streamProperties: `cancelable: ${streamProperties.cancelable}, transferable: ${streamProperties.transferable}, both: ${streamProperties.both}`,
+      },
+      success: true,
     });
   } catch (error) {
     console.error("Error updating new metrics cache:", error);
-    return NextResponse.json({
-      error: "Failed to update cache",
-      details: error instanceof Error ? error.message : "Unknown error",
-      success: false,
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        details: error instanceof Error ? error.message : "Unknown error",
+        error: "Failed to update cache",
+        success: false,
+      },
+      { status: 500 },
+    );
   }
 }
 

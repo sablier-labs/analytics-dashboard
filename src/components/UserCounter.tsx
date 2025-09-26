@@ -2,8 +2,8 @@
 
 import { useRef } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function UserCounter() {
   const { data, loading, error } = useAnalytics();
@@ -35,16 +35,20 @@ export function UserCounter() {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Users</p>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={135} tooltip="View fetchTotalUsers source" />
+          <SourceCodeLink
+            fileName="graphql.ts"
+            lineNumber={135}
+            tooltip="View fetchTotalUsers source"
+          />
         </div>
-        <SharePanel 
+        <SharePanel
           title="Total Users"
           elementRef={containerRef}
           description="Total number of unique users on the Sablier protocol"

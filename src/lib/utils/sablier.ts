@@ -2,19 +2,19 @@
 
 // Known Sablier contract addresses to aliases mapping
 const SABLIER_CONTRACT_ALIASES: Record<string, string> = {
-  // Lockup Linear V2.1 contracts
-  "0xafb979d9afad1ad27c5eff4e27226e3ab9e5dcc9": "LL2", // Ethereum
   "0x4b45090152a5731b5bc71b5baf71d4549532cd99": "LL2", // Base
-  "0x197d655f3be03903fd25e7828c3534504bfe525e": "LL2", // Arbitrum
-  "0x67422c3e36a908d5c3237e9cffeb40bde7060f6e": "LL2", // Polygon
   "0x6b9a46c8377f21517e65fa3899b3a9fab19d17f5": "LL2", // Optimism
+  "0x6f68516c21e248cddfaf4898e66b2b0adee0e0d6": "LD2", // Optimism
 
   // Lockup Dynamic V2.1 contracts
   "0x39efdc3dbb57b2388ccc4bb40ac4cb1226bc9e44": "LD2", // Ethereum
+  "0x197d655f3be03903fd25e7828c3534504bfe525e": "LL2", // Arbitrum
+  "0x67422c3e36a908d5c3237e9cffeb40bde7060f6e": "LL2", // Polygon
+  // Lockup Linear V2.1 contracts
+  "0xafb979d9afad1ad27c5eff4e27226e3ab9e5dcc9": "LL2", // Ethereum
+  "0xce49854a647a1723e8fb7cc3d190cab29a44ab87": "LD2", // Polygon
   "0xde6a30327c14b8a67b2a573a6ebc2d42a3b57b8e": "LD2", // Base
   "0xf390ce6f54e4dc7c5a5f7f8689062b7591f7111d": "LD2", // Arbitrum
-  "0xce49854a647a1723e8fb7cc3d190cab29a44ab87": "LD2", // Polygon
-  "0x6f68516c21e248cddfaf4898e66b2b0adee0e0d6": "LD2", // Optimism
 
   // Add more contract mappings as needed
 };
@@ -38,7 +38,7 @@ const getDefaultContractAlias = (contract: string): string => {
 export function getSablierStreamUrl(
   chainId: string,
   tokenId: string,
-  contract: string
+  contract: string,
 ): string | null {
   // Check for required parameters
   if (!chainId || !tokenId || !contract) {
@@ -91,7 +91,7 @@ export function formatDuration(startTime: string, endTime: string): string {
     const years = Math.floor(days / 365);
     const remainingDays = days % 365;
     if (remainingDays === 0) {
-      return `${years} year${years > 1 ? 's' : ''}`;
+      return `${years} year${years > 1 ? "s" : ""}`;
     }
     return `${years}y ${Math.floor(remainingDays / 30)}m`;
   }
@@ -100,33 +100,33 @@ export function formatDuration(startTime: string, endTime: string): string {
     const months = Math.floor(days / 30);
     const remainingDays = days % 30;
     if (remainingDays === 0) {
-      return `${months} month${months > 1 ? 's' : ''}`;
+      return `${months} month${months > 1 ? "s" : ""}`;
     }
     return `${months}m ${remainingDays}d`;
   }
 
   if (days > 0) {
     if (hours === 0) {
-      return `${days} day${days > 1 ? 's' : ''}`;
+      return `${days} day${days > 1 ? "s" : ""}`;
     }
     return `${days}d ${hours}h`;
   }
 
-  return `${hours} hour${hours > 1 ? 's' : ''}`;
+  return `${hours} hour${hours > 1 ? "s" : ""}`;
 }
 
 /**
  * Determines if a stream is still active or has ended
  */
-export function getStreamStatus(endTime: string): 'active' | 'completed' {
+export function getStreamStatus(endTime: string): "active" | "completed" {
   if (!endTime) {
-    return 'active';
+    return "active";
   }
 
   const end = parseInt(endTime) * 1000;
   const now = Date.now();
 
-  return now < end ? 'active' : 'completed';
+  return now < end ? "active" : "completed";
 }
 
 /**

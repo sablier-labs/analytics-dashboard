@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function TotalVestingStreams() {
   const { data, loading, error } = useAnalytics();
@@ -13,18 +13,26 @@ export function TotalVestingStreams() {
 
   // If cache doesn't have totalVestingStreams, fetch directly
   useEffect(() => {
-    if (!loading && data && !data.totalVestingStreams && fallbackData === null && !fallbackLoading) {
+    if (
+      !loading &&
+      data &&
+      !data.totalVestingStreams &&
+      fallbackData === null &&
+      !fallbackLoading
+    ) {
       setFallbackLoading(true);
-      fetch('/api/fallback-total-streams')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-total-streams")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(`Total vesting streams loaded via fallback: ${result.data.toLocaleString()}`);
+            console.log(
+              `Total vesting streams loaded via fallback: ${result.data.toLocaleString()}`,
+            );
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback total vesting streams:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback total vesting streams:", err);
           // In case of error, set a default value to prevent infinite loading
           setFallbackData(0);
         })
@@ -53,7 +61,9 @@ export function TotalVestingStreams() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading total vesting streams</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading total vesting streams
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -68,22 +78,28 @@ export function TotalVestingStreams() {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Vesting Streams</p>
-          <SourceCodeLink fileName="graphql.ts" lineNumber={1224} tooltip="View fetchTotalVestingStreams source" />
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            Total Vesting Streams
+          </p>
+          <SourceCodeLink
+            fileName="graphql.ts"
+            lineNumber={1224}
+            tooltip="View fetchTotalVestingStreams source"
+          />
         </div>
-        <SharePanel 
+        <SharePanel
           title="Total Vesting Streams"
           elementRef={containerRef}
           description="Total number of vesting streams ever created on the protocol"
         />
       </div>
-      
+
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <p className="text-2xl font-bold text-gray-900 dark:text-white">

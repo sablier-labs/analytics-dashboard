@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
+import { useEffect, useRef, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { StreamCategoryDistribution as StreamCategoryDistributionType } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -22,18 +22,20 @@ export function StreamCategoryDistribution() {
   useEffect(() => {
     if (!loading && data && !data.streamCategoryDistribution && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/fallback-category-distribution')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-category-distribution")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(`Stream category distribution loaded via fallback: ${result.data.total} total streams`);
+            console.log(
+              `Stream category distribution loaded via fallback: ${result.data.total} total streams`,
+            );
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback category distribution:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback category distribution:", err);
           // In case of error, set a default object to prevent infinite loading
-          setFallbackData({ linear: 0, dynamic: 0, tranched: 0, total: 0 });
+          setFallbackData({ dynamic: 0, linear: 0, total: 0, tranched: 0 });
         })
         .finally(() => setFallbackLoading(false));
     }
@@ -56,7 +58,9 @@ export function StreamCategoryDistribution() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading stream category distribution</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading stream category distribution
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -71,21 +75,20 @@ export function StreamCategoryDistribution() {
   }
 
   const chartData = {
-    labels: ["LockupLinear", "LockupDynamic", "LockupTranched"],
     datasets: [
       {
-        data: [categoryData.linear, categoryData.dynamic, categoryData.tranched],
         backgroundColor: [
-          "rgba(255, 80, 1, 0.8)",     // Primary brand orange for Linear
-          "rgba(154, 52, 18, 0.8)",    // Sablier-800 (dark brown) for Dynamic  
-          "rgba(253, 186, 116, 0.8)",  // Sablier-300 (light orange) for Tranched
+          "rgba(255, 80, 1, 0.8)", // Primary brand orange for Linear
+          "rgba(154, 52, 18, 0.8)", // Sablier-800 (dark brown) for Dynamic
+          "rgba(253, 186, 116, 0.8)", // Sablier-300 (light orange) for Tranched
         ],
         borderColor: [
-          "rgb(255, 80, 1)",           // sablier-500
-          "rgb(154, 52, 18)",          // sablier-800
-          "rgb(253, 186, 116)",        // sablier-300
+          "rgb(255, 80, 1)", // sablier-500
+          "rgb(154, 52, 18)", // sablier-800
+          "rgb(253, 186, 116)", // sablier-300
         ],
         borderWidth: 2,
+        data: [categoryData.linear, categoryData.dynamic, categoryData.tranched],
         hoverBackgroundColor: [
           "rgba(255, 80, 1, 0.9)",
           "rgba(154, 52, 18, 0.9)",
@@ -93,15 +96,14 @@ export function StreamCategoryDistribution() {
         ],
       },
     ],
+    labels: ["LockupLinear", "LockupDynamic", "LockupTranched"],
   };
 
   const options = {
-    responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
         display: true,
-        position: "bottom" as const,
         labels: {
           color: theme === "dark" ? "rgb(209, 213, 219)" : "rgb(75, 85, 99)",
           font: {
@@ -109,18 +111,18 @@ export function StreamCategoryDistribution() {
             size: 12,
           },
           padding: 20,
-          usePointStyle: true,
           pointStyle: "circle",
+          usePointStyle: true,
         },
+        position: "bottom" as const,
       },
       tooltip: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
-        titleColor: "rgb(255, 255, 255)",
         bodyColor: "rgb(255, 255, 255)",
+        bodyFont: {
+          size: 12,
+        },
         borderWidth: 0,
-        cornerRadius: 6,
-        padding: 12,
-        displayColors: true,
         callbacks: {
           label: (context: any) => {
             const value = context.parsed;
@@ -129,15 +131,17 @@ export function StreamCategoryDistribution() {
             return `${context.label}: ${formattedValue} (${percentage}%)`;
           },
         },
+        cornerRadius: 6,
+        displayColors: true,
+        padding: 12,
+        titleColor: "rgb(255, 255, 255)",
         titleFont: {
           size: 13,
           weight: "bold" as const,
         },
-        bodyFont: {
-          size: 12,
-        },
       },
     },
+    responsive: true,
   };
 
   return (
@@ -148,10 +152,16 @@ export function StreamCategoryDistribution() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Stream Category Distribution</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={1150} tooltip="View fetchStreamCategoryDistribution source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Stream Category Distribution
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={1150}
+              tooltip="View fetchStreamCategoryDistribution source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Stream Category Distribution"
             elementRef={containerRef}
             description="Distribution of vesting stream types across the protocol"

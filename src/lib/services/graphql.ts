@@ -109,7 +109,6 @@ export interface MonthlyTransactionGrowth {
   newTransactions: number;
 }
 
-
 export interface UserTransactionDistribution {
   label: string;
   userCount: number;
@@ -708,15 +707,13 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
   }
 }
 
-
-
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   const now = Date.now();
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   lastMonth.setDate(1);
   lastMonth.setHours(0, 0, 0, 0);
-  
+
   const twoMonthsAgo = new Date();
   twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
   twoMonthsAgo.setDate(1);
@@ -879,22 +876,27 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
     console.log(`Fetched ${result.data.Asset.length} assets from GraphQL`);
 
     // Convert to TopAsset format and sort by stream count
-    const topAssets = result.data.Asset
-      .map((asset) => ({
-        assetId: asset.id,
-        address: asset.address,
-        symbol: asset.symbol,
-        name: asset.name,
-        chainId: asset.chainId,
-        streamCount: asset.streams_aggregate.aggregate.count,
-        decimals: parseInt(asset.decimals, 10),
-      }))
+    const topAssets = result.data.Asset.map((asset) => ({
+      address: asset.address,
+      assetId: asset.id,
+      chainId: asset.chainId,
+      decimals: parseInt(asset.decimals, 10),
+      name: asset.name,
+      streamCount: asset.streams_aggregate.aggregate.count,
+      symbol: asset.symbol,
+    }))
       .sort((a, b) => b.streamCount - a.streamCount) // Sort by stream count desc
       .slice(0, 10); // Take top 10
 
-    const totalStreams = result.data.Asset.reduce((sum, asset) => sum + asset.streams_aggregate.aggregate.count, 0);
+    const totalStreams = result.data.Asset.reduce(
+      (sum, asset) => sum + asset.streams_aggregate.aggregate.count,
+      0,
+    );
     console.log(`Processing ${result.data.Asset.length} assets with ${totalStreams} total streams`);
-    console.log(`Top assets:`, topAssets.slice(0, 5).map(a => `${a.symbol}: ${a.streamCount} streams`));
+    console.log(
+      `Top assets:`,
+      topAssets.slice(0, 5).map((a) => `${a.symbol}: ${a.streamCount} streams`),
+    );
 
     return topAssets;
   } catch (error) {
@@ -907,17 +909,17 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
   // Generate last 12 months of time ranges
   const timeRanges: Array<{ label: string; startTimestamp: string; endTimestamp: string }> = [];
   const now = new Date();
-  
+
   for (let i = 11; i >= 0; i--) {
     const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const startOfMonth = new Date(current.getFullYear(), current.getMonth(), 1);
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59);
-    
+
     const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     const startTimestamp = Math.floor(startOfMonth.getTime() / 1000).toString();
     const endTimestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
-    
-    timeRanges.push({ label, startTimestamp, endTimestamp });
+
+    timeRanges.push({ endTimestamp, label, startTimestamp });
   }
 
   // Create aggregation queries for each month
@@ -943,11 +945,11 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -967,8 +969,8 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
       const key = `month_${index}`;
       const count = result.data[key]?.aggregate?.count || 0;
       monthlyData.push({
-        month: range.label,
         count,
+        month: range.label,
       });
     });
 
@@ -985,7 +987,7 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
 export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
   // Filter out streams shorter than 24 hours (86400 seconds)
   const minDuration = "86400"; // 24 hours in seconds
-  
+
   const query = `
     query GetStreamDurationStats {
       Stream_aggregate(where: { duration: { _gte: "${minDuration}" } }) {
@@ -1013,11 +1015,11 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -1050,7 +1052,7 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
 
     // Calculate median position
     const medianPosition = Math.floor(totalCount / 2);
-    
+
     // Make another query to get the median value
     const medianQuery = `
       query GetMedianValue {
@@ -1066,11 +1068,11 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
     `;
 
     const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query: medianQuery }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query: medianQuery }),
+      method: "POST",
     });
 
     if (!medianResponse.ok) {
@@ -1086,22 +1088,24 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
       throw new Error(`GraphQL error: ${medianResult.errors[0]?.message}`);
     }
 
-    const median = medianResult.data.Stream[0] ? parseInt(medianResult.data.Stream[0].duration, 10) : 0;
+    const median = medianResult.data.Stream[0]
+      ? parseInt(medianResult.data.Stream[0].duration, 10)
+      : 0;
 
     const stats: StreamDurationStats = {
-      median,
       average: parseFloat(aggregate.avg.duration || "0"),
-      min: parseInt(aggregate.min.duration || "0", 10),
       max: parseInt(aggregate.max.duration || "0", 10),
+      median,
+      min: parseInt(aggregate.min.duration || "0", 10),
     };
 
     console.log(`Fetched stream duration stats:`, {
-      median: `${Math.round(stats.median / 86400)} days`,
       average: `${Math.round(stats.average / 86400)} days`,
-      min: `${Math.round(stats.min / 86400)} days`,
       max: `${Math.round(stats.max / 86400)} days`,
+      median: `${Math.round(stats.median / 86400)} days`,
+      medianPosition,
+      min: `${Math.round(stats.min / 86400)} days`,
       totalCount,
-      medianPosition
     });
 
     return stats;
@@ -1142,11 +1146,11 @@ export async function fetchStreamProperties(): Promise<StreamProperties> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -1168,17 +1172,17 @@ export async function fetchStreamProperties(): Promise<StreamProperties> {
     const { totalStreams, cancelableStreams, transferableStreams, bothProperties } = result.data;
 
     const properties: StreamProperties = {
-      total: totalStreams.aggregate.count,
-      cancelable: cancelableStreams.aggregate.count,
-      transferable: transferableStreams.aggregate.count,
       both: bothProperties.aggregate.count,
+      cancelable: cancelableStreams.aggregate.count,
+      total: totalStreams.aggregate.count,
+      transferable: transferableStreams.aggregate.count,
     };
 
     console.log(`Fetched stream properties:`, {
-      total: properties.total,
+      both: `${properties.both} (${((properties.both / properties.total) * 100).toFixed(1)}%)`,
       cancelable: `${properties.cancelable} (${((properties.cancelable / properties.total) * 100).toFixed(1)}%)`,
+      total: properties.total,
       transferable: `${properties.transferable} (${((properties.transferable / properties.total) * 100).toFixed(1)}%)`,
-      both: `${properties.both} (${((properties.both / properties.total) * 100).toFixed(1)}%)`
     });
 
     return properties;
@@ -1216,11 +1220,11 @@ export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryD
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -1242,17 +1246,17 @@ export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryD
     const { totalStreams, linearStreams, dynamicStreams, tranchedStreams } = result.data;
 
     const distribution: StreamCategoryDistribution = {
-      total: totalStreams.aggregate.count,
-      linear: linearStreams.aggregate.count,
       dynamic: dynamicStreams.aggregate.count,
+      linear: linearStreams.aggregate.count,
+      total: totalStreams.aggregate.count,
       tranched: tranchedStreams.aggregate.count,
     };
 
     console.log(`Fetched stream category distribution:`, {
-      total: distribution.total,
-      linear: `${distribution.linear} (${((distribution.linear / distribution.total) * 100).toFixed(1)}%)`,
       dynamic: `${distribution.dynamic} (${((distribution.dynamic / distribution.total) * 100).toFixed(1)}%)`,
-      tranched: `${distribution.tranched} (${((distribution.tranched / distribution.total) * 100).toFixed(1)}%)`
+      linear: `${distribution.linear} (${((distribution.linear / distribution.total) * 100).toFixed(1)}%)`,
+      total: distribution.total,
+      tranched: `${distribution.tranched} (${((distribution.tranched / distribution.total) * 100).toFixed(1)}%)`,
     });
 
     return distribution;
@@ -1275,11 +1279,11 @@ export async function fetchTotalVestingStreams(): Promise<number> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -1309,7 +1313,7 @@ export async function fetchTotalVestingStreams(): Promise<number> {
 export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompletedStreams> {
   // Get current timestamp for determining active vs completed
   const currentTimestamp = Math.floor(Date.now() / 1000).toString();
-  
+
   const query = `
     query GetActiveVsCompletedStreams {
       totalStreams: Stream_aggregate {
@@ -1332,11 +1336,11 @@ export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompleted
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -1357,15 +1361,15 @@ export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompleted
     const { totalStreams, activeStreams, completedStreams } = result.data;
 
     const streams: ActiveVsCompletedStreams = {
-      total: totalStreams.aggregate.count,
       active: activeStreams.aggregate.count,
       completed: completedStreams.aggregate.count,
+      total: totalStreams.aggregate.count,
     };
 
     console.log(`Fetched active vs completed streams:`, {
-      total: streams.total,
       active: `${streams.active} (${((streams.active / streams.total) * 100).toFixed(1)}%)`,
-      completed: `${streams.completed} (${((streams.completed / streams.total) * 100).toFixed(1)}%)`
+      completed: `${streams.completed} (${((streams.completed / streams.total) * 100).toFixed(1)}%)`,
+      total: streams.total,
     });
 
     return streams;
@@ -1438,11 +1442,11 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -1498,11 +1502,11 @@ export async function fetch24HourMetrics(): Promise<Activity24Hours> {
 
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
-      method: "POST",
+      body: JSON.stringify({ query }),
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query }),
+      method: "POST",
     });
 
     if (!response.ok) {

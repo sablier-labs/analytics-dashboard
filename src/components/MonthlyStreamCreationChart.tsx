@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -12,12 +11,13 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { MonthlyStreamCreation } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(
   CategoryScale,
@@ -39,19 +39,25 @@ export function MonthlyStreamCreationChart() {
 
   // If cache doesn't have monthlyStreamCreation, fetch directly
   useEffect(() => {
-    if (!loading && data && !data.monthlyStreamCreation && fallbackData.length === 0 && !fallbackLoading) {
+    if (
+      !loading &&
+      data &&
+      !data.monthlyStreamCreation &&
+      fallbackData.length === 0 &&
+      !fallbackLoading
+    ) {
       setFallbackLoading(true);
       // Use direct GraphQL function for faster response
-      fetch('/api/fallback-monthly-streams')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-monthly-streams")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
             console.log(`Monthly stream data loaded via fallback: ${result.data.length} months`);
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback monthly stream data:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback monthly stream data:", err);
           // In case of error, set empty array to prevent infinite loading
           setFallbackData([]);
         })
@@ -76,7 +82,9 @@ export function MonthlyStreamCreationChart() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading monthly stream creation data</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading monthly stream creation data
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -85,58 +93,58 @@ export function MonthlyStreamCreationChart() {
   if (monthlyStreamData.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No monthly stream creation data available</p>
+        <p className="text-gray-600 dark:text-gray-300">
+          No monthly stream creation data available
+        </p>
       </div>
     );
   }
 
   const chartData = {
-    labels: monthlyStreamData.map((item) => {
-      const [year, month] = item.month.split('-');
-      return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-US', {
-        month: 'short',
-        year: '2-digit'
-      });
-    }),
     datasets: [
       {
-        label: "Streams Created",
-        data: monthlyStreamData.map((item) => item.count),
-        borderColor: "rgb(255, 80, 1)",
         backgroundColor: "rgba(255, 80, 1, 0.1)",
+        borderColor: "rgb(255, 80, 1)",
         borderWidth: 3,
+        data: monthlyStreamData.map((item) => item.count),
         fill: true,
-        tension: 0.4,
+        label: "Streams Created",
         pointBackgroundColor: "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 80, 1)",
         pointHoverBackgroundColor: "rgb(255, 80, 1)",
         pointHoverBorderColor: "rgb(255, 255, 255)",
         pointHoverBorderWidth: 3,
-        pointRadius: 6,
         pointHoverRadius: 8,
+        pointRadius: 6,
+        tension: 0.4,
       },
     ],
+    labels: monthlyStreamData.map((item) => {
+      const [year, month] = item.month.split("-");
+      return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString("en-US", {
+        month: "short",
+        year: "2-digit",
+      });
+    }),
   };
 
   const options = {
-    responsive: true,
-    maintainAspectRatio: false,
     interaction: {
-      mode: "index" as const,
       intersect: false,
+      mode: "index" as const,
     },
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false,
       },
       tooltip: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
-        titleColor: "rgb(255, 255, 255)",
         bodyColor: "rgb(255, 255, 255)",
+        bodyFont: {
+          size: 12,
+        },
         borderWidth: 0,
-        cornerRadius: 6,
-        padding: 12,
-        displayColors: false,
         callbacks: {
           label: (context: any) => {
             const value = new Intl.NumberFormat().format(context.parsed.y);
@@ -144,28 +152,30 @@ export function MonthlyStreamCreationChart() {
           },
           title: (context: any) => {
             const monthIndex = context[0].dataIndex;
-            const [year, month] = monthlyStreamData[monthIndex].month.split('-');
-            return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-US', {
-              month: 'long',
-              year: 'numeric'
+            const [year, month] = monthlyStreamData[monthIndex].month.split("-");
+            return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
             });
           },
         },
+        cornerRadius: 6,
+        displayColors: false,
+        padding: 12,
+        titleColor: "rgb(255, 255, 255)",
         titleFont: {
           size: 13,
           weight: "bold" as const,
         },
-        bodyFont: {
-          size: 12,
-        },
       },
     },
+    responsive: true,
     scales: {
       x: {
-        grid: {
+        border: {
           display: false,
         },
-        border: {
+        grid: {
           display: false,
         },
         ticks: {
@@ -190,12 +200,6 @@ export function MonthlyStreamCreationChart() {
           lineWidth: 1,
         },
         ticks: {
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
-          },
           callback: (tickValue: any) => {
             const value = Number(tickValue);
             if (value >= 1000000) {
@@ -206,13 +210,18 @@ export function MonthlyStreamCreationChart() {
             }
             return new Intl.NumberFormat().format(value);
           },
-          padding: 12,
+          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+          font: {
+            family: "Inter, system-ui, sans-serif",
+            size: 11,
+            weight: "normal" as const,
+          },
           maxTicksLimit: 6,
+          padding: 12,
         },
       },
     },
   };
-
 
   return (
     <div
@@ -222,10 +231,16 @@ export function MonthlyStreamCreationChart() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Monthly Stream Creation Trends</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={845} tooltip="View fetchMonthlyStreamCreation source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Monthly Stream Creation Trends
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={845}
+              tooltip="View fetchMonthlyStreamCreation source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Monthly Stream Creation Trends"
             elementRef={containerRef}
             description="Number of new vesting streams created each month over the past year"
@@ -238,7 +253,7 @@ export function MonthlyStreamCreationChart() {
           <span>12-month period</span>
         </div>
       </div>
-      
+
       <div className="h-80">
         <Line data={chartData} options={options} />
       </div>

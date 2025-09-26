@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { StreamProperties as StreamPropertiesType } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function StreamProperties() {
   const { data, loading, error } = useAnalytics();
@@ -16,18 +16,20 @@ export function StreamProperties() {
   useEffect(() => {
     if (!loading && data && !data.streamProperties && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/fallback-stream-properties')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-stream-properties")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(`Stream properties loaded via fallback: ${result.data.both} streams with both properties`);
+            console.log(
+              `Stream properties loaded via fallback: ${result.data.both} streams with both properties`,
+            );
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback stream properties:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback stream properties:", err);
           // In case of error, set a default object to prevent infinite loading
-          setFallbackData({ cancelable: 0, transferable: 0, both: 0, total: 0 });
+          setFallbackData({ both: 0, cancelable: 0, total: 0, transferable: 0 });
         })
         .finally(() => setFallbackLoading(false));
     }
@@ -54,7 +56,9 @@ export function StreamProperties() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading stream properties data</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading stream properties data
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -73,7 +77,7 @@ export function StreamProperties() {
   };
 
   const formatPercentage = (count: number, total: number) => {
-    return ((count / total) * 100).toFixed(1) + '%';
+    return ((count / total) * 100).toFixed(1) + "%";
   };
 
   return (
@@ -85,9 +89,13 @@ export function StreamProperties() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Stream Properties</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={1060} tooltip="View fetchStreamProperties source" />
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={1060}
+              tooltip="View fetchStreamProperties source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Stream Properties"
             elementRef={containerRef}
             description="Breakdown of cancelable and transferable stream properties"
@@ -107,9 +115,7 @@ export function StreamProperties() {
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {formatPercentage(propertiesData.cancelable, propertiesData.total)}
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
-            Cancelable
-          </div>
+          <div className="text-sm font-medium text-gray-900 dark:text-white">Cancelable</div>
         </div>
 
         {/* Transferable Streams */}
@@ -120,9 +126,7 @@ export function StreamProperties() {
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {formatPercentage(propertiesData.transferable, propertiesData.total)}
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
-            Transferable
-          </div>
+          <div className="text-sm font-medium text-gray-900 dark:text-white">Transferable</div>
         </div>
 
         {/* Both Properties */}
@@ -133,9 +137,7 @@ export function StreamProperties() {
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {formatPercentage(propertiesData.both, propertiesData.total)}
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-white">
-            Both
-          </div>
+          <div className="text-sm font-medium text-gray-900 dark:text-white">Both</div>
         </div>
       </div>
 

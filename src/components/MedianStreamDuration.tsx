@@ -1,14 +1,14 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { StreamDurationStats } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 // Helper function to format duration in seconds to human-readable format
 function formatDuration(seconds: number): { value: string; unit: string } {
-  if (seconds === 0) return { value: "0", unit: "seconds" };
+  if (seconds === 0) return { unit: "seconds", value: "0" };
 
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
@@ -18,44 +18,52 @@ function formatDuration(seconds: number): { value: string; unit: string } {
     const years = Math.floor(days / 365);
     const remainingDays = days % 365;
     if (remainingDays === 0) {
-      return { value: years.toString(), unit: years === 1 ? "year" : "years" };
+      return { unit: years === 1 ? "year" : "years", value: years.toString() };
     }
-    return { value: `${years}.${Math.floor(remainingDays / 36.5)}`, unit: years === 1 ? "year" : "years" };
+    return {
+      unit: years === 1 ? "year" : "years",
+      value: `${years}.${Math.floor(remainingDays / 36.5)}`,
+    };
   }
-  
+
   if (days >= 30) {
     const months = Math.floor(days / 30);
     const remainingDays = days % 30;
     if (remainingDays === 0) {
-      return { value: months.toString(), unit: months === 1 ? "month" : "months" };
+      return { unit: months === 1 ? "month" : "months", value: months.toString() };
     }
-    return { value: `${months}.${Math.floor(remainingDays / 3)}`, unit: months === 1 ? "month" : "months" };
+    return {
+      unit: months === 1 ? "month" : "months",
+      value: `${months}.${Math.floor(remainingDays / 3)}`,
+    };
   }
 
   if (days >= 7) {
     const weeks = Math.floor(days / 7);
     const remainingDays = days % 7;
     if (remainingDays === 0) {
-      return { value: weeks.toString(), unit: weeks === 1 ? "week" : "weeks" };
+      return { unit: weeks === 1 ? "week" : "weeks", value: weeks.toString() };
     }
-    return { value: `${weeks}.${Math.floor(remainingDays * 1.4)}`, unit: weeks === 1 ? "week" : "weeks" };
+    return {
+      unit: weeks === 1 ? "week" : "weeks",
+      value: `${weeks}.${Math.floor(remainingDays * 1.4)}`,
+    };
   }
 
   if (days > 0) {
-    return { value: days.toString(), unit: days === 1 ? "day" : "days" };
+    return { unit: days === 1 ? "day" : "days", value: days.toString() };
   }
 
   if (hours > 0) {
-    return { value: hours.toString(), unit: hours === 1 ? "hour" : "hours" };
+    return { unit: hours === 1 ? "hour" : "hours", value: hours.toString() };
   }
 
   if (minutes > 0) {
-    return { value: minutes.toString(), unit: minutes === 1 ? "minute" : "minutes" };
+    return { unit: minutes === 1 ? "minute" : "minutes", value: minutes.toString() };
   }
 
-  return { value: seconds.toString(), unit: seconds === 1 ? "second" : "seconds" };
+  return { unit: seconds === 1 ? "second" : "seconds", value: seconds.toString() };
 }
-
 
 export function MedianStreamDuration() {
   const { data, loading, error } = useAnalytics();
@@ -67,18 +75,20 @@ export function MedianStreamDuration() {
   useEffect(() => {
     if (!loading && data && !data.streamDurationStats && !fallbackData && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/fallback-duration-stats')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-duration-stats")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(`Stream duration stats loaded via fallback: median ${Math.round(result.data.median / 86400)} days`);
+            console.log(
+              `Stream duration stats loaded via fallback: median ${Math.round(result.data.median / 86400)} days`,
+            );
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback duration stats:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback duration stats:", err);
           // In case of error, set a default object to prevent infinite loading
-          setFallbackData({ median: 0, average: 0, min: 0, max: 0 });
+          setFallbackData({ average: 0, max: 0, median: 0, min: 0 });
         })
         .finally(() => setFallbackLoading(false));
     }
@@ -106,7 +116,9 @@ export function MedianStreamDuration() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading stream duration data</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading stream duration data
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -130,10 +142,16 @@ export function MedianStreamDuration() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Median Vesting Stream Duration</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={924} tooltip="View fetchStreamDurationStats source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Median Vesting Stream Duration
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={924}
+              tooltip="View fetchStreamDurationStats source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Median Vesting Stream Duration"
             elementRef={containerRef}
             description="Median duration of vesting streams longer than 24 hours"

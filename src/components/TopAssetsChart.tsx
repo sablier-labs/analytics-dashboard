@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import {
   BarElement,
   CategoryScale,
@@ -10,13 +9,13 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
+import { useEffect, useRef, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TopAsset } from "@/lib/services/graphql";
-import { useState, useEffect } from "react";
-import { SourceCodeLink } from "./SourceCodeLink";
-import { useTheme } from "@/contexts/ThemeContext";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -31,14 +30,14 @@ export function TopAssetsChart() {
   useEffect(() => {
     if (!loading && data && !data.topAssets && fallbackData.length === 0 && !fallbackLoading) {
       setFallbackLoading(true);
-      fetch('/api/fallback-assets')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-assets")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
           }
         })
-        .catch(err => console.error('Failed to fetch fallback data:', err))
+        .catch((err) => console.error("Failed to fetch fallback data:", err))
         .finally(() => setFallbackLoading(false));
     }
   }, [data, loading, fallbackData.length, fallbackLoading]);
@@ -66,11 +65,11 @@ export function TopAssetsChart() {
   // Use cached data if available, otherwise use fallback data
   const topAssets = data?.topAssets || fallbackData;
 
-  console.log("TopAssetsChart data:", { 
-    data: !!data, 
-    cachedAssets: data?.topAssets?.length || 0, 
+  console.log("TopAssetsChart data:", {
+    cachedAssets: data?.topAssets?.length || 0,
+    data: !!data,
     fallbackAssets: fallbackData.length,
-    totalAssets: topAssets.length 
+    totalAssets: topAssets.length,
   });
 
   if (topAssets.length === 0) {
@@ -79,7 +78,8 @@ export function TopAssetsChart() {
         <p className="text-gray-600 dark:text-gray-300">No top assets data available</p>
         {data && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Debug: Data loaded but topAssets is empty. Available keys: {Object.keys(data).join(', ')}
+            Debug: Data loaded but topAssets is empty. Available keys:{" "}
+            {Object.keys(data).join(", ")}
           </p>
         )}
       </div>
@@ -115,6 +115,9 @@ export function TopAssetsChart() {
       tooltip: {
         backgroundColor: "rgba(0, 0, 0, 0.9)",
         bodyColor: "rgb(255, 255, 255)",
+        bodyFont: {
+          size: 12,
+        },
         borderWidth: 0,
         callbacks: {
           afterLabel: (context: any) => {
@@ -137,9 +140,6 @@ export function TopAssetsChart() {
         titleFont: {
           size: 13,
           weight: "bold" as const,
-        },
-        bodyFont: {
-          size: 12,
         },
       },
     },
@@ -203,10 +203,16 @@ export function TopAssetsChart() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Top Assets by Vesting Stream Count</h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={752} tooltip="View fetchTopAssetsByStreamCount source" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              Top Assets by Vesting Stream Count
+            </h2>
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={752}
+              tooltip="View fetchTopAssetsByStreamCount source"
+            />
           </div>
-          <SharePanel 
+          <SharePanel
             title="Top Assets by Vesting Stream Count"
             elementRef={containerRef}
             description="Most popular ERC-20 tokens being used for streaming, ranked by total number of streams"
@@ -219,7 +225,7 @@ export function TopAssetsChart() {
           <span>Top {topAssets.length} assets shown</span>
         </div>
       </div>
-      
+
       <div className="h-80">
         <Bar data={chartData} options={options} />
       </div>

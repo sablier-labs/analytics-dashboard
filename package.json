@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@antfu/ni": "^25.0.0",
-    "@biomejs/biome": "^2.2.2",
+    "@biomejs/biome": "^2.2.4",
     "@sablier/devkit": "github:sablier-labs/devkit#main",
     "@types/node": "^20",
     "@types/react": "^19",

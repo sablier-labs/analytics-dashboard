@@ -1,8 +1,8 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
-import { RefreshButton } from "@/components/RefreshButton";
 import { useEffect, useState } from "react";
+import { RefreshButton } from "@/components/RefreshButton";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export function LastUpdated() {
   const { data, loading, refetch } = useAnalytics();
@@ -11,12 +11,12 @@ export function LastUpdated() {
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
-      timeZoneName: "short"
+      month: "long",
+      timeZoneName: "short",
+      year: "numeric",
     });
   };
 
@@ -88,7 +88,10 @@ export function LastUpdated() {
             />
           </svg>
           <span>Data last updated:</span>
-          <span className={getFreshnessColor(data.lastUpdated)} title={formatTimestamp(data.lastUpdated)}>
+          <span
+            className={getFreshnessColor(data.lastUpdated)}
+            title={formatTimestamp(data.lastUpdated)}
+          >
             {relativeTime}
           </span>
           <span className="text-gray-400 dark:text-gray-500">•</span>

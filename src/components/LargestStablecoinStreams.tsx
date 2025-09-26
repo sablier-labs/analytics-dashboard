@@ -1,9 +1,14 @@
 "use client";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
-import type { StablecoinStream } from "@/lib/services/graphql";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
-import { getSablierStreamUrl, formatDuration, getStreamStatus, normalizeAmount } from "@/lib/utils/sablier";
+import type { OptimizedStablecoinStream } from "@/lib/services/cache";
+import {
+  formatDuration,
+  getSablierStreamUrl,
+  getStreamStatus,
+  normalizeAmount,
+} from "@/lib/utils/sablier";
 import { TokenLogo } from "./TokenLogo";
 
 function formatAmount(amount: string, decimals: string): string {
@@ -15,14 +20,14 @@ function formatAmount(amount: string, decimals: string): string {
 function formatDate(timestamp: string): string {
   const date = new Date(parseInt(timestamp) * 1000);
   return date.toLocaleDateString("en-US", {
-    month: "short",
     day: "numeric",
+    month: "short",
     year: "numeric",
   });
 }
 
 interface LargestStablecoinStreamsData {
-  largestStablecoinStreams?: StablecoinStream[];
+  largestStablecoinStreams?: OptimizedStablecoinStream[];
 }
 
 export function LargestStablecoinStreams() {
@@ -46,22 +51,8 @@ export function LargestStablecoinStreams() {
     );
   }
 
-  // Filter out testnets and normalize amounts for proper sorting
-  const allStreams = (data?.largestStablecoinStreams || []).filter(stream => !isTestnetChain(stream.chainId));
-
-  // Sort by normalized amounts (not string comparison) and take top 25
-  const streams = allStreams
-    .map(stream => ({
-      ...stream,
-      normalizedAmount: normalizeAmount(stream.depositAmount, stream.asset.decimals)
-    }))
-    .sort((a, b) => {
-      // Sort in descending order (largest first)
-      if (a.normalizedAmount > b.normalizedAmount) return -1;
-      if (a.normalizedAmount < b.normalizedAmount) return 1;
-      return 0;
-    })
-    .slice(0, 25);
+  // Streams are already optimized, filtered, and sorted from Edge Config/cache
+  const streams = data?.largestStablecoinStreams || [];
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -107,7 +98,11 @@ export function LargestStablecoinStreams() {
               </thead>
               <tbody>
                 {streams.map((stream, index) => {
-                  const streamUrl = getSablierStreamUrl(stream.chainId, stream.tokenId, stream.contract);
+                  const streamUrl = getSablierStreamUrl(
+                    stream.chainId,
+                    stream.tokenId,
+                    stream.contract,
+                  );
                   const status = getStreamStatus(stream.endTime);
                   const duration = formatDuration(stream.startTime, stream.endTime);
 
@@ -116,9 +111,7 @@ export function LargestStablecoinStreams() {
                       key={stream.id}
                       className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                     >
-                      <td className="py-3 px-2 text-gray-900 dark:text-white">
-                        #{index + 1}
-                      </td>
+                      <td className="py-3 px-2 text-gray-900 dark:text-white">#{index + 1}</td>
                       <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">
                         {formatAmount(stream.depositAmount, stream.asset.decimals)}
                       </td>
@@ -133,16 +126,16 @@ export function LargestStablecoinStreams() {
                       <td className="py-3 px-2 text-gray-600 dark:text-gray-400">
                         {formatDate(stream.startTime)}
                       </td>
-                      <td className="py-3 px-2 text-gray-600 dark:text-gray-400">
-                        {duration}
-                      </td>
+                      <td className="py-3 px-2 text-gray-600 dark:text-gray-400">{duration}</td>
                       <td className="py-3 px-2">
-                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${
-                          status === 'active'
-                            ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                        }`}>
-                          {status === 'active' ? 'Active' : 'Completed'}
+                        <span
+                          className={`inline-block px-2 py-1 text-xs font-medium rounded ${
+                            status === "active"
+                              ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          }`}
+                        >
+                          {status === "active" ? "Active" : "Completed"}
                         </span>
                       </td>
                       <td className="py-3 px-2">
@@ -165,7 +158,12 @@ export function LargestStablecoinStreams() {
                               stroke="currentColor"
                               viewBox="0 0 24 24"
                             >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
                             </svg>
                           </a>
                         ) : (

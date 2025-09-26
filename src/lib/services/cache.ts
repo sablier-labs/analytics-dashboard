@@ -33,6 +33,21 @@ import {
   fetchTotalVestingStreams,
 } from "./graphql";
 
+// Optimized stream interface for Edge Config (only essential fields)
+export interface OptimizedStablecoinStream {
+  id: string;
+  tokenId: string;
+  depositAmount: string;
+  chainId: string;
+  contract: string;
+  startTime: string;
+  endTime: string;
+  asset: {
+    symbol: string;
+    decimals: string;
+  };
+}
+
 export interface CachedAnalyticsData {
   totalUsers: number;
   totalTransactions: number;
@@ -49,7 +64,7 @@ export interface CachedAnalyticsData {
   streamCategoryDistribution: StreamCategoryDistribution;
   totalVestingStreams: number;
   activeVsCompletedStreams: ActiveVsCompletedStreams;
-  largestStablecoinStreams: StablecoinStream[];
+  largestStablecoinStreams: OptimizedStablecoinStream[];
   activity24Hours: Activity24Hours;
   lastUpdated: string;
 }

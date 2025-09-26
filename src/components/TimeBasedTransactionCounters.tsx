@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import type { TimeBasedTransactionCounts } from "@/lib/services/graphql";
-import { SourceCodeLink } from "./SourceCodeLink";
 import { SharePanel } from "./SharePanel";
+import { SourceCodeLink } from "./SourceCodeLink";
 
 export function TimeBasedTransactionCounters() {
   const { data, loading, error } = useAnalytics();
@@ -14,18 +14,25 @@ export function TimeBasedTransactionCounters() {
 
   // If cache doesn't have timeBasedTransactions, fetch directly
   useEffect(() => {
-    if (!loading && data && (!data.timeBasedTransactions || Object.values(data.timeBasedTransactions).every(v => v === 0)) && !fallbackData && !fallbackLoading) {
+    if (
+      !loading &&
+      data &&
+      (!data.timeBasedTransactions ||
+        Object.values(data.timeBasedTransactions).every((v) => v === 0)) &&
+      !fallbackData &&
+      !fallbackLoading
+    ) {
       setFallbackLoading(true);
-      fetch('/api/fallback-time-transactions')
-        .then(res => res.json())
-        .then(result => {
+      fetch("/api/fallback-time-transactions")
+        .then((res) => res.json())
+        .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log('Time-based transactions loaded via fallback');
+            console.log("Time-based transactions loaded via fallback");
           }
         })
-        .catch(err => {
-          console.error('Failed to fetch fallback time-based transactions:', err);
+        .catch((err) => {
+          console.error("Failed to fetch fallback time-based transactions:", err);
           setFallbackData({ past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 });
         })
         .finally(() => setFallbackLoading(false));
@@ -33,8 +40,10 @@ export function TimeBasedTransactionCounters() {
   }, [data, loading, fallbackData, fallbackLoading]);
 
   // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
-  const hasValidCachedData = data?.timeBasedTransactions && !Object.values(data.timeBasedTransactions).every(v => v === 0);
-  const transactionCounts = fallbackData || (hasValidCachedData ? data.timeBasedTransactions : null);
+  const hasValidCachedData =
+    data?.timeBasedTransactions && !Object.values(data.timeBasedTransactions).every((v) => v === 0);
+  const transactionCounts =
+    fallbackData || (hasValidCachedData ? data.timeBasedTransactions : null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -67,7 +76,10 @@ export function TimeBasedTransactionCounters() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {timeRanges.map((range) => (
-          <div key={range.key} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+          <div
+            key={range.key}
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+          >
             <div className="animate-pulse">
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
@@ -81,7 +93,9 @@ export function TimeBasedTransactionCounters() {
   if (error) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading time-based transaction counts</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading time-based transaction counts
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
@@ -96,25 +110,36 @@ export function TimeBasedTransactionCounters() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               Transaction Activity by Time Period
             </h2>
-            <SourceCodeLink fileName="graphql.ts" lineNumber={301} tooltip="View fetchTimeBasedTransactionCounts source" />
+            <SourceCodeLink
+              fileName="graphql.ts"
+              lineNumber={301}
+              tooltip="View fetchTimeBasedTransactionCounts source"
+            />
           </div>
           <div className="flex-1 flex justify-end">
-            <SharePanel 
+            <SharePanel
               title="Transaction Activity by Time Period"
               elementRef={containerRef}
               description="Number of transactions processed within each time range"
             />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-300">Number of transactions processed within each time range</p>
+        <p className="text-gray-600 dark:text-gray-300">
+          Number of transactions processed within each time range
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {timeRanges.map((range) => (
-          <div key={range.key} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+          <div
+            key={range.key}
+            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{range.label}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                  {range.label}
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {transactionCounts ? formatNumber(transactionCounts[range.key]) : "—"}
                 </p>

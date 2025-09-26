@@ -5,7 +5,7 @@ export async function GET() {
     // Check Edge Config freshness
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
+      : "http://localhost:3000";
 
     const response = await fetch(`${baseUrl}/api/analytics`);
     const data = await response.json();
@@ -26,32 +26,35 @@ export async function GET() {
     const status = isDataFresh && hasRealData ? "healthy" : "unhealthy";
 
     return NextResponse.json({
-      status,
-      lastUpdated: data.lastUpdated,
-      hoursOld: Math.round(hoursOld * 100) / 100,
       checks: {
         dataFreshness: {
+          actual: `${Math.round(hoursOld * 100) / 100} hours`,
           status: isDataFresh ? "pass" : "fail",
           threshold: "< 24 hours",
-          actual: `${Math.round(hoursOld * 100) / 100} hours`
         },
         realData: {
+          growthRate: data.growthRateMetrics?.userGrowthRate || 0,
+          monthlyDataPoints: data.monthlyUserGrowth?.length || 0,
           status: hasRealData ? "pass" : "fail",
           totalUsers: data.totalUsers,
-          growthRate: data.growthRateMetrics?.userGrowthRate || 0,
-          monthlyDataPoints: data.monthlyUserGrowth?.length || 0
-        }
+        },
       },
-      message: status === "healthy"
-        ? "Edge Config is fresh and has real data"
-        : "Edge Config is stale or contains zero/empty data"
+      hoursOld: Math.round(hoursOld * 100) / 100,
+      lastUpdated: data.lastUpdated,
+      message:
+        status === "healthy"
+          ? "Edge Config is fresh and has real data"
+          : "Edge Config is stale or contains zero/empty data",
+      status,
     });
-
   } catch (error) {
-    return NextResponse.json({
-      status: "error",
-      error: error instanceof Error ? error.message : "Unknown error",
-      message: "Unable to check Edge Config health"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown error",
+        message: "Unable to check Edge Config health",
+        status: "error",
+      },
+      { status: 500 },
+    );
   }
 }

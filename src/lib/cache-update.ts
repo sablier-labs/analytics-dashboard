@@ -1,7 +1,11 @@
+import { isTestnetChain } from "@/lib/constants/chains";
+import type { StablecoinStream } from "@/lib/services/graphql";
 import {
+  fetch24HourMetrics,
   fetchActiveVsCompletedStreams,
   fetchChainDistribution,
   fetchGrowthRateMetrics,
+  fetchLargestStablecoinStreams,
   fetchMonthlyStreamCreation,
   fetchMonthlyTransactionGrowth,
   fetchMonthlyUserGrowth,
@@ -14,9 +18,72 @@ import {
   fetchTotalTransactions,
   fetchTotalUsers,
   fetchTotalVestingStreams,
-  fetchLargestStablecoinStreams,
-  fetch24HourMetrics,
 } from "@/lib/services/graphql";
+import { normalizeAmount } from "@/lib/utils/sablier";
+
+// Optimized stream interface for Edge Config (only essential fields)
+interface OptimizedStablecoinStream {
+  id: string;
+  tokenId: string;
+  depositAmount: string;
+  chainId: string;
+  contract: string;
+  startTime: string;
+  endTime: string;
+  asset: {
+    symbol: string;
+    decimals: string;
+  };
+}
+
+function optimizeStablecoinStreams(streams: StablecoinStream[]): OptimizedStablecoinStream[] {
+  console.log(`Processing ${streams.length} stablecoin streams for optimization...`);
+
+  // Filter out testnets and normalize amounts for proper sorting
+  const validStreams = streams.filter((stream) => !isTestnetChain(stream.chainId));
+  console.log(`Filtered to ${validStreams.length} mainnet streams`);
+
+  // Sort by normalized amounts (not string comparison) and take top 25
+  const sortedStreams = validStreams
+    .map((stream) => ({
+      ...stream,
+      normalizedAmount: normalizeAmount(stream.depositAmount, stream.asset.decimals),
+    }))
+    .sort((a, b) => {
+      // Sort in descending order (largest first)
+      if (a.normalizedAmount > b.normalizedAmount) return -1;
+      if (a.normalizedAmount < b.normalizedAmount) return 1;
+      return 0;
+    })
+    .slice(0, 25) // Only keep top 25 for Edge Config
+    .map((stream) => ({
+      asset: {
+        decimals: stream.asset.decimals,
+        symbol: stream.asset.symbol,
+      },
+      chainId: stream.chainId,
+      contract: stream.contract,
+      depositAmount: stream.depositAmount,
+      endTime: stream.endTime,
+      // Keep only essential fields to reduce size
+      id: stream.id,
+      startTime: stream.startTime,
+      tokenId: stream.tokenId,
+    }));
+
+  console.log(`Optimized to ${sortedStreams.length} streams for Edge Config`);
+
+  // Log the top 5 streams to verify USDC is appearing
+  console.log("Top 5 streams after optimization:");
+  sortedStreams.slice(0, 5).forEach((stream, index) => {
+    const amount = BigInt(stream.depositAmount) / BigInt(10 ** parseInt(stream.asset.decimals));
+    console.log(
+      `  ${index + 1}. ${amount.toLocaleString()} ${stream.asset.symbol} (Chain: ${stream.chainId})`,
+    );
+  });
+
+  return sortedStreams;
+}
 
 export async function updateAnalyticsCache() {
   console.log("Starting cache update...");
@@ -89,15 +156,15 @@ export async function updateAnalyticsCache() {
     }),
     fetchStreamDurationStats().catch((err) => {
       console.error("Error fetching stream duration stats:", err);
-      return { median: 0, average: 0, min: 0, max: 0 };
+      return { average: 0, max: 0, median: 0, min: 0 };
     }),
     fetchStreamProperties().catch((err) => {
       console.error("Error fetching stream properties:", err);
-      return { cancelable: 0, transferable: 0, both: 0, total: 0 };
+      return { both: 0, cancelable: 0, total: 0, transferable: 0 };
     }),
     fetchStreamCategoryDistribution().catch((err) => {
       console.error("Error fetching stream category distribution:", err);
-      return { linear: 0, dynamic: 0, tranched: 0, total: 0 };
+      return { dynamic: 0, linear: 0, total: 0, tranched: 0 };
     }),
     fetchTotalVestingStreams().catch((err) => {
       console.error("Error fetching total vesting streams:", err);
@@ -107,10 +174,12 @@ export async function updateAnalyticsCache() {
       console.error("Error fetching active vs completed streams:", err);
       return { active: 0, completed: 0, total: 0 };
     }),
-    fetchLargestStablecoinStreams().catch((err) => {
-      console.error("Error fetching largest stablecoin streams:", err);
-      return [];
-    }),
+    fetchLargestStablecoinStreams()
+      .then((streams) => optimizeStablecoinStreams(streams))
+      .catch((err) => {
+        console.error("Error fetching largest stablecoin streams:", err);
+        return [];
+      }),
     fetch24HourMetrics().catch((err) => {
       console.error("Error fetching 24-hour metrics:", err);
       return { streamsCreated: 0, totalTransactions: 0 };
