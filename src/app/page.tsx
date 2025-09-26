@@ -1,5 +1,6 @@
 import { ActiveVsCompletedStreams } from "@/components/ActiveVsCompletedStreams";
 import { Activity24Hours } from "@/components/Activity24Hours";
+import { AirdropsSection } from "@/components/AirdropsSection";
 import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
@@ -69,6 +70,8 @@ export default function Home() {
           </div>
 
           <LargestStablecoinStreams />
+
+          <AirdropsSection />
         </div>
       </div>
     </div>
