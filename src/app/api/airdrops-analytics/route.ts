@@ -8,11 +8,13 @@ import {
   fetchTotalCampaigns,
   fetchTopPerformingCampaigns,
   fetchVestingDistribution,
+  fetchCampaignCompletionRate,
+  fetchAdminLeaderboard,
 } from "@/lib/services/airdrops-graphql";
 
 export async function GET() {
   try {
-    // Fetch all eight metrics in parallel for efficiency
+    // Fetch all ten metrics in parallel for efficiency
     const [
       totalCampaigns,
       monthlyCampaignCreation,
@@ -22,6 +24,8 @@ export async function GET() {
       vestingDistribution,
       chainDistribution,
       topPerformingCampaigns,
+      campaignCompletionRate,
+      adminLeaderboard,
     ] = await Promise.all([
       fetchTotalCampaigns(),
       fetchMonthlyCampaignCreation(),
@@ -31,6 +35,8 @@ export async function GET() {
       fetchVestingDistribution(),
       fetchChainDistribution(),
       fetchTopPerformingCampaigns(),
+      fetchCampaignCompletionRate(),
+      fetchAdminLeaderboard(),
     ]);
 
     return NextResponse.json({
@@ -42,6 +48,8 @@ export async function GET() {
       topPerformingCampaigns,
       totalCampaigns,
       vestingDistribution,
+      campaignCompletionRate,
+      adminLeaderboard,
     });
   } catch (error) {
     console.error("Error fetching airdrops analytics:", error);

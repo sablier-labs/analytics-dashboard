@@ -566,6 +566,211 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
   }
 }
 
+export interface CampaignCompletionRate {
+  totalCampaigns: number;
+  completedCampaigns: number;
+  completionRate: number;
+}
+
+export interface CampaignCompletionResponse {
+  total: {
+    aggregate: {
+      count: number;
+    };
+  };
+  completed: {
+    aggregate: {
+      count: number;
+    };
+  };
+}
+
+export async function fetchCampaignCompletionRate(): Promise<CampaignCompletionRate> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetCampaignCompletionRate {
+      Campaign(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
+        claimedCount
+        totalRecipients
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{ Campaign: Array<{ claimedCount: string; totalRecipients: string }> }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const campaigns = result.data.Campaign;
+    const totalCampaigns = campaigns.length;
+
+    // Count campaigns where all recipients claimed (claimedCount == totalRecipients)
+    const completedCampaigns = campaigns.filter(campaign =>
+      campaign.claimedCount === campaign.totalRecipients
+    ).length;
+
+    const completionRate = totalCampaigns > 0 ? (completedCampaigns / totalCampaigns) * 100 : 0;
+
+    const campaignCompletion: CampaignCompletionRate = {
+      totalCampaigns,
+      completedCampaigns,
+      completionRate: Math.round(completionRate * 10) / 10, // Round to 1 decimal place
+    };
+
+    console.log(
+      `Fetched campaign completion rate: ${completedCampaigns}/${totalCampaigns} (${campaignCompletion.completionRate}%)`,
+    );
+
+    return campaignCompletion;
+  } catch (error) {
+    console.error("Error fetching campaign completion rate:", error);
+    throw error;
+  }
+}
+
+export interface AdminStats {
+  admin: string;
+  campaignCount: number;
+  totalClaimers: number;
+  totalRecipients: number;
+  averageClaimRate: number;
+  chainIds: string[];
+}
+
+export interface AdminStatsResponse {
+  Campaign: Array<{
+    admin: string;
+    campaignCount: number;
+    totalClaimers: string;
+    totalRecipients: string;
+    chainIds: string[];
+  }>;
+}
+
+export async function fetchAdminLeaderboard(): Promise<AdminStats[]> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetAdminLeaderboard {
+      Campaign(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
+        admin
+        claimedCount
+        totalRecipients
+        chainId
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{ Campaign: Array<{ admin: string; claimedCount: string; totalRecipients: string; chainId: string }> }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Group campaigns by admin
+    const adminMap = new Map<string, {
+      campaignCount: number;
+      totalClaimers: number;
+      totalRecipients: number;
+      chainIds: Set<string>;
+    }>();
+
+    result.data.Campaign.forEach(campaign => {
+      const admin = campaign.admin;
+      const claimers = parseInt(campaign.claimedCount, 10);
+      const recipients = parseInt(campaign.totalRecipients, 10);
+
+      if (!adminMap.has(admin)) {
+        adminMap.set(admin, {
+          campaignCount: 0,
+          totalClaimers: 0,
+          totalRecipients: 0,
+          chainIds: new Set<string>(),
+        });
+      }
+
+      const stats = adminMap.get(admin)!;
+      stats.campaignCount += 1;
+      stats.totalClaimers += claimers;
+      stats.totalRecipients += recipients;
+      stats.chainIds.add(campaign.chainId);
+    });
+
+    // Convert to array and calculate average claim rates
+    const adminStats: AdminStats[] = Array.from(adminMap.entries()).map(([admin, stats]) => {
+      const averageClaimRate = stats.totalRecipients > 0
+        ? (stats.totalClaimers / stats.totalRecipients) * 100
+        : 0;
+
+      return {
+        admin,
+        campaignCount: stats.campaignCount,
+        totalClaimers: stats.totalClaimers,
+        totalRecipients: stats.totalRecipients,
+        averageClaimRate: Math.round(averageClaimRate * 10) / 10,
+        chainIds: Array.from(stats.chainIds),
+      };
+    });
+
+    // Sort by campaign count descending, then by total claimers
+    const topAdmins = adminStats
+      .sort((a, b) => {
+        if (b.campaignCount !== a.campaignCount) {
+          return b.campaignCount - a.campaignCount;
+        }
+        return b.totalClaimers - a.totalClaimers;
+      })
+      .slice(0, 10);
+
+    console.log(
+      `Fetched admin leaderboard: ${topAdmins.length} admins, top admin: ${topAdmins[0]?.campaignCount || 0} campaigns`,
+    );
+
+    return topAdmins;
+  } catch (error) {
+    console.error("Error fetching admin leaderboard:", error);
+    throw error;
+  }
+}
+
 export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampaign[]> {
   const testnetChainIds = getTestnetChainIds();
 
