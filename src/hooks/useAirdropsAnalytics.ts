@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import type {
   MonthlyCampaignCreation,
   RecipientParticipation,
@@ -10,21 +10,33 @@ interface AirdropsAnalyticsData {
   recipientParticipation: RecipientParticipation;
 }
 
-async function fetchAirdropsAnalytics(): Promise<AirdropsAnalyticsData> {
-  const response = await fetch("/api/airdrops-analytics");
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch airdrops analytics: ${response.statusText}`);
-  }
-
-  return response.json();
-}
-
 export function useAirdropsAnalytics() {
-  return useQuery({
-    queryFn: fetchAirdropsAnalytics,
-    queryKey: ["airdrops-analytics"],
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const [data, setData] = useState<AirdropsAnalyticsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const loadAirdropsAnalytics = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch("/api/airdrops-analytics");
+      if (!response.ok) {
+        throw new Error(`Failed to fetch airdrops analytics: ${response.statusText}`);
+      }
+      const airdropsData = await response.json();
+      setData(airdropsData);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to load airdrops analytics"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadAirdropsAnalytics();
+  }, [loadAirdropsAnalytics]);
+
+  const refetch = () => loadAirdropsAnalytics();
+
+  return { data, error, isLoading, refetch };
 }
