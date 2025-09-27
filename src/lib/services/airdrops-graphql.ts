@@ -1,4 +1,4 @@
-import { getTestnetChainIds } from "@/lib/constants/chains";
+import { getTestnetChainIds, getMainnetChainName } from "@/lib/constants/chains";
 
 const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/graphql";
 
@@ -36,6 +36,50 @@ export interface ParticipationCampaign {
 
 export interface ParticipationResponse {
   Campaign: ParticipationCampaign[];
+}
+
+export interface MedianClaimersResponse {
+  Campaign: Array<{
+    claimedCount: string;
+  }>;
+}
+
+export interface MedianClaimWindowResponse {
+  Campaign: Array<{
+    timestamp: string;
+    expiration: string;
+  }>;
+}
+
+export interface VestingDistribution {
+  instant: number;
+  vesting: number;
+}
+
+export interface VestingDistributionResponse {
+  instant: {
+    aggregate: {
+      count: number;
+    };
+  };
+  vesting: {
+    aggregate: {
+      count: number;
+    };
+  };
+}
+
+export interface ChainDistribution {
+  chainId: string;
+  chainName: string;
+  count: number;
+}
+
+export interface ChainDistributionResponse {
+  Campaign: Array<{
+    chainId: string;
+    count: number;
+  }>;
 }
 
 export async function fetchTotalCampaigns(): Promise<number> {
@@ -223,6 +267,271 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
     };
   } catch (error) {
     console.error("Error fetching recipient participation:", error);
+    throw error;
+  }
+}
+
+export async function fetchMedianClaimers(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetMedianClaimers {
+      Campaign(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          claimedCount: { _gte: "10" }
+        }
+      ) {
+        claimedCount
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<MedianClaimersResponse> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Extract claimers counts and sort for median calculation
+    const claimerCounts = result.data.Campaign
+      .map(campaign => parseInt(campaign.claimedCount))
+      .sort((a, b) => a - b);
+
+    if (claimerCounts.length === 0) {
+      console.log("No campaigns with ≥10 claims found");
+      return 0;
+    }
+
+    // Calculate median
+    const median = claimerCounts.length % 2 === 0
+      ? (claimerCounts[claimerCounts.length / 2 - 1] + claimerCounts[claimerCounts.length / 2]) / 2
+      : claimerCounts[Math.floor(claimerCounts.length / 2)];
+
+    console.log(
+      `Calculated median claimers: ${median} from ${claimerCounts.length} campaigns with ≥10 claims`
+    );
+
+    return Math.round(median);
+  } catch (error) {
+    console.error("Error fetching median claimers:", error);
+    throw error;
+  }
+}
+
+export async function fetchMedianClaimWindow(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetMedianClaimWindow {
+      Campaign(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          expiration: { _is_null: false }
+          expiration: { _neq: "" }
+        }
+      ) {
+        timestamp
+        expiration
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<MedianClaimWindowResponse> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Calculate claim windows in days and sort for median calculation
+    const claimWindows = result.data.Campaign
+      .map(campaign => {
+        const startTime = parseInt(campaign.timestamp);
+        const endTime = parseInt(campaign.expiration);
+        const durationSeconds = endTime - startTime;
+        const durationDays = durationSeconds / (24 * 60 * 60); // Convert seconds to days
+        return durationDays;
+      })
+      .filter(duration => duration > 0) // Only include valid durations
+      .sort((a, b) => a - b);
+
+    if (claimWindows.length === 0) {
+      console.log("No campaigns with valid expiration dates found");
+      return 0;
+    }
+
+    // Calculate median
+    const median = claimWindows.length % 2 === 0
+      ? (claimWindows[claimWindows.length / 2 - 1] + claimWindows[claimWindows.length / 2]) / 2
+      : claimWindows[Math.floor(claimWindows.length / 2)];
+
+    console.log(
+      `Calculated median claim window: ${median.toFixed(1)} days from ${claimWindows.length} campaigns with expiration dates`
+    );
+
+    return Math.round(median);
+  } catch (error) {
+    console.error("Error fetching median claim window:", error);
+    throw error;
+  }
+}
+
+export async function fetchVestingDistribution(): Promise<VestingDistribution> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetVestingDistribution {
+      instant: Campaign_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          _or: [
+            { lockup: { _is_null: true } },
+            { lockup: { _eq: "" } }
+          ]
+        }
+      ) {
+        aggregate {
+          count
+        }
+      }
+      vesting: Campaign_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          lockup: { _is_null: false }
+          lockup: { _neq: "" }
+        }
+      ) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<VestingDistributionResponse> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const instantCount = result.data.instant.aggregate.count;
+    const vestingCount = result.data.vesting.aggregate.count;
+
+    console.log(
+      `Fetched vesting distribution: ${instantCount} instant campaigns, ${vestingCount} vesting campaigns`
+    );
+
+    return {
+      instant: instantCount,
+      vesting: vestingCount,
+    };
+  } catch (error) {
+    console.error("Error fetching vesting distribution:", error);
+    throw error;
+  }
+}
+
+export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetChainDistribution {
+      Campaign(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
+        chainId
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{ Campaign: Array<{ chainId: string }> }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Aggregate campaigns by chainId
+    const chainCounts = new Map<string, number>();
+
+    for (const campaign of result.data.Campaign) {
+      const currentCount = chainCounts.get(campaign.chainId) || 0;
+      chainCounts.set(campaign.chainId, currentCount + 1);
+    }
+
+    // Convert to array and add chain names
+    const chainDistribution: ChainDistribution[] = Array.from(chainCounts.entries())
+      .map(([chainId, count]) => ({
+        chainId,
+        chainName: getMainnetChainName(chainId),
+        count,
+      }))
+      .sort((a, b) => b.count - a.count); // Sort by count descending
+
+    console.log(
+      `Fetched chain distribution: ${chainDistribution.length} chains, ${result.data.Campaign.length} total campaigns`
+    );
+
+    return chainDistribution;
+  } catch (error) {
+    console.error("Error fetching chain distribution:", error);
     throw error;
   }
 }

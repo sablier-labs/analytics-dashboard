@@ -5,18 +5,26 @@ import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function RecipientParticipation() {
+export function MedianClaimWindow() {
   const { data, isLoading, error } = useAirdropsAnalytics();
-  const participationData = data?.recipientParticipation || null;
+  const medianClaimWindow = data?.medianClaimWindow || null;
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat().format(num);
+  };
+
+  const formatDays = (days: number) => {
+    const formattedNumber = formatNumber(days);
+    return days === 1 ? `${formattedNumber} day` : `${formattedNumber} days`;
+  };
 
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-          <div className="h-8 bg-gray-200 rounded w-20 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-28"></div>
+          <div className="h-8 bg-gray-200 rounded w-20"></div>
         </div>
       </div>
     );
@@ -25,23 +33,11 @@ export function RecipientParticipation() {
   if (error) {
     return (
       <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading participation data</p>
+        <p className="text-sm text-red-600 mb-2">Error loading median claim window</p>
         <p className="text-xs text-red-500">{error.message}</p>
       </div>
     );
   }
-
-  if (!participationData) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <p className="text-gray-600">No participation data available</p>
-      </div>
-    );
-  }
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat().format(num);
-  };
 
   return (
     <div
@@ -51,32 +47,29 @@ export function RecipientParticipation() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-            Recipient Participation
+            Median Claim Window
           </p>
           <SourceCodeLink
             fileName="airdrops-graphql.ts"
-            lineNumber={158}
-            tooltip="View fetchRecipientParticipation source"
+            lineNumber={336}
+            tooltip="View fetchMedianClaimWindow source"
           />
         </div>
         <SharePanel
-          title="Recipient Participation"
+          title="Median Claim Window"
           elementRef={containerRef}
-          description="% of eligible recipients that claimed across campaigns with at least 10 claims"
+          description="Median claim window duration for campaigns with expiration dates"
         />
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-            {participationData.percentage.toFixed(1)}%
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Across {formatNumber(participationData.campaignCount)} campaigns
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            {medianClaimWindow !== null ? formatDays(medianClaimWindow) : "—"}
           </p>
         </div>
-        <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg">
+        <div className="flex items-center justify-center w-12 h-12 bg-amber-100 dark:bg-amber-900 rounded-lg">
           <svg
-            className="w-6 h-6 text-green-600 dark:text-green-400"
+            className="w-6 h-6 text-amber-600 dark:text-amber-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -85,7 +78,7 @@ export function RecipientParticipation() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
         </div>

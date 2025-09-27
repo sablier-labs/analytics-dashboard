@@ -2,12 +2,18 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   MonthlyCampaignCreation,
   RecipientParticipation,
+  VestingDistribution,
+  ChainDistribution,
 } from "@/lib/services/airdrops-graphql";
 
 interface AirdropsAnalyticsData {
   totalCampaigns: number;
   monthlyCampaignCreation: MonthlyCampaignCreation[];
   recipientParticipation: RecipientParticipation;
+  medianClaimers: number;
+  medianClaimWindow: number;
+  vestingDistribution: VestingDistribution;
+  chainDistribution: ChainDistribution[];
 }
 
 export function useAirdropsAnalytics() {
