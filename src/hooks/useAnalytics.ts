@@ -25,7 +25,7 @@ export function useAnalytics() {
 
   useEffect(() => {
     void loadAnalytics();
-  }, []);
+  }, [loadAnalytics]);
 
   const refetch = () => loadAnalytics();
 

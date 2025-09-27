@@ -39,13 +39,13 @@ function verifyRequest(request: NextRequest) {
   }
 
   // Allow internal requests (for manual refresh)
-  if (userAgent && userAgent.includes("undici")) {
+  if (userAgent?.includes("undici")) {
     console.log("✅ Internal request (undici) - allowing request");
     return true;
   }
 
   // Check if request comes from Vercel infrastructure (backup auth method)
-  if (userAgent && userAgent.includes("vercel")) {
+  if (userAgent?.includes("vercel")) {
     console.log("✅ Vercel infrastructure request - allowing request");
     return true;
   }

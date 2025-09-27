@@ -82,6 +82,30 @@ export interface ChainDistributionResponse {
   }>;
 }
 
+export interface TopPerformingCampaign {
+  id: string;
+  chainId: string;
+  chainName: string;
+  claimedCount: string;
+  totalRecipients: string;
+  claimRate: number;
+  timestamp: string;
+  expiration: string;
+  admin: string;
+}
+
+export interface TopPerformingCampaignsResponse {
+  Campaign: Array<{
+    id: string;
+    chainId: string;
+    claimedCount: string;
+    totalRecipients: string;
+    timestamp: string;
+    expiration: string;
+    admin: string;
+  }>;
+}
+
 export async function fetchTotalCampaigns(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
 
@@ -538,6 +562,80 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
     return chainDistribution;
   } catch (error) {
     console.error("Error fetching chain distribution:", error);
+    throw error;
+  }
+}
+
+export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampaign[]> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetTopPerformingCampaigns {
+      Campaign(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          claimedCount: { _gte: "10" }
+        }
+        order_by: { claimedCount: desc }
+        limit: 10
+      ) {
+        id
+        chainId
+        claimedCount
+        totalRecipients
+        timestamp
+        expiration
+        admin
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<TopPerformingCampaignsResponse> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Transform response to include chain names and claim rates
+    const topCampaigns: TopPerformingCampaign[] = result.data.Campaign.map((campaign) => {
+      const claimedCount = parseInt(campaign.claimedCount, 10);
+      const totalRecipients = parseInt(campaign.totalRecipients, 10);
+      const claimRate = totalRecipients > 0 ? (claimedCount / totalRecipients) * 100 : 0;
+
+      return {
+        id: campaign.id,
+        chainId: campaign.chainId,
+        chainName: getMainnetChainName(campaign.chainId),
+        claimedCount: campaign.claimedCount,
+        totalRecipients: campaign.totalRecipients,
+        claimRate: Math.round(claimRate * 10) / 10, // Round to 1 decimal place
+        timestamp: campaign.timestamp,
+        expiration: campaign.expiration,
+        admin: campaign.admin,
+      };
+    });
+
+    console.log(
+      `Fetched top performing campaigns: ${topCampaigns.length} campaigns, highest claimers: ${topCampaigns[0]?.claimedCount || 0}`,
+    );
+
+    return topCampaigns;
+  } catch (error) {
+    console.error("Error fetching top performing campaigns:", error);
     throw error;
   }
 }

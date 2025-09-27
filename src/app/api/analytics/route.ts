@@ -16,7 +16,7 @@ export async function GET() {
   // Try to get cached data, but don't fail if Edge Config is not available
   try {
     cached = await get<CachedAnalyticsData>("analytics");
-  } catch (error) {
+  } catch (_error) {
     console.log("Edge Config not available, falling back to direct GraphQL fetch");
   }
 

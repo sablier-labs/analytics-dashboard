@@ -193,7 +193,7 @@ export function TopAssetsChart() {
     },
   };
 
-  const totalStreams = topAssets.reduce((sum, asset) => sum + asset.streamCount, 0);
+  const _totalStreams = topAssets.reduce((sum, asset) => sum + asset.streamCount, 0);
 
   return (
     <div

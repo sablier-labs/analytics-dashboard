@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
 import {
+  fetchChainDistribution,
+  fetchMedianClaimers,
+  fetchMedianClaimWindow,
   fetchMonthlyCampaignCreation,
   fetchRecipientParticipation,
   fetchTotalCampaigns,
-  fetchMedianClaimers,
-  fetchMedianClaimWindow,
+  fetchTopPerformingCampaigns,
   fetchVestingDistribution,
-  fetchChainDistribution,
 } from "@/lib/services/airdrops-graphql";
 
 export async function GET() {
   try {
-    // Fetch all seven metrics in parallel for efficiency
+    // Fetch all eight metrics in parallel for efficiency
     const [
       totalCampaigns,
       monthlyCampaignCreation,
@@ -20,6 +21,7 @@ export async function GET() {
       medianClaimWindow,
       vestingDistribution,
       chainDistribution,
+      topPerformingCampaigns,
     ] = await Promise.all([
       fetchTotalCampaigns(),
       fetchMonthlyCampaignCreation(),
@@ -28,16 +30,18 @@ export async function GET() {
       fetchMedianClaimWindow(),
       fetchVestingDistribution(),
       fetchChainDistribution(),
+      fetchTopPerformingCampaigns(),
     ]);
 
     return NextResponse.json({
-      monthlyCampaignCreation,
-      recipientParticipation,
-      totalCampaigns,
+      chainDistribution,
       medianClaimers,
       medianClaimWindow,
+      monthlyCampaignCreation,
+      recipientParticipation,
+      topPerformingCampaigns,
+      totalCampaigns,
       vestingDistribution,
-      chainDistribution,
     });
   } catch (error) {
     console.error("Error fetching airdrops analytics:", error);

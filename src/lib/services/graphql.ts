@@ -708,7 +708,7 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
 }
 
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
-  const now = Date.now();
+  const _now = Date.now();
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
   lastMonth.setDate(1);

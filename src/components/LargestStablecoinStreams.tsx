@@ -18,7 +18,7 @@ function formatAmount(amount: string, decimals: string): string {
 }
 
 function formatDate(timestamp: string): string {
-  const date = new Date(parseInt(timestamp) * 1000);
+  const date = new Date(parseInt(timestamp, 10) * 1000);
   return date.toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",

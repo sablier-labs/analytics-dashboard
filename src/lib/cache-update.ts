@@ -76,7 +76,7 @@ function optimizeStablecoinStreams(streams: StablecoinStream[]): OptimizedStable
   // Log the top 5 streams to verify USDC is appearing
   console.log("Top 5 streams after optimization:");
   sortedStreams.slice(0, 5).forEach((stream, index) => {
-    const amount = BigInt(stream.depositAmount) / BigInt(10 ** parseInt(stream.asset.decimals));
+    const amount = BigInt(stream.depositAmount) / BigInt(10 ** parseInt(stream.asset.decimals, 10));
     console.log(
       `  ${index + 1}. ${amount.toLocaleString()} ${stream.asset.symbol} (Chain: ${stream.chainId})`,
     );

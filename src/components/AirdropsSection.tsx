@@ -1,12 +1,13 @@
 "use client";
 
+import { AirdropsChainDistribution } from "./AirdropsChainDistribution";
 import { CampaignCreationTrend } from "./CampaignCreationTrend";
-import { RecipientParticipation } from "./RecipientParticipation";
-import { TotalCampaigns } from "./TotalCampaigns";
 import { MedianClaimers } from "./MedianClaimers";
 import { MedianClaimWindow } from "./MedianClaimWindow";
+import { RecipientParticipation } from "./RecipientParticipation";
+import { TopPerformingCampaigns } from "./TopPerformingCampaigns";
+import { TotalCampaigns } from "./TotalCampaigns";
 import { VestingDistribution } from "./VestingDistribution";
-import { AirdropsChainDistribution } from "./AirdropsChainDistribution";
 
 export function AirdropsSection() {
   return (
@@ -28,9 +29,14 @@ export function AirdropsSection() {
         </div>
 
         {/* Row 3: Two charts side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <VestingDistribution />
           <AirdropsChainDistribution />
+        </div>
+
+        {/* Row 4: Top Performing Campaigns (full width) */}
+        <div className="grid grid-cols-1 gap-6">
+          <TopPerformingCampaigns />
         </div>
       </div>
     </div>

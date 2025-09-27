@@ -121,7 +121,7 @@ export function MonthlyStreamCreationChart() {
     ],
     labels: monthlyStreamData.map((item) => {
       const [year, month] = item.month.split("-");
-      return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString("en-US", {
+      return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString("en-US", {
         month: "short",
         year: "2-digit",
       });
@@ -153,10 +153,13 @@ export function MonthlyStreamCreationChart() {
           title: (context: any) => {
             const monthIndex = context[0].dataIndex;
             const [year, month] = monthlyStreamData[monthIndex].month.split("-");
-            return new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            });
+            return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString(
+              "en-US",
+              {
+                month: "long",
+                year: "numeric",
+              },
+            );
           },
         },
         cornerRadius: 6,

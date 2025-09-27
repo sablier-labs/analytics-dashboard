@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       if (getResponse.ok) {
         existingData = await getResponse.json();
       }
-    } catch (error) {
+    } catch (_error) {
       console.log("Could not fetch existing cache data, will create new entry");
     }
 

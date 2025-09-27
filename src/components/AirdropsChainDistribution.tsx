@@ -180,9 +180,7 @@ export function AirdropsChainDistribution() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Chain Distribution
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chain Distribution</h2>
             <SourceCodeLink
               fileName="airdrops-graphql.ts"
               lineNumber={476}

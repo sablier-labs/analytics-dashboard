@@ -20,7 +20,7 @@ const SABLIER_CONTRACT_ALIASES: Record<string, string> = {
 };
 
 // Fallback aliases based on common patterns
-const getDefaultContractAlias = (contract: string): string => {
+const _getDefaultContractAlias = (contract: string): string => {
   // If we don't have a specific mapping, use a generic approach
   // This is a fallback - in practice we'd want to maintain the contract mapping above
   return contract.toLowerCase();
@@ -76,8 +76,8 @@ export function formatDuration(startTime: string, endTime: string): string {
     return "N/A";
   }
 
-  const start = parseInt(startTime) * 1000;
-  const end = parseInt(endTime) * 1000;
+  const start = parseInt(startTime, 10) * 1000;
+  const end = parseInt(endTime, 10) * 1000;
   const durationMs = end - start;
 
   if (durationMs <= 0) {
@@ -123,7 +123,7 @@ export function getStreamStatus(endTime: string): "active" | "completed" {
     return "active";
   }
 
-  const end = parseInt(endTime) * 1000;
+  const end = parseInt(endTime, 10) * 1000;
   const now = Date.now();
 
   return now < end ? "active" : "completed";
@@ -138,7 +138,7 @@ export function normalizeAmount(amount: string, decimals: string): bigint {
     return BigInt(0);
   }
 
-  const dec = parseInt(decimals);
+  const dec = parseInt(decimals, 10);
   const targetDecimals = 18;
   const value = BigInt(amount);
 

@@ -46,9 +46,7 @@ export function VestingDistribution() {
   if (!vestingData || (vestingData.instant === 0 && vestingData.vesting === 0)) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">
-          No vesting distribution data available
-        </p>
+        <p className="text-gray-600 dark:text-gray-300">No vesting distribution data available</p>
       </div>
     );
   }
@@ -69,10 +67,7 @@ export function VestingDistribution() {
         borderWidth: 2,
         cutout: "60%", // This creates the donut effect
         data: [vestingData.instant, vestingData.vesting],
-        hoverBackgroundColor: [
-          "rgba(59, 130, 246, 0.9)",
-          "rgba(249, 115, 22, 0.9)",
-        ],
+        hoverBackgroundColor: ["rgba(59, 130, 246, 0.9)", "rgba(249, 115, 22, 0.9)"],
       },
     ],
     labels: ["Instant", "Vesting"],

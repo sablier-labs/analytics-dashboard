@@ -21,7 +21,7 @@ export function LastUpdated() {
   };
 
   const getRelativeTime = (timestamp: string) => {
-    const now = new Date().getTime();
+    const now = Date.now();
     const updatedTime = new Date(timestamp).getTime();
     const diffInMinutes = Math.floor((now - updatedTime) / (1000 * 60));
 
@@ -36,7 +36,7 @@ export function LastUpdated() {
   };
 
   const getFreshnessColor = (timestamp: string) => {
-    const now = new Date().getTime();
+    const now = Date.now();
     const updatedTime = new Date(timestamp).getTime();
     const diffInHours = (now - updatedTime) / (1000 * 60 * 60);
 
@@ -57,7 +57,7 @@ export function LastUpdated() {
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [data?.lastUpdated]);
+  }, [data?.lastUpdated, getRelativeTime]);
 
   if (loading || !data?.lastUpdated) {
     return (
