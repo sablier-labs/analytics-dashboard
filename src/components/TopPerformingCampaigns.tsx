@@ -58,8 +58,8 @@ export function TopPerformingCampaigns() {
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="space-y-3">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            {Array.from({ length: 10 }, (_, i) => (
+              <div key={`skeleton-row-${i}`} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
         </div>
