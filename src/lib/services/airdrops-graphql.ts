@@ -1,4 +1,4 @@
-import { getTestnetChainIds, getMainnetChainName } from "@/lib/constants/chains";
+import { getMainnetChainName, getTestnetChainIds } from "@/lib/constants/chains";
 
 const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/graphql";
 
@@ -248,8 +248,8 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
     let totalRecipients = 0;
 
     for (const campaign of result.data.Campaign) {
-      totalClaimed += parseInt(campaign.claimedCount);
-      totalRecipients += parseInt(campaign.totalRecipients);
+      totalClaimed += parseInt(campaign.claimedCount, 10);
+      totalRecipients += parseInt(campaign.totalRecipients, 10);
     }
 
     const percentage = totalRecipients > 0 ? (totalClaimed / totalRecipients) * 100 : 0;
@@ -308,9 +308,9 @@ export async function fetchMedianClaimers(): Promise<number> {
     }
 
     // Extract claimers counts and sort for median calculation
-    const claimerCounts = result.data.Campaign
-      .map(campaign => parseInt(campaign.claimedCount))
-      .sort((a, b) => a - b);
+    const claimerCounts = result.data.Campaign.map((campaign) =>
+      parseInt(campaign.claimedCount, 10),
+    ).sort((a, b) => a - b);
 
     if (claimerCounts.length === 0) {
       console.log("No campaigns with ≥10 claims found");
@@ -318,12 +318,14 @@ export async function fetchMedianClaimers(): Promise<number> {
     }
 
     // Calculate median
-    const median = claimerCounts.length % 2 === 0
-      ? (claimerCounts[claimerCounts.length / 2 - 1] + claimerCounts[claimerCounts.length / 2]) / 2
-      : claimerCounts[Math.floor(claimerCounts.length / 2)];
+    const median =
+      claimerCounts.length % 2 === 0
+        ? (claimerCounts[claimerCounts.length / 2 - 1] + claimerCounts[claimerCounts.length / 2]) /
+          2
+        : claimerCounts[Math.floor(claimerCounts.length / 2)];
 
     console.log(
-      `Calculated median claimers: ${median} from ${claimerCounts.length} campaigns with ≥10 claims`
+      `Calculated median claimers: ${median} from ${claimerCounts.length} campaigns with ≥10 claims`,
     );
 
     return Math.round(median);
@@ -341,8 +343,10 @@ export async function fetchMedianClaimWindow(): Promise<number> {
       Campaign(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          expiration: { _is_null: false }
-          expiration: { _neq: "" }
+          _and: [
+            { expiration: { _is_null: false } },
+            { expiration: { _neq: "0" } }
+          ]
         }
       ) {
         timestamp
@@ -372,15 +376,14 @@ export async function fetchMedianClaimWindow(): Promise<number> {
     }
 
     // Calculate claim windows in days and sort for median calculation
-    const claimWindows = result.data.Campaign
-      .map(campaign => {
-        const startTime = parseInt(campaign.timestamp);
-        const endTime = parseInt(campaign.expiration);
-        const durationSeconds = endTime - startTime;
-        const durationDays = durationSeconds / (24 * 60 * 60); // Convert seconds to days
-        return durationDays;
-      })
-      .filter(duration => duration > 0) // Only include valid durations
+    const claimWindows = result.data.Campaign.map((campaign) => {
+      const startTime = parseInt(campaign.timestamp, 10);
+      const endTime = parseInt(campaign.expiration, 10);
+      const durationSeconds = endTime - startTime;
+      const durationDays = durationSeconds / (24 * 60 * 60); // Convert seconds to days
+      return durationDays;
+    })
+      .filter((duration) => duration > 0) // Only include valid durations
       .sort((a, b) => a - b);
 
     if (claimWindows.length === 0) {
@@ -389,12 +392,13 @@ export async function fetchMedianClaimWindow(): Promise<number> {
     }
 
     // Calculate median
-    const median = claimWindows.length % 2 === 0
-      ? (claimWindows[claimWindows.length / 2 - 1] + claimWindows[claimWindows.length / 2]) / 2
-      : claimWindows[Math.floor(claimWindows.length / 2)];
+    const median =
+      claimWindows.length % 2 === 0
+        ? (claimWindows[claimWindows.length / 2 - 1] + claimWindows[claimWindows.length / 2]) / 2
+        : claimWindows[Math.floor(claimWindows.length / 2)];
 
     console.log(
-      `Calculated median claim window: ${median.toFixed(1)} days from ${claimWindows.length} campaigns with expiration dates`
+      `Calculated median claim window: ${median.toFixed(1)} days from ${claimWindows.length} campaigns with expiration dates`,
     );
 
     return Math.round(median);
@@ -425,8 +429,10 @@ export async function fetchVestingDistribution(): Promise<VestingDistribution> {
       vesting: Campaign_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          lockup: { _is_null: false }
-          lockup: { _neq: "" }
+          _and: [
+            { lockup: { _is_null: false } },
+            { lockup: { _neq: "" } }
+          ]
         }
       ) {
         aggregate {
@@ -460,7 +466,7 @@ export async function fetchVestingDistribution(): Promise<VestingDistribution> {
     const vestingCount = result.data.vesting.aggregate.count;
 
     console.log(
-      `Fetched vesting distribution: ${instantCount} instant campaigns, ${vestingCount} vesting campaigns`
+      `Fetched vesting distribution: ${instantCount} instant campaigns, ${vestingCount} vesting campaigns`,
     );
 
     return {
@@ -526,7 +532,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
       .sort((a, b) => b.count - a.count); // Sort by count descending
 
     console.log(
-      `Fetched chain distribution: ${chainDistribution.length} chains, ${result.data.Campaign.length} total campaigns`
+      `Fetched chain distribution: ${chainDistribution.length} chains, ${result.data.Campaign.length} total campaigns`,
     );
 
     return chainDistribution;
