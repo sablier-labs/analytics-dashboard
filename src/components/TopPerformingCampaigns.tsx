@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { getMainnetChainName } from "@/lib/constants/chains";
-import { getSablierStreamUrl } from "@/lib/utils/sablier";
 import type { TopPerformingCampaign } from "@/lib/services/airdrops-graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -33,12 +32,6 @@ function shortenCampaignId(id: string): string {
   return `${address.slice(0, 8)}...${address.slice(-4)}-${chain}`;
 }
 
-function getClaimRateColor(rate: number): string {
-  if (rate >= 80) return "text-green-600 dark:text-green-400";
-  if (rate >= 60) return "text-yellow-600 dark:text-yellow-400";
-  if (rate >= 40) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
-}
 
 interface TopPerformingCampaignsData {
   topPerformingCampaigns?: TopPerformingCampaign[];
@@ -149,12 +142,7 @@ export function TopPerformingCampaigns() {
             </thead>
             <tbody>
               {campaigns.map((campaign, index) => {
-                const claimRateColor = getClaimRateColor(campaign.claimRate);
-                const sablierUrl = getSablierStreamUrl(
-                  campaign.chainId,
-                  campaign.id.split("-")[0], // Use the contract address as tokenId
-                  campaign.id.split("-")[0], // Use the contract address as contract
-                );
+                const campaignUrl = `https://app.sablier.com/airdrops/campaign/${campaign.id}/`;
 
                 return (
                   <tr
@@ -177,7 +165,7 @@ export function TopPerformingCampaigns() {
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className={`font-semibold ${claimRateColor}`}>
+                      <div className="font-semibold text-gray-900 dark:text-white">
                         {campaign.claimRate}%
                       </div>
                     </td>
@@ -197,13 +185,12 @@ export function TopPerformingCampaigns() {
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      {sablierUrl ? (
-                        <a
-                          href={sablierUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
-                        >
+                      <a
+                        href={campaignUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                      >
                           <svg
                             className="w-4 h-4"
                             fill="none"
@@ -218,9 +205,6 @@ export function TopPerformingCampaigns() {
                             />
                           </svg>
                         </a>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
                     </td>
                   </tr>
                 );
