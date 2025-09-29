@@ -20,6 +20,12 @@ import {
   fetchTotalVestingStreams,
 } from "@/lib/services/graphql";
 import { normalizeAmount } from "@/lib/utils/sablier";
+import {
+  optimizeAnalyticsCache,
+  validateCacheSize,
+  createCacheSummary,
+  CACHE_LIMITS,
+} from "./cache-optimization";
 
 // Optimized stream interface for Edge Config (only essential fields)
 interface OptimizedStablecoinStream {
@@ -40,7 +46,7 @@ function optimizeStablecoinStreams(streams: StablecoinStream[]): OptimizedStable
   // Filter out testnets and normalize amounts for proper sorting
   const validStreams = streams.filter((stream) => !isTestnetChain(stream.chainId));
 
-  // Sort by normalized amounts (not string comparison) and take top 25
+  // Sort by normalized amounts and take only top limit (reduced from 25 to 20)
   const sortedStreams = validStreams
     .map((stream) => ({
       ...stream,
@@ -52,7 +58,7 @@ function optimizeStablecoinStreams(streams: StablecoinStream[]): OptimizedStable
       if (a.normalizedAmount < b.normalizedAmount) return 1;
       return 0;
     })
-    .slice(0, 25) // Only keep top 25 for Edge Config
+    .slice(0, CACHE_LIMITS.TOP_STABLECOIN_STREAMS) // Use optimized limit
     .map((stream) => ({
       asset: {
         decimals: stream.asset.decimals,
@@ -61,23 +67,18 @@ function optimizeStablecoinStreams(streams: StablecoinStream[]): OptimizedStable
       chainId: stream.chainId,
       contract: stream.contract,
       depositAmount: stream.depositAmount,
-      endTime: stream.endTime,
-      // Keep only essential fields to reduce size
+      // Optimize timestamps - remove unnecessary precision for older streams
+      endTime: stream.endTime.split("T")[0] + "T23:59:59Z",
       id: stream.id,
-      startTime: stream.startTime,
+      startTime: stream.startTime.split("T")[0] + "T00:00:00Z",
       tokenId: stream.tokenId,
     }));
-
 
   return sortedStreams;
 }
 
 export async function updateAnalyticsCache() {
-  console.log("Starting cache update...");
-
-  // Get current cached data to preserve on failures
-  // Skip fetching current data to avoid URL issues - just use defaults if API calls fail
-  const currentCachedData = null;
+  console.log("🚀 Starting optimized cache update...");
 
   // Fetch all analytics data in parallel, preserving existing data on failure
   const [
@@ -171,8 +172,8 @@ export async function updateAnalyticsCache() {
     }),
   ]);
 
-  // Prepare the cached data
-  const cachedData = {
+  // Prepare the raw cached data
+  const rawCachedData = {
     activeVsCompletedStreams,
     activity24Hours,
     chainDistribution,
@@ -193,6 +194,19 @@ export async function updateAnalyticsCache() {
     totalVestingStreams,
   };
 
+  // Apply optimizations to reduce storage size
+  const optimizedCachedData = optimizeAnalyticsCache(rawCachedData);
+
+  // Validate cache size and log summary
+  console.log("📊 Cache optimization summary:");
+  console.log("   Raw data:", createCacheSummary(rawCachedData));
+  console.log("   Optimized data:", createCacheSummary(optimizedCachedData));
+
+  const isValidSize = validateCacheSize(optimizedCachedData, "analytics");
+  if (!isValidSize) {
+    console.error("❌ Cache size validation failed - data may be too large for Edge Config");
+  }
+
   // Store in Edge Config using Vercel REST API
   const edgeConfigId = process.env.EDGE_CONFIG_ID;
   const vercelAccessToken = process.env.VERCEL_ACCESS_TOKEN;
@@ -207,7 +221,7 @@ export async function updateAnalyticsCache() {
         {
           key: "analytics",
           operation: "upsert",
-          value: cachedData,
+          value: optimizedCachedData,
         },
       ],
     }),
@@ -228,19 +242,25 @@ export async function updateAnalyticsCache() {
     throw new Error(`Edge Config update failed: ${JSON.stringify(result)}`);
   }
 
-  console.log("Cache update completed successfully");
+  console.log("✅ Optimized cache update completed successfully");
 
   return {
     dataPoints: {
-      chainDistribution: chainDistribution.length,
-      monthlyTransactionGrowth: monthlyTransactionGrowth.length,
-      monthlyUserGrowth: monthlyUserGrowth.length,
-      topAssets: topAssets.length,
+      chainDistribution: optimizedCachedData.chainDistribution.length,
+      monthlyTransactionGrowth: optimizedCachedData.monthlyTransactionGrowth.length,
+      monthlyUserGrowth: optimizedCachedData.monthlyUserGrowth.length,
+      stablecoinStreams: optimizedCachedData.largestStablecoinStreams.length,
+      topAssets: optimizedCachedData.topAssets.length,
       totalTransactions,
       totalUsers,
     },
-    lastUpdated: cachedData.lastUpdated,
-    message: "Cache updated successfully",
+    lastUpdated: optimizedCachedData.lastUpdated,
+    message: "Optimized cache updated successfully",
+    optimizations: {
+      monthlyDataLimited: CACHE_LIMITS.MONTHLY_DATA_MONTHS + " months",
+      stablecoinStreamsLimit: CACHE_LIMITS.TOP_STABLECOIN_STREAMS,
+      topAssetsLimit: CACHE_LIMITS.TOP_ASSETS_LIMIT,
+    },
     success: true,
   };
 }

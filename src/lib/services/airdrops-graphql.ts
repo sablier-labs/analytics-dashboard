@@ -1,3 +1,4 @@
+import { get } from "@vercel/edge-config";
 import { getMainnetChainName, getTestnetChainIds } from "@/lib/constants/chains";
 
 const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/graphql";
@@ -94,6 +95,28 @@ export interface TopPerformingCampaign {
   admin: string;
 }
 
+// Optimized campaign interface for Edge Config (only essential fields)
+export interface OptimizedTopPerformingCampaign {
+  id: string;
+  chainId: string;
+  chainName: string;
+  claimedCount: string;
+  totalRecipients: string;
+  claimRate: number;
+}
+
+export interface CachedAirdropsData {
+  totalCampaigns: number;
+  monthlyCampaignCreation: MonthlyCampaignCreation[];
+  recipientParticipation: RecipientParticipation;
+  medianClaimers: number;
+  medianClaimWindow: number;
+  vestingDistribution: VestingDistribution;
+  chainDistribution: ChainDistribution[];
+  topPerformingCampaigns: OptimizedTopPerformingCampaign[];
+  lastUpdated: string;
+}
+
 export interface TopPerformingCampaignsResponse {
   Campaign: Array<{
     id: string;
@@ -143,7 +166,6 @@ export async function fetchTotalCampaigns(): Promise<number> {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    console.log(`Fetched total campaigns: ${result.data.Campaign_aggregate.aggregate.count}`);
     return result.data.Campaign_aggregate.aggregate.count;
   } catch (error) {
     console.error("Error fetching total campaigns:", error);
@@ -219,9 +241,6 @@ export async function fetchMonthlyCampaignCreation(): Promise<MonthlyCampaignCre
     }));
 
     const totalCampaigns = monthlyData.reduce((sum, month) => sum + month.count, 0);
-    console.log(
-      `Fetched monthly campaign creation: ${monthlyData.length} months, ${totalCampaigns} total campaigns`,
-    );
 
     return monthlyData;
   } catch (error) {
@@ -278,12 +297,6 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
 
     const percentage = totalRecipients > 0 ? (totalClaimed / totalRecipients) * 100 : 0;
 
-    console.log(
-      `Calculated recipient participation: ${percentage.toFixed(1)}% across ${result.data.Campaign.length} campaigns`,
-    );
-    console.log(
-      `Total claims: ${totalClaimed.toLocaleString()}, Total recipients: ${totalRecipients.toLocaleString()}`,
-    );
 
     return {
       campaignCount: result.data.Campaign.length,
@@ -348,9 +361,6 @@ export async function fetchMedianClaimers(): Promise<number> {
           2
         : claimerCounts[Math.floor(claimerCounts.length / 2)];
 
-    console.log(
-      `Calculated median claimers: ${median} from ${claimerCounts.length} campaigns with ≥10 claims`,
-    );
 
     return Math.round(median);
   } catch (error) {
@@ -421,9 +431,6 @@ export async function fetchMedianClaimWindow(): Promise<number> {
         ? (claimWindows[claimWindows.length / 2 - 1] + claimWindows[claimWindows.length / 2]) / 2
         : claimWindows[Math.floor(claimWindows.length / 2)];
 
-    console.log(
-      `Calculated median claim window: ${median.toFixed(1)} days from ${claimWindows.length} campaigns with expiration dates`,
-    );
 
     return Math.round(median);
   } catch (error) {
@@ -489,9 +496,6 @@ export async function fetchVestingDistribution(): Promise<VestingDistribution> {
     const instantCount = result.data.instant.aggregate.count;
     const vestingCount = result.data.vesting.aggregate.count;
 
-    console.log(
-      `Fetched vesting distribution: ${instantCount} instant campaigns, ${vestingCount} vesting campaigns`,
-    );
 
     return {
       instant: instantCount,
@@ -555,9 +559,6 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
       }))
       .sort((a, b) => b.count - a.count); // Sort by count descending
 
-    console.log(
-      `Fetched chain distribution: ${chainDistribution.length} chains, ${result.data.Campaign.length} total campaigns`,
-    );
 
     return chainDistribution;
   } catch (error) {
@@ -566,210 +567,6 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
   }
 }
 
-export interface CampaignCompletionRate {
-  totalCampaigns: number;
-  completedCampaigns: number;
-  completionRate: number;
-}
-
-export interface CampaignCompletionResponse {
-  total: {
-    aggregate: {
-      count: number;
-    };
-  };
-  completed: {
-    aggregate: {
-      count: number;
-    };
-  };
-}
-
-export async function fetchCampaignCompletionRate(): Promise<CampaignCompletionRate> {
-  const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetCampaignCompletionRate {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-        }
-      ) {
-        claimedCount
-        totalRecipients
-      }
-    }
-  `;
-
-  try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: GraphQLResponse<{ Campaign: Array<{ claimedCount: string; totalRecipients: string }> }> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const campaigns = result.data.Campaign;
-    const totalCampaigns = campaigns.length;
-
-    // Count campaigns where all recipients claimed (claimedCount == totalRecipients)
-    const completedCampaigns = campaigns.filter(campaign =>
-      campaign.claimedCount === campaign.totalRecipients
-    ).length;
-
-    const completionRate = totalCampaigns > 0 ? (completedCampaigns / totalCampaigns) * 100 : 0;
-
-    const campaignCompletion: CampaignCompletionRate = {
-      totalCampaigns,
-      completedCampaigns,
-      completionRate: Math.round(completionRate * 10) / 10, // Round to 1 decimal place
-    };
-
-    console.log(
-      `Fetched campaign completion rate: ${completedCampaigns}/${totalCampaigns} (${campaignCompletion.completionRate}%)`,
-    );
-
-    return campaignCompletion;
-  } catch (error) {
-    console.error("Error fetching campaign completion rate:", error);
-    throw error;
-  }
-}
-
-export interface AdminStats {
-  admin: string;
-  campaignCount: number;
-  totalClaimers: number;
-  totalRecipients: number;
-  averageClaimRate: number;
-  chainIds: string[];
-}
-
-export interface AdminStatsResponse {
-  Campaign: Array<{
-    admin: string;
-    campaignCount: number;
-    totalClaimers: string;
-    totalRecipients: string;
-    chainIds: string[];
-  }>;
-}
-
-export async function fetchAdminLeaderboard(): Promise<AdminStats[]> {
-  const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetAdminLeaderboard {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-        }
-      ) {
-        admin
-        claimedCount
-        totalRecipients
-        chainId
-      }
-    }
-  `;
-
-  try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: GraphQLResponse<{ Campaign: Array<{ admin: string; claimedCount: string; totalRecipients: string; chainId: string }> }> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Group campaigns by admin
-    const adminMap = new Map<string, {
-      campaignCount: number;
-      totalClaimers: number;
-      totalRecipients: number;
-      chainIds: Set<string>;
-    }>();
-
-    result.data.Campaign.forEach(campaign => {
-      const admin = campaign.admin;
-      const claimers = parseInt(campaign.claimedCount, 10);
-      const recipients = parseInt(campaign.totalRecipients, 10);
-
-      if (!adminMap.has(admin)) {
-        adminMap.set(admin, {
-          campaignCount: 0,
-          totalClaimers: 0,
-          totalRecipients: 0,
-          chainIds: new Set<string>(),
-        });
-      }
-
-      const stats = adminMap.get(admin)!;
-      stats.campaignCount += 1;
-      stats.totalClaimers += claimers;
-      stats.totalRecipients += recipients;
-      stats.chainIds.add(campaign.chainId);
-    });
-
-    // Convert to array and calculate average claim rates
-    const adminStats: AdminStats[] = Array.from(adminMap.entries()).map(([admin, stats]) => {
-      const averageClaimRate = stats.totalRecipients > 0
-        ? (stats.totalClaimers / stats.totalRecipients) * 100
-        : 0;
-
-      return {
-        admin,
-        campaignCount: stats.campaignCount,
-        totalClaimers: stats.totalClaimers,
-        totalRecipients: stats.totalRecipients,
-        averageClaimRate: Math.round(averageClaimRate * 10) / 10,
-        chainIds: Array.from(stats.chainIds),
-      };
-    });
-
-    // Sort by campaign count descending, then by total claimers
-    const topAdmins = adminStats
-      .sort((a, b) => {
-        if (b.campaignCount !== a.campaignCount) {
-          return b.campaignCount - a.campaignCount;
-        }
-        return b.totalClaimers - a.totalClaimers;
-      })
-      .slice(0, 10);
-
-    console.log(
-      `Fetched admin leaderboard: ${topAdmins.length} admins, top admin: ${topAdmins[0]?.campaignCount || 0} campaigns`,
-    );
-
-    return topAdmins;
-  } catch (error) {
-    console.error("Error fetching admin leaderboard:", error);
-    throw error;
-  }
-}
 
 export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampaign[]> {
   const testnetChainIds = getTestnetChainIds();
@@ -834,13 +631,122 @@ export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampai
       };
     });
 
-    console.log(
-      `Fetched top performing campaigns: ${topCampaigns.length} campaigns, highest claimers: ${topCampaigns[0]?.claimedCount || 0}`,
-    );
 
     return topCampaigns;
   } catch (error) {
     console.error("Error fetching top performing campaigns:", error);
     throw error;
   }
+}
+
+// Cache functions following the same pattern as main analytics API
+
+async function getCachedAirdropsData(): Promise<CachedAirdropsData | null> {
+  try {
+    const cached = await get<CachedAirdropsData>("airdrops");
+    return cached || null;
+  } catch (error) {
+    console.error("Error reading from Edge Config for airdrops:", error);
+    return null;
+  }
+}
+
+export async function getCachedTotalCampaigns(): Promise<number> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.totalCampaigns !== undefined) {
+    return cached.totalCampaigns;
+  }
+  console.log("Cache miss - fetching total campaigns from GraphQL");
+  return fetchTotalCampaigns();
+}
+
+export async function getCachedMonthlyCampaignCreation(): Promise<MonthlyCampaignCreation[]> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.monthlyCampaignCreation) {
+    return cached.monthlyCampaignCreation;
+  }
+  console.log("Cache miss - fetching monthly campaign creation from GraphQL");
+  return fetchMonthlyCampaignCreation();
+}
+
+export async function getCachedRecipientParticipation(): Promise<RecipientParticipation> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.recipientParticipation) {
+    return cached.recipientParticipation;
+  }
+  console.log("Cache miss - fetching recipient participation from GraphQL");
+  return fetchRecipientParticipation();
+}
+
+export async function getCachedMedianClaimers(): Promise<number> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.medianClaimers !== undefined) {
+    return cached.medianClaimers;
+  }
+  console.log("Cache miss - fetching median claimers from GraphQL");
+  return fetchMedianClaimers();
+}
+
+export async function getCachedMedianClaimWindow(): Promise<number> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.medianClaimWindow !== undefined) {
+    return cached.medianClaimWindow;
+  }
+  console.log("Cache miss - fetching median claim window from GraphQL");
+  return fetchMedianClaimWindow();
+}
+
+export async function getCachedVestingDistribution(): Promise<VestingDistribution> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.vestingDistribution) {
+    return cached.vestingDistribution;
+  }
+  console.log("Cache miss - fetching vesting distribution from GraphQL");
+  return fetchVestingDistribution();
+}
+
+export async function getCachedChainDistribution(): Promise<ChainDistribution[]> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.chainDistribution) {
+    return cached.chainDistribution;
+  }
+  console.log("Cache miss - fetching chain distribution from GraphQL");
+  return fetchChainDistribution();
+}
+
+export async function getCachedTopPerformingCampaigns(): Promise<TopPerformingCampaign[]> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.topPerformingCampaigns) {
+    // Convert optimized campaigns back to full campaigns with default values for missing fields
+    return cached.topPerformingCampaigns.map((campaign) => ({
+      ...campaign,
+      timestamp: "", // Default value - not needed for display
+      expiration: "", // Default value - not needed for display
+      admin: "", // Default value - not needed for display
+    }));
+  }
+  console.log("Cache miss - fetching top performing campaigns from GraphQL");
+  return fetchTopPerformingCampaigns();
+}
+
+export async function getAirdropsCacheInfo(): Promise<{
+  isCached: boolean;
+  lastUpdated?: string;
+  age?: string;
+}> {
+  const cached = await getCachedAirdropsData();
+
+  if (!cached?.lastUpdated) {
+    return { isCached: false };
+  }
+
+  const lastUpdated = new Date(cached.lastUpdated);
+  const now = new Date();
+  const ageInHours = Math.floor((now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60));
+
+  return {
+    age: ageInHours < 24 ? `${ageInHours} hours ago` : `${Math.floor(ageInHours / 24)} days ago`,
+    isCached: true,
+    lastUpdated: cached.lastUpdated,
+  };
 }

@@ -53,7 +53,6 @@ export function MonthlyStreamCreationChart() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(`Monthly stream data loaded via fallback: ${result.data.length} months`);
           }
         })
         .catch((err) => {

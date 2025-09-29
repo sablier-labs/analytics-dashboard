@@ -27,7 +27,6 @@ export function GrowthRateIndicators() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log("Growth rate metrics loaded via fallback");
           }
         })
         .catch((err) => {

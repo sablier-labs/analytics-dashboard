@@ -50,7 +50,6 @@ export function CumulativeTransactionChart() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log("Monthly transaction growth loaded via fallback");
           }
         })
         .catch((err) => {

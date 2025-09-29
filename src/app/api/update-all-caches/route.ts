@@ -1,13 +1,13 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { updateAnalyticsCache } from "@/lib/cache-update";
+import { updateAnalyticsCache } from "@/lib/cache-update-optimized";
+import { updateAirdropsCache } from "@/lib/airdrops-cache-update";
 
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
   const userAgent = request.headers.get("user-agent");
-
 
   // In development, allow all requests
   if (process.env.NODE_ENV === "development") {
@@ -51,14 +51,40 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await updateAnalyticsCache();
-    return NextResponse.json(result);
+    console.log("🚀 Starting optimized update for all caches...");
+
+    // Update both caches in parallel for efficiency
+    const [analyticsResult, airdropsResult] = await Promise.allSettled([
+      updateAnalyticsCache(),
+      updateAirdropsCache(),
+    ]);
+
+    const results = {
+      analytics: analyticsResult.status === "fulfilled"
+        ? { success: true, ...analyticsResult.value }
+        : { success: false, error: analyticsResult.reason?.message || "Unknown error" },
+      airdrops: airdropsResult.status === "fulfilled"
+        ? { success: true, ...airdropsResult.value }
+        : { success: false, error: airdropsResult.reason?.message || "Unknown error" },
+    };
+
+    const overallSuccess = results.analytics.success && results.airdrops.success;
+
+    return NextResponse.json({
+      success: overallSuccess,
+      message: overallSuccess
+        ? "All caches updated successfully with optimizations"
+        : "Some cache updates failed",
+      results,
+      timestamp: new Date().toISOString(),
+    });
+
   } catch (error) {
-    console.error("Error updating cache:", error);
+    console.error("Error updating all caches:", error);
     return NextResponse.json(
       {
         details: error instanceof Error ? error.message : "Unknown error",
-        error: "Failed to update cache",
+        error: "Failed to update caches",
         success: false,
       },
       { status: 500 },

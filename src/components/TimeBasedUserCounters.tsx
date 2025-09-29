@@ -27,7 +27,6 @@ export function TimeBasedUserCounters() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log("Time-based users loaded via fallback");
           }
         })
         .catch((err) => {

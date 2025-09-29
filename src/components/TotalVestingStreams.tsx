@@ -26,9 +26,6 @@ export function TotalVestingStreams() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(
-              `Total vesting streams loaded via fallback: ${result.data.toLocaleString()}`,
-            );
           }
         })
         .catch((err) => {

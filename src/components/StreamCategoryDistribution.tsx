@@ -27,9 +27,6 @@ export function StreamCategoryDistribution() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(
-              `Stream category distribution loaded via fallback: ${result.data.total} total streams`,
-            );
           }
         })
         .catch((err) => {

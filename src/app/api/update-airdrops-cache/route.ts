@@ -1,13 +1,12 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { updateAnalyticsCache } from "@/lib/cache-update";
+import { updateAirdropsCache } from "@/lib/airdrops-cache-update";
 
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
   const userAgent = request.headers.get("user-agent");
-
 
   // In development, allow all requests
   if (process.env.NODE_ENV === "development") {
@@ -51,14 +50,14 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const result = await updateAnalyticsCache();
+    const result = await updateAirdropsCache();
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error updating cache:", error);
+    console.error("Error updating airdrops cache:", error);
     return NextResponse.json(
       {
         details: error instanceof Error ? error.message : "Unknown error",
-        error: "Failed to update cache",
+        error: "Failed to update airdrops cache",
         success: false,
       },
       { status: 500 },

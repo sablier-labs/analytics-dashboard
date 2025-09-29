@@ -28,7 +28,6 @@ export function TimeBasedTransactionCounters() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log("Time-based transactions loaded via fallback");
           }
         })
         .catch((err) => {

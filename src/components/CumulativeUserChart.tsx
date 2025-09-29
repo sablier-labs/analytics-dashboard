@@ -49,7 +49,6 @@ export function CumulativeUserChart() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log("Monthly user growth loaded via fallback");
           }
         })
         .catch((err) => {

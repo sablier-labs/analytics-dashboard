@@ -27,9 +27,6 @@ export function ActiveVsCompletedStreams() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(
-              `Active vs completed streams loaded via fallback: ${result.data.active} active, ${result.data.completed} completed`,
-            );
           }
         })
         .catch((err) => {

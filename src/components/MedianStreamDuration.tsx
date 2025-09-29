@@ -80,9 +80,6 @@ export function MedianStreamDuration() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(
-              `Stream duration stats loaded via fallback: median ${Math.round(result.data.median / 86400)} days`,
-            );
           }
         })
         .catch((err) => {

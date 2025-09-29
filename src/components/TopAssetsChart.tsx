@@ -65,12 +65,6 @@ export function TopAssetsChart() {
   // Use cached data if available, otherwise use fallback data
   const topAssets = data?.topAssets || fallbackData;
 
-  console.log("TopAssetsChart data:", {
-    cachedAssets: data?.topAssets?.length || 0,
-    data: !!data,
-    fallbackAssets: fallbackData.length,
-    totalAssets: topAssets.length,
-  });
 
   if (topAssets.length === 0) {
     return (

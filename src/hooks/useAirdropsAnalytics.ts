@@ -5,8 +5,6 @@ import type {
   RecipientParticipation,
   TopPerformingCampaign,
   VestingDistribution,
-  CampaignCompletionRate,
-  AdminStats,
 } from "@/lib/services/airdrops-graphql";
 
 interface AirdropsAnalyticsData {
@@ -18,8 +16,6 @@ interface AirdropsAnalyticsData {
   vestingDistribution: VestingDistribution;
   chainDistribution: ChainDistribution[];
   topPerformingCampaigns: TopPerformingCampaign[];
-  campaignCompletionRate: CampaignCompletionRate;
-  adminLeaderboard: AdminStats[];
 }
 
 export function useAirdropsAnalytics() {

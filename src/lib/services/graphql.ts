@@ -873,8 +873,6 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    console.log(`Fetched ${result.data.Asset.length} assets from GraphQL`);
-
     // Convert to TopAsset format and sort by stream count
     const topAssets = result.data.Asset.map((asset) => ({
       address: asset.address,
@@ -887,16 +885,6 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
     }))
       .sort((a, b) => b.streamCount - a.streamCount) // Sort by stream count desc
       .slice(0, 10); // Take top 10
-
-    const totalStreams = result.data.Asset.reduce(
-      (sum, asset) => sum + asset.streams_aggregate.aggregate.count,
-      0,
-    );
-    console.log(`Processing ${result.data.Asset.length} assets with ${totalStreams} total streams`);
-    console.log(
-      `Top assets:`,
-      topAssets.slice(0, 5).map((a) => `${a.symbol}: ${a.streamCount} streams`),
-    );
 
     return topAssets;
   } catch (error) {
@@ -974,8 +962,6 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
       });
     });
 
-    console.log(`Fetched monthly stream creation data for ${monthlyData.length} months`);
-    console.log(`Latest data:`, monthlyData.slice(-3));
 
     return monthlyData;
   } catch (error) {
@@ -1099,14 +1085,6 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
       min: parseInt(aggregate.min.duration || "0", 10),
     };
 
-    console.log(`Fetched stream duration stats:`, {
-      average: `${Math.round(stats.average / 86400)} days`,
-      max: `${Math.round(stats.max / 86400)} days`,
-      median: `${Math.round(stats.median / 86400)} days`,
-      medianPosition,
-      min: `${Math.round(stats.min / 86400)} days`,
-      totalCount,
-    });
 
     return stats;
   } catch (error) {
@@ -1178,12 +1156,6 @@ export async function fetchStreamProperties(): Promise<StreamProperties> {
       transferable: transferableStreams.aggregate.count,
     };
 
-    console.log(`Fetched stream properties:`, {
-      both: `${properties.both} (${((properties.both / properties.total) * 100).toFixed(1)}%)`,
-      cancelable: `${properties.cancelable} (${((properties.cancelable / properties.total) * 100).toFixed(1)}%)`,
-      total: properties.total,
-      transferable: `${properties.transferable} (${((properties.transferable / properties.total) * 100).toFixed(1)}%)`,
-    });
 
     return properties;
   } catch (error) {
@@ -1252,12 +1224,6 @@ export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryD
       tranched: tranchedStreams.aggregate.count,
     };
 
-    console.log(`Fetched stream category distribution:`, {
-      dynamic: `${distribution.dynamic} (${((distribution.dynamic / distribution.total) * 100).toFixed(1)}%)`,
-      linear: `${distribution.linear} (${((distribution.linear / distribution.total) * 100).toFixed(1)}%)`,
-      total: distribution.total,
-      tranched: `${distribution.tranched} (${((distribution.tranched / distribution.total) * 100).toFixed(1)}%)`,
-    });
 
     return distribution;
   } catch (error) {
@@ -1301,7 +1267,6 @@ export async function fetchTotalVestingStreams(): Promise<number> {
 
     const totalStreams = result.data.totalStreams.aggregate.count;
 
-    console.log(`Fetched total vesting streams: ${totalStreams.toLocaleString()}`);
 
     return totalStreams;
   } catch (error) {
@@ -1366,11 +1331,6 @@ export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompleted
       total: totalStreams.aggregate.count,
     };
 
-    console.log(`Fetched active vs completed streams:`, {
-      active: `${streams.active} (${((streams.active / streams.total) * 100).toFixed(1)}%)`,
-      completed: `${streams.completed} (${((streams.completed / streams.total) * 100).toFixed(1)}%)`,
-      total: streams.total,
-    });
 
     return streams;
   } catch (error) {
@@ -1460,7 +1420,6 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    console.log(`Fetched ${result.data.Stream.length} largest stablecoin streams`);
     return result.data.Stream;
   } catch (error) {
     console.error("Error fetching largest stablecoin streams:", error);
@@ -1528,7 +1487,6 @@ export async function fetch24HourMetrics(): Promise<Activity24Hours> {
       totalTransactions: result.data.transactions24h.aggregate.count,
     };
 
-    console.log(`Fetched 24h metrics:`, metrics);
     return metrics;
   } catch (error) {
     console.error("Error fetching 24-hour metrics:", error);

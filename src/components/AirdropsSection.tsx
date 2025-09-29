@@ -1,8 +1,6 @@
 "use client";
 
-import { AdminLeaderboard } from "./AdminLeaderboard";
 import { AirdropsChainDistribution } from "./AirdropsChainDistribution";
-import { CampaignCompletionRate } from "./CampaignCompletionRate";
 import { CampaignCreationTrend } from "./CampaignCreationTrend";
 import { MedianClaimers } from "./MedianClaimers";
 import { MedianClaimWindow } from "./MedianClaimWindow";
@@ -25,10 +23,6 @@ export function AirdropsSection() {
           <MedianClaimWindow />
         </div>
 
-        {/* Row 1.5: Metric cards - Second Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <CampaignCompletionRate />
-        </div>
 
         {/* Row 2: Campaign Creation Trend (full width) */}
         <div className="grid grid-cols-1 gap-6 mb-8">
@@ -46,10 +40,6 @@ export function AirdropsSection() {
           <TopPerformingCampaigns />
         </div>
 
-        {/* Row 5: Admin Leaderboard (full width) */}
-        <div className="grid grid-cols-1 gap-6">
-          <AdminLeaderboard />
-        </div>
       </div>
     </div>
   );

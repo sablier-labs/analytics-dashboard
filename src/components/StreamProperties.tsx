@@ -21,9 +21,6 @@ export function StreamProperties() {
         .then((result) => {
           if (result.success) {
             setFallbackData(result.data);
-            console.log(
-              `Stream properties loaded via fallback: ${result.data.both} streams with both properties`,
-            );
           }
         })
         .catch((err) => {
