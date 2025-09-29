@@ -1,3 +1,9 @@
+import {
+  CACHE_LIMITS,
+  createCacheSummary,
+  optimizeAirdropsCache,
+  validateCacheSize,
+} from "./cache-optimization";
 import type { OptimizedTopPerformingCampaign } from "./services/airdrops-graphql";
 import {
   fetchChainDistribution,
@@ -5,30 +11,22 @@ import {
   fetchMedianClaimWindow,
   fetchMonthlyCampaignCreation,
   fetchRecipientParticipation,
-  fetchTotalCampaigns,
   fetchTopPerformingCampaigns,
+  fetchTotalCampaigns,
   fetchVestingDistribution,
 } from "./services/airdrops-graphql";
-import {
-  optimizeAirdropsCache,
-  validateCacheSize,
-  createCacheSummary,
-  CACHE_LIMITS,
-} from "./cache-optimization";
 
 function optimizeTopPerformingCampaigns(campaigns: any[]): OptimizedTopPerformingCampaign[] {
   // Keep only essential fields and limit to top campaigns
-  return campaigns
-    .slice(0, CACHE_LIMITS.TOP_CAMPAIGNS_LIMIT)
-    .map((campaign) => ({
-      id: campaign.id,
-      chainId: campaign.chainId,
-      chainName: campaign.chainName,
-      claimedCount: campaign.claimedCount,
-      totalRecipients: campaign.totalRecipients,
-      claimRate: campaign.claimRate,
-      // Remove timestamp, expiration, admin fields to save space
-    }));
+  return campaigns.slice(0, CACHE_LIMITS.TOP_CAMPAIGNS_LIMIT).map((campaign) => ({
+    chainId: campaign.chainId,
+    chainName: campaign.chainName,
+    claimedCount: campaign.claimedCount,
+    claimRate: campaign.claimRate,
+    id: campaign.id,
+    totalRecipients: campaign.totalRecipients,
+    // Remove timestamp, expiration, admin fields to save space
+  }));
 }
 
 export async function updateAirdropsCache() {
@@ -55,7 +53,7 @@ export async function updateAirdropsCache() {
     }),
     fetchRecipientParticipation().catch((err) => {
       console.error("Error fetching recipient participation:", err);
-      return { percentage: 0, campaignCount: 0 };
+      return { campaignCount: 0, percentage: 0 };
     }),
     fetchMedianClaimers().catch((err) => {
       console.error("Error fetching median claimers:", err);
@@ -82,16 +80,17 @@ export async function updateAirdropsCache() {
   ]);
 
   // Prepare the raw cached data
+  const timestamp = new Date().toISOString();
   const rawCachedData = {
-    totalCampaigns,
-    monthlyCampaignCreation,
-    recipientParticipation,
+    chainDistribution,
+    lastUpdated: timestamp,
     medianClaimers,
     medianClaimWindow,
-    vestingDistribution,
-    chainDistribution,
+    monthlyCampaignCreation,
+    recipientParticipation,
     topPerformingCampaigns,
-    lastUpdated: new Date().toISOString(),
+    totalCampaigns,
+    vestingDistribution,
   };
 
   // Apply optimizations to reduce storage size
@@ -104,7 +103,9 @@ export async function updateAirdropsCache() {
 
   const isValidSize = validateCacheSize(optimizedCachedData, "airdrops");
   if (!isValidSize) {
-    console.error("❌ Airdrops cache size validation failed - data may be too large for Edge Config");
+    console.error(
+      "❌ Airdrops cache size validation failed - data may be too large for Edge Config",
+    );
   }
 
   // Store in Edge Config using Vercel REST API
@@ -146,19 +147,19 @@ export async function updateAirdropsCache() {
 
   return {
     dataPoints: {
-      totalCampaigns,
-      monthlyCampaignCreation: optimizedCachedData.monthlyCampaignCreation.length,
       chainDistribution: optimizedCachedData.chainDistribution.length,
-      topPerformingCampaigns: optimizedCachedData.topPerformingCampaigns.length,
       medianClaimers,
       medianClaimWindow,
+      monthlyCampaignCreation: optimizedCachedData.monthlyCampaignCreation.length,
+      topPerformingCampaigns: optimizedCachedData.topPerformingCampaigns.length,
+      totalCampaigns,
     },
-    lastUpdated: optimizedCachedData.lastUpdated,
+    lastUpdated: timestamp,
     message: "Optimized airdrops cache updated successfully",
     optimizations: {
+      chainDistributionLimit: CACHE_LIMITS.AIRDROP_CHAIN_LIMIT,
       monthlyDataLimited: CACHE_LIMITS.AIRDROP_MONTHLY_MONTHS + " months",
       topCampaignsLimit: CACHE_LIMITS.TOP_CAMPAIGNS_LIMIT,
-      chainDistributionLimit: CACHE_LIMITS.AIRDROP_CHAIN_LIMIT,
     },
     success: true,
   };

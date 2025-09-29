@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { updateAnalyticsCache } from "@/lib/cache-update-optimized";
 import { updateAirdropsCache } from "@/lib/airdrops-cache-update";
+import { updateAnalyticsCache } from "@/lib/cache-update-optimized";
 
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
@@ -60,25 +60,26 @@ export async function POST(request: NextRequest) {
     ]);
 
     const results = {
-      analytics: analyticsResult.status === "fulfilled"
-        ? { success: true, ...analyticsResult.value }
-        : { success: false, error: analyticsResult.reason?.message || "Unknown error" },
-      airdrops: airdropsResult.status === "fulfilled"
-        ? { success: true, ...airdropsResult.value }
-        : { success: false, error: airdropsResult.reason?.message || "Unknown error" },
+      airdrops:
+        airdropsResult.status === "fulfilled"
+          ? airdropsResult.value
+          : { error: airdropsResult.reason?.message || "Unknown error", success: false },
+      analytics:
+        analyticsResult.status === "fulfilled"
+          ? analyticsResult.value
+          : { error: analyticsResult.reason?.message || "Unknown error", success: false },
     };
 
     const overallSuccess = results.analytics.success && results.airdrops.success;
 
     return NextResponse.json({
-      success: overallSuccess,
       message: overallSuccess
         ? "All caches updated successfully with optimizations"
         : "Some cache updates failed",
       results,
+      success: overallSuccess,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error("Error updating all caches:", error);
     return NextResponse.json(

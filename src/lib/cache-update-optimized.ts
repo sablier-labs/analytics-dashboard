@@ -21,10 +21,10 @@ import {
 } from "@/lib/services/graphql";
 import { normalizeAmount } from "@/lib/utils/sablier";
 import {
+  CACHE_LIMITS,
+  createCacheSummary,
   optimizeAnalyticsCache,
   validateCacheSize,
-  createCacheSummary,
-  CACHE_LIMITS,
 } from "./cache-optimization";
 
 // Optimized stream interface for Edge Config (only essential fields)
@@ -173,13 +173,14 @@ export async function updateAnalyticsCache() {
   ]);
 
   // Prepare the raw cached data
+  const timestamp = new Date().toISOString();
   const rawCachedData = {
     activeVsCompletedStreams,
     activity24Hours,
     chainDistribution,
     growthRateMetrics,
     largestStablecoinStreams,
-    lastUpdated: new Date().toISOString(),
+    lastUpdated: timestamp,
     monthlyStreamCreation,
     monthlyTransactionGrowth,
     monthlyUserGrowth,
@@ -254,7 +255,7 @@ export async function updateAnalyticsCache() {
       totalTransactions,
       totalUsers,
     },
-    lastUpdated: optimizedCachedData.lastUpdated,
+    lastUpdated: timestamp,
     message: "Optimized cache updated successfully",
     optimizations: {
       monthlyDataLimited: CACHE_LIMITS.MONTHLY_DATA_MONTHS + " months",
