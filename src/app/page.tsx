@@ -9,6 +9,7 @@ import { LargestStablecoinStreams } from "@/components/LargestStablecoinStreams"
 import { LastUpdated } from "@/components/LastUpdated";
 import { MedianStreamDuration } from "@/components/MedianStreamDuration";
 import { MonthlyStreamCreationChart } from "@/components/MonthlyStreamCreationChart";
+import { SolanaSection } from "@/components/SolanaSection";
 import { StreamCategoryDistribution } from "@/components/StreamCategoryDistribution";
 import { StreamProperties } from "@/components/StreamProperties";
 import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
@@ -72,6 +73,8 @@ export default function Home() {
           <LargestStablecoinStreams />
 
           <AirdropsSection />
+
+          <SolanaSection />
         </div>
       </div>
     </div>
