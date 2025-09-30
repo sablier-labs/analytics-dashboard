@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { updateAirdropsCache } from "@/lib/airdrops-cache-update";
 import { updateAnalyticsCache } from "@/lib/cache-update-optimized";
+import { updateSolanaCache } from "@/lib/solana-cache-update";
 
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
@@ -53,10 +54,11 @@ export async function POST(request: NextRequest) {
   try {
     console.log("🚀 Starting optimized update for all caches...");
 
-    // Update both caches in parallel for efficiency
-    const [analyticsResult, airdropsResult] = await Promise.allSettled([
+    // Update all caches in parallel for efficiency
+    const [analyticsResult, airdropsResult, solanaResult] = await Promise.allSettled([
       updateAnalyticsCache(),
       updateAirdropsCache(),
+      updateSolanaCache(),
     ]);
 
     const results = {
@@ -68,9 +70,14 @@ export async function POST(request: NextRequest) {
         analyticsResult.status === "fulfilled"
           ? analyticsResult.value
           : { error: analyticsResult.reason?.message || "Unknown error", success: false },
+      solana:
+        solanaResult.status === "fulfilled"
+          ? solanaResult.value
+          : { error: solanaResult.reason?.message || "Unknown error", success: false },
     };
 
-    const overallSuccess = results.analytics.success && results.airdrops.success;
+    const overallSuccess =
+      results.analytics.success && results.airdrops.success && results.solana.success;
 
     return NextResponse.json({
       message: overallSuccess
