@@ -108,6 +108,7 @@ export interface OptimizedTopPerformingCampaign {
 export interface CachedAirdropsData {
   totalCampaigns: number;
   monthlyCampaignCreation: MonthlyCampaignCreation[];
+  monthlyClaimTrends: MonthlyClaimTrend[];
   recipientParticipation: RecipientParticipation;
   medianClaimers: number;
   medianClaimWindow: number;
@@ -126,6 +127,17 @@ export interface TopPerformingCampaignsResponse {
     timestamp: string;
     expiration: string;
     admin: string;
+  }>;
+}
+
+export interface MonthlyClaimTrend {
+  month: string;
+  count: number;
+}
+
+export interface ClaimActionResponse {
+  Action: Array<{
+    timestamp: string;
   }>;
 }
 
@@ -240,8 +252,6 @@ export async function fetchMonthlyCampaignCreation(): Promise<MonthlyCampaignCre
       month: range.label,
     }));
 
-    const totalCampaigns = monthlyData.reduce((sum, month) => sum + month.count, 0);
-
     return monthlyData;
   } catch (error) {
     console.error("Error fetching monthly campaign creation:", error);
@@ -296,7 +306,6 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
     }
 
     const percentage = totalRecipients > 0 ? (totalClaimed / totalRecipients) * 100 : 0;
-
 
     return {
       campaignCount: result.data.Campaign.length,
@@ -360,7 +369,6 @@ export async function fetchMedianClaimers(): Promise<number> {
         ? (claimerCounts[claimerCounts.length / 2 - 1] + claimerCounts[claimerCounts.length / 2]) /
           2
         : claimerCounts[Math.floor(claimerCounts.length / 2)];
-
 
     return Math.round(median);
   } catch (error) {
@@ -431,7 +439,6 @@ export async function fetchMedianClaimWindow(): Promise<number> {
         ? (claimWindows[claimWindows.length / 2 - 1] + claimWindows[claimWindows.length / 2]) / 2
         : claimWindows[Math.floor(claimWindows.length / 2)];
 
-
     return Math.round(median);
   } catch (error) {
     console.error("Error fetching median claim window:", error);
@@ -496,7 +503,6 @@ export async function fetchVestingDistribution(): Promise<VestingDistribution> {
     const instantCount = result.data.instant.aggregate.count;
     const vestingCount = result.data.vesting.aggregate.count;
 
-
     return {
       instant: instantCount,
       vesting: vestingCount,
@@ -559,7 +565,6 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
       }))
       .sort((a, b) => b.count - a.count); // Sort by count descending
 
-
     return chainDistribution;
   } catch (error) {
     console.error("Error fetching chain distribution:", error);
@@ -567,6 +572,81 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
   }
 }
 
+export async function fetchMonthlyClaimTrends(): Promise<MonthlyClaimTrend[]> {
+  const testnetChainIds = getTestnetChainIds();
+
+  // Generate last 12 months of time ranges
+  const timeRanges: Array<{ label: string; startTimestamp: string; endTimestamp: string }> = [];
+  const now = new Date();
+
+  for (let i = 11; i >= 0; i--) {
+    const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const startOfMonth = new Date(current.getFullYear(), current.getMonth(), 1);
+    const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59);
+
+    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+    const startTimestamp = Math.floor(startOfMonth.getTime() / 1000).toString();
+    const endTimestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
+
+    timeRanges.push({ endTimestamp, label, startTimestamp });
+  }
+
+  const query = `
+    query GetMonthlyClaimTrends {
+      ${timeRanges
+        .map(
+          (range, index) => `
+        month${index}: Action_aggregate(
+          where: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+            timestamp: { _gte: "${range.startTimestamp}", _lte: "${range.endTimestamp}" }
+            category: { _eq: "Claim" }
+          }
+        ) {
+          aggregate {
+            count
+          }
+        }
+      `,
+        )
+        .join("\n")}
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<Record<string, { aggregate: { count: number } }>> =
+      await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Convert response to monthly data
+    const monthlyData: MonthlyClaimTrend[] = timeRanges.map((range, index) => ({
+      count: result.data[`month${index}`].aggregate.count,
+      month: range.label,
+    }));
+
+    console.log("Monthly claim trends fetched:", monthlyData);
+    return monthlyData;
+  } catch (error) {
+    console.error("Error fetching monthly claim trends:", error);
+    throw error;
+  }
+}
 
 export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampaign[]> {
   const testnetChainIds = getTestnetChainIds();
@@ -619,18 +699,17 @@ export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampai
       const claimRate = totalRecipients > 0 ? (claimedCount / totalRecipients) * 100 : 0;
 
       return {
-        id: campaign.id,
+        admin: campaign.admin,
         chainId: campaign.chainId,
         chainName: getMainnetChainName(campaign.chainId),
         claimedCount: campaign.claimedCount,
-        totalRecipients: campaign.totalRecipients,
         claimRate: Math.round(claimRate * 10) / 10, // Round to 1 decimal place
-        timestamp: campaign.timestamp,
         expiration: campaign.expiration,
-        admin: campaign.admin,
+        id: campaign.id,
+        timestamp: campaign.timestamp,
+        totalRecipients: campaign.totalRecipients,
       };
     });
-
 
     return topCampaigns;
   } catch (error) {
@@ -667,6 +746,15 @@ export async function getCachedMonthlyCampaignCreation(): Promise<MonthlyCampaig
   }
   console.log("Cache miss - fetching monthly campaign creation from GraphQL");
   return fetchMonthlyCampaignCreation();
+}
+
+export async function getCachedMonthlyClaimTrends(): Promise<MonthlyClaimTrend[]> {
+  const cached = await getCachedAirdropsData();
+  if (cached?.monthlyClaimTrends) {
+    return cached.monthlyClaimTrends;
+  }
+  console.log("Cache miss - fetching monthly claim trends from GraphQL");
+  return fetchMonthlyClaimTrends();
 }
 
 export async function getCachedRecipientParticipation(): Promise<RecipientParticipation> {
@@ -720,9 +808,9 @@ export async function getCachedTopPerformingCampaigns(): Promise<TopPerformingCa
     // Convert optimized campaigns back to full campaigns with default values for missing fields
     return cached.topPerformingCampaigns.map((campaign) => ({
       ...campaign,
-      timestamp: "", // Default value - not needed for display
-      expiration: "", // Default value - not needed for display
       admin: "", // Default value - not needed for display
+      expiration: "", // Default value - not needed for display
+      timestamp: "", // Default value - not needed for display
     }));
   }
   console.log("Cache miss - fetching top performing campaigns from GraphQL");

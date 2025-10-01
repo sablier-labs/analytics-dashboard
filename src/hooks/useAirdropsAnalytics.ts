@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   ChainDistribution,
   MonthlyCampaignCreation,
+  MonthlyClaimTrend,
   RecipientParticipation,
   TopPerformingCampaign,
   VestingDistribution,
@@ -10,6 +11,7 @@ import type {
 interface AirdropsAnalyticsData {
   totalCampaigns: number;
   monthlyCampaignCreation: MonthlyCampaignCreation[];
+  monthlyClaimTrends: MonthlyClaimTrend[];
   recipientParticipation: RecipientParticipation;
   medianClaimers: number;
   medianClaimWindow: number;

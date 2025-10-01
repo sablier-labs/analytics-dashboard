@@ -10,6 +10,7 @@ import {
   fetchMedianClaimers,
   fetchMedianClaimWindow,
   fetchMonthlyCampaignCreation,
+  fetchMonthlyClaimTrends,
   fetchRecipientParticipation,
   fetchTopPerformingCampaigns,
   fetchTotalCampaigns,
@@ -36,6 +37,7 @@ export async function updateAirdropsCache() {
   const [
     totalCampaigns,
     monthlyCampaignCreation,
+    monthlyClaimTrends,
     recipientParticipation,
     medianClaimers,
     medianClaimWindow,
@@ -49,6 +51,10 @@ export async function updateAirdropsCache() {
     }),
     fetchMonthlyCampaignCreation().catch((err) => {
       console.error("Error fetching monthly campaign creation:", err);
+      return [];
+    }),
+    fetchMonthlyClaimTrends().catch((err) => {
+      console.error("Error fetching monthly claim trends:", err);
       return [];
     }),
     fetchRecipientParticipation().catch((err) => {
@@ -87,11 +93,14 @@ export async function updateAirdropsCache() {
     medianClaimers,
     medianClaimWindow,
     monthlyCampaignCreation,
+    monthlyClaimTrends,
     recipientParticipation,
     topPerformingCampaigns,
     totalCampaigns,
     vestingDistribution,
   };
+
+  console.log("Monthly claim trends data:", monthlyClaimTrends);
 
   // Apply optimizations to reduce storage size
   const optimizedCachedData = optimizeAirdropsCache(rawCachedData);
@@ -151,6 +160,7 @@ export async function updateAirdropsCache() {
       medianClaimers,
       medianClaimWindow,
       monthlyCampaignCreation: optimizedCachedData.monthlyCampaignCreation.length,
+      monthlyClaimTrends: optimizedCachedData.monthlyClaimTrends.length,
       topPerformingCampaigns: optimizedCachedData.topPerformingCampaigns.length,
       totalCampaigns,
     },

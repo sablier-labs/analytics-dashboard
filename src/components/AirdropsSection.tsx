@@ -4,6 +4,7 @@ import { AirdropsChainDistribution } from "./AirdropsChainDistribution";
 import { CampaignCreationTrend } from "./CampaignCreationTrend";
 import { MedianClaimers } from "./MedianClaimers";
 import { MedianClaimWindow } from "./MedianClaimWindow";
+import { MonthlyClaimTrends } from "./MonthlyClaimTrends";
 import { RecipientParticipation } from "./RecipientParticipation";
 import { TopPerformingCampaigns } from "./TopPerformingCampaigns";
 import { TotalCampaigns } from "./TotalCampaigns";
@@ -23,23 +24,26 @@ export function AirdropsSection() {
           <MedianClaimWindow />
         </div>
 
-
         {/* Row 2: Campaign Creation Trend (full width) */}
         <div className="grid grid-cols-1 gap-6 mb-8">
           <CampaignCreationTrend />
         </div>
 
-        {/* Row 3: Two charts side by side */}
+        {/* Row 3: Monthly Claim Trends (full width) */}
+        <div className="grid grid-cols-1 gap-6 mb-8">
+          <MonthlyClaimTrends />
+        </div>
+
+        {/* Row 4: Two charts side by side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <VestingDistribution />
           <AirdropsChainDistribution />
         </div>
 
-        {/* Row 4: Top Performing Campaigns (full width) */}
+        {/* Row 5: Top Performing Campaigns (full width) */}
         <div className="grid grid-cols-1 gap-6 mb-8">
           <TopPerformingCampaigns />
         </div>
-
       </div>
     </div>
   );

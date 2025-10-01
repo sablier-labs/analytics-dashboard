@@ -1,14 +1,18 @@
 import { get } from "@vercel/edge-config";
 import { NextResponse } from "next/server";
-import type { CachedAirdropsData, OptimizedTopPerformingCampaign } from "@/lib/services/airdrops-graphql";
+import type {
+  CachedAirdropsData,
+  OptimizedTopPerformingCampaign,
+} from "@/lib/services/airdrops-graphql";
 import {
   fetchChainDistribution,
   fetchMedianClaimers,
   fetchMedianClaimWindow,
   fetchMonthlyCampaignCreation,
+  fetchMonthlyClaimTrends,
   fetchRecipientParticipation,
-  fetchTotalCampaigns,
   fetchTopPerformingCampaigns,
+  fetchTotalCampaigns,
   fetchVestingDistribution,
 } from "@/lib/services/airdrops-graphql";
 
@@ -26,9 +30,9 @@ export async function GET() {
     // Convert optimized campaigns back to full campaigns for API consistency
     const topPerformingCampaigns = cached.topPerformingCampaigns.map((campaign) => ({
       ...campaign,
-      timestamp: "", // Default value - not needed for display
-      expiration: "", // Default value - not needed for display
       admin: "", // Default value - not needed for display
+      expiration: "", // Default value - not needed for display
+      timestamp: "", // Default value - not needed for display
     }));
 
     return NextResponse.json({
@@ -36,6 +40,7 @@ export async function GET() {
       medianClaimers: cached.medianClaimers,
       medianClaimWindow: cached.medianClaimWindow,
       monthlyCampaignCreation: cached.monthlyCampaignCreation,
+      monthlyClaimTrends: cached.monthlyClaimTrends,
       recipientParticipation: cached.recipientParticipation,
       topPerformingCampaigns,
       totalCampaigns: cached.totalCampaigns,
@@ -50,6 +55,7 @@ export async function GET() {
     const [
       totalCampaigns,
       monthlyCampaignCreation,
+      monthlyClaimTrends,
       recipientParticipation,
       medianClaimers,
       medianClaimWindow,
@@ -59,7 +65,8 @@ export async function GET() {
     ] = await Promise.all([
       fetchTotalCampaigns().catch(() => 0),
       fetchMonthlyCampaignCreation().catch(() => []),
-      fetchRecipientParticipation().catch(() => ({ percentage: 0, campaignCount: 0 })),
+      fetchMonthlyClaimTrends().catch(() => []),
+      fetchRecipientParticipation().catch(() => ({ campaignCount: 0, percentage: 0 })),
       fetchMedianClaimers().catch(() => 0),
       fetchMedianClaimWindow().catch(() => 0),
       fetchVestingDistribution().catch(() => ({ instant: 0, vesting: 0 })),
@@ -72,6 +79,7 @@ export async function GET() {
       medianClaimers,
       medianClaimWindow,
       monthlyCampaignCreation,
+      monthlyClaimTrends,
       recipientParticipation,
       topPerformingCampaigns,
       totalCampaigns,

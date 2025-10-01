@@ -4,40 +4,38 @@
  */
 
 import type {
-  MonthlyUserGrowth,
-  MonthlyTransactionGrowth,
-  MonthlyStreamCreation,
-  TopAsset,
-  ChainDistribution,
-} from "./services/graphql";
-import type { OptimizedStablecoinStream } from "./services/cache";
-import type {
-  MonthlyCampaignCreation,
   ChainDistribution as AirdropsChainDistribution,
+  MonthlyCampaignCreation,
+  MonthlyClaimTrend,
   OptimizedTopPerformingCampaign,
 } from "./services/airdrops-graphql";
+import type { OptimizedStablecoinStream } from "./services/cache";
+import type {
+  ChainDistribution,
+  MonthlyStreamCreation,
+  MonthlyTransactionGrowth,
+  MonthlyUserGrowth,
+  TopAsset,
+} from "./services/graphql";
 
 // Configuration for data retention limits
 export const CACHE_LIMITS = {
-  // Main analytics limits
-  MONTHLY_DATA_MONTHS: 24, // Limit monthly data to 24 months
-  TOP_STABLECOIN_STREAMS: 20, // Reduce from 25 to 20
-  TOP_ASSETS_LIMIT: 15, // Limit top assets
-  CHAIN_DISTRIBUTION_LIMIT: 10, // Limit chain distribution entries
+  AIRDROP_CHAIN_LIMIT: 8, // Limit chain distribution for airdrops
 
   // Airdrops limits
   AIRDROP_MONTHLY_MONTHS: 12, // Limit to 12 months for airdrops
+  CHAIN_DISTRIBUTION_LIMIT: 10, // Limit chain distribution entries
+  // Main analytics limits
+  MONTHLY_DATA_MONTHS: 24, // Limit monthly data to 24 months
+  TOP_ASSETS_LIMIT: 15, // Limit top assets
   TOP_CAMPAIGNS_LIMIT: 8, // Reduce from 10 to 8
-  AIRDROP_CHAIN_LIMIT: 8, // Limit chain distribution for airdrops
+  TOP_STABLECOIN_STREAMS: 20, // Reduce from 25 to 20
 } as const;
 
 /**
  * Optimizes monthly growth data by limiting to recent months
  */
-export function limitMonthlyData<T extends { month: string }>(
-  data: T[],
-  monthsLimit: number
-): T[] {
+export function limitMonthlyData<T extends { month: string }>(data: T[], monthsLimit: number): T[] {
   if (!data || data.length <= monthsLimit) {
     return data;
   }
@@ -63,21 +61,21 @@ export function limitTopEntries<T>(data: T[], limit: number): T[] {
  * Removes unnecessary fields from stablecoin streams to reduce size
  */
 export function compressStablecoinStreams(
-  streams: OptimizedStablecoinStream[]
+  streams: OptimizedStablecoinStream[],
 ): OptimizedStablecoinStream[] {
   return streams.map((stream) => ({
-    id: stream.id,
-    tokenId: stream.tokenId,
-    depositAmount: stream.depositAmount,
+    asset: {
+      decimals: stream.asset.decimals,
+      symbol: stream.asset.symbol,
+    },
     chainId: stream.chainId,
     contract: stream.contract,
+    depositAmount: stream.depositAmount,
+    endTime: stream.endTime.split("T")[0] + "T23:59:59Z",
+    id: stream.id,
     // Keep only essential time fields (remove seconds precision for older streams)
     startTime: stream.startTime.split("T")[0] + "T00:00:00Z",
-    endTime: stream.endTime.split("T")[0] + "T23:59:59Z",
-    asset: {
-      symbol: stream.asset.symbol,
-      decimals: stream.asset.decimals,
-    },
+    tokenId: stream.tokenId,
   }));
 }
 
@@ -95,31 +93,28 @@ export function optimizeAnalyticsCache(data: {
 }) {
   return {
     ...data,
-    // Limit monthly data to recent periods
-    monthlyUserGrowth: limitMonthlyData(
-      data.monthlyUserGrowth,
-      CACHE_LIMITS.MONTHLY_DATA_MONTHS
-    ),
-    monthlyTransactionGrowth: limitMonthlyData(
-      data.monthlyTransactionGrowth,
-      CACHE_LIMITS.MONTHLY_DATA_MONTHS
-    ),
-    monthlyStreamCreation: limitMonthlyData(
-      data.monthlyStreamCreation,
-      CACHE_LIMITS.MONTHLY_DATA_MONTHS
-    ),
-
-    // Limit top entries
-    topAssets: limitTopEntries(data.topAssets, CACHE_LIMITS.TOP_ASSETS_LIMIT),
     chainDistribution: limitTopEntries(
       data.chainDistribution,
-      CACHE_LIMITS.CHAIN_DISTRIBUTION_LIMIT
+      CACHE_LIMITS.CHAIN_DISTRIBUTION_LIMIT,
     ),
 
     // Optimize and limit stablecoin streams
     largestStablecoinStreams: compressStablecoinStreams(
-      limitTopEntries(data.largestStablecoinStreams, CACHE_LIMITS.TOP_STABLECOIN_STREAMS)
+      limitTopEntries(data.largestStablecoinStreams, CACHE_LIMITS.TOP_STABLECOIN_STREAMS),
     ),
+    monthlyStreamCreation: limitMonthlyData(
+      data.monthlyStreamCreation,
+      CACHE_LIMITS.MONTHLY_DATA_MONTHS,
+    ),
+    monthlyTransactionGrowth: limitMonthlyData(
+      data.monthlyTransactionGrowth,
+      CACHE_LIMITS.MONTHLY_DATA_MONTHS,
+    ),
+    // Limit monthly data to recent periods
+    monthlyUserGrowth: limitMonthlyData(data.monthlyUserGrowth, CACHE_LIMITS.MONTHLY_DATA_MONTHS),
+
+    // Limit top entries
+    topAssets: limitTopEntries(data.topAssets, CACHE_LIMITS.TOP_ASSETS_LIMIT),
   };
 }
 
@@ -128,26 +123,28 @@ export function optimizeAnalyticsCache(data: {
  */
 export function optimizeAirdropsCache(data: {
   monthlyCampaignCreation: MonthlyCampaignCreation[];
+  monthlyClaimTrends: MonthlyClaimTrend[];
   chainDistribution: AirdropsChainDistribution[];
   topPerformingCampaigns: OptimizedTopPerformingCampaign[];
   [key: string]: any;
 }) {
   return {
     ...data,
+
+    // Limit top entries
+    chainDistribution: limitTopEntries(data.chainDistribution, CACHE_LIMITS.AIRDROP_CHAIN_LIMIT),
     // Limit monthly data
     monthlyCampaignCreation: limitMonthlyData(
       data.monthlyCampaignCreation,
-      CACHE_LIMITS.AIRDROP_MONTHLY_MONTHS
+      CACHE_LIMITS.AIRDROP_MONTHLY_MONTHS,
     ),
-
-    // Limit top entries
-    chainDistribution: limitTopEntries(
-      data.chainDistribution,
-      CACHE_LIMITS.AIRDROP_CHAIN_LIMIT
+    monthlyClaimTrends: limitMonthlyData(
+      data.monthlyClaimTrends,
+      CACHE_LIMITS.AIRDROP_MONTHLY_MONTHS,
     ),
     topPerformingCampaigns: limitTopEntries(
       data.topPerformingCampaigns,
-      CACHE_LIMITS.TOP_CAMPAIGNS_LIMIT
+      CACHE_LIMITS.TOP_CAMPAIGNS_LIMIT,
     ),
   };
 }
@@ -172,7 +169,7 @@ export function formatBytes(bytes: number): string {
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Math.round((bytes / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
+  return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`;
 }
 
 /**
@@ -187,7 +184,9 @@ export function validateCacheSize(data: any, cacheKey: string): boolean {
   // Warning thresholds
   if (size > 1000000) {
     // 1MB
-    console.warn(`⚠️ ${cacheKey} cache is very large (${sizeFormatted}) - consider more aggressive optimization`);
+    console.warn(
+      `⚠️ ${cacheKey} cache is very large (${sizeFormatted}) - consider more aggressive optimization`,
+    );
     return false;
   } else if (size > 500000) {
     // 500KB
