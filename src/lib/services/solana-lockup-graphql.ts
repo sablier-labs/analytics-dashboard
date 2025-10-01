@@ -255,11 +255,13 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
       .sort((a, b) => b.streamCount - a.streamCount)
       .slice(0, 10);
 
+    console.log(`🎨 Enriching ${topTokens.length} tokens with metadata...`);
+
     try {
       const mints = topTokens.map((t) => t.mint);
       const metadataMap = await resolveTokenMetadata(mints);
 
-      return topTokens.map((token) => {
+      const enrichedTokens = topTokens.map((token) => {
         const metadata = metadataMap.get(token.mint);
         return {
           ...token,
@@ -268,8 +270,19 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
           symbol: metadata?.symbol,
         };
       });
+
+      const withMetadata = enrichedTokens.filter((t) => t.symbol).length;
+      console.log(
+        `✅ Token enrichment complete: ${withMetadata}/${topTokens.length} tokens have metadata`,
+      );
+
+      return enrichedTokens;
     } catch (error) {
-      console.error("Error enriching token metadata:", error);
+      console.error("❌ Error enriching token metadata:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", error.message, error.stack);
+      }
+      console.log("⚠️ Returning tokens without metadata due to error");
       return topTokens;
     }
   } catch (error) {
