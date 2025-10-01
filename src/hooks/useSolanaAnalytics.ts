@@ -6,8 +6,8 @@ interface SolanaAnalyticsData {
   totalStreams: number;
   totalCampaigns: number;
   topSPLTokens: Array<{
-    symbol: string;
-    name: string;
+    mint: string;
+    address: string;
     streamCount: number;
   }>;
   totalTransactions: number;

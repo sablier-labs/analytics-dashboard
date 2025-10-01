@@ -6,9 +6,11 @@ export interface GraphQLResponse<T> {
   errors?: Array<{ message: string }>;
 }
 
-export interface UserAggregateResponse {
-  users: Array<{
+export interface StreamsResponse {
+  streams: Array<{
     id: string;
+    sender: string;
+    recipient: string;
   }>;
 }
 
@@ -18,30 +20,31 @@ export interface StreamAggregateResponse {
   }>;
 }
 
-export interface TransactionAggregateResponse {
+export interface ActionResponse {
   actions: Array<{
     id: string;
+    addressA: string | null;
   }>;
 }
 
 export interface TopSPLToken {
-  symbol: string;
-  name: string;
+  mint: string;
+  address: string;
   streamCount: number;
 }
 
 export interface AssetResponse {
   assets: Array<{
     id: string;
-    symbol: string;
-    name: string;
+    mint: string;
+    address: string;
     streams: Array<{
       id: string;
     }>;
   }>;
 }
 
-export interface StreamResponse {
+export interface StreamTimestampResponse {
   streams: Array<{
     id: string;
     timestamp: string;
@@ -51,8 +54,9 @@ export interface StreamResponse {
 export async function fetchSolanaUsers(): Promise<number> {
   const query = `
     query GetSolanaUsers {
-      users(first: 1000) {
-        id
+      streams(first: 1000) {
+        sender
+        recipient
       }
     }
   `;
@@ -70,13 +74,19 @@ export async function fetchSolanaUsers(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<UserAggregateResponse> = await response.json();
+    const result: GraphQLResponse<StreamsResponse> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    return result.data.users.length;
+    const uniqueUsers = new Set<string>();
+    result.data.streams.forEach((stream) => {
+      uniqueUsers.add(stream.sender);
+      uniqueUsers.add(stream.recipient);
+    });
+
+    return uniqueUsers.size;
   } catch (error) {
     console.error("Error fetching Solana users:", error);
     throw error;
@@ -92,7 +102,7 @@ export async function fetchSolanaMAU(): Promise<number> {
         where: { timestamp_gte: "${thirtyDaysAgo}" }
         first: 1000
       ) {
-        addressId
+        addressA
       }
     }
   `;
@@ -110,14 +120,17 @@ export async function fetchSolanaMAU(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<{ actions: Array<{ addressId: string }> }> =
-      await response.json();
+    const result: GraphQLResponse<ActionResponse> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    const uniqueUsers = new Set(result.data.actions.map((action) => action.addressId));
+    const uniqueUsers = new Set(
+      result.data.actions
+        .map((action) => action.addressA)
+        .filter((addr): addr is string => addr !== null),
+    );
     return uniqueUsers.size;
   } catch (error) {
     console.error("Error fetching Solana MAU:", error);
@@ -182,7 +195,7 @@ export async function fetchSolanaTransactions(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<TransactionAggregateResponse> = await response.json();
+    const result: GraphQLResponse<{ actions: Array<{ id: string }> }> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
@@ -200,8 +213,8 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
     query GetTopTokens {
       assets(first: 1000) {
         id
-        symbol
-        name
+        mint
+        address
         streams {
           id
         }
@@ -230,9 +243,9 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
 
     const topTokens = result.data.assets
       .map((asset) => ({
-        name: asset.name,
+        address: asset.address,
+        mint: asset.mint,
         streamCount: asset.streams.length,
-        symbol: asset.symbol,
       }))
       .sort((a, b) => b.streamCount - a.streamCount)
       .slice(0, 10);
@@ -272,7 +285,7 @@ export async function fetchSolanaStreams24h(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<StreamResponse> = await response.json();
+    const result: GraphQLResponse<StreamTimestampResponse> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);

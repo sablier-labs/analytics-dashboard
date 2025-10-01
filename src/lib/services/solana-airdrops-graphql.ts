@@ -12,10 +12,11 @@ export interface CampaignAggregateResponse {
   }>;
 }
 
-export interface ClaimResponse {
-  claims: Array<{
+export interface ActivityResponse {
+  activities: Array<{
     id: string;
     timestamp: string;
+    claims: string;
   }>;
 }
 
@@ -59,12 +60,13 @@ export async function fetchSolanaClaims24h(): Promise<number> {
 
   const query = `
     query GetClaims24h {
-      claims(
+      activities(
         where: { timestamp_gte: "${twentyFourHoursAgo}" }
         first: 1000
       ) {
         id
         timestamp
+        claims
       }
     }
   `;
@@ -82,13 +84,17 @@ export async function fetchSolanaClaims24h(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<ClaimResponse> = await response.json();
+    const result: GraphQLResponse<ActivityResponse> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    return result.data.claims.length;
+    const totalClaims = result.data.activities.reduce((sum, activity) => {
+      return sum + parseInt(activity.claims, 10);
+    }, 0);
+
+    return totalClaims;
   } catch (error) {
     console.error("Error fetching Solana claims 24h:", error);
     throw error;

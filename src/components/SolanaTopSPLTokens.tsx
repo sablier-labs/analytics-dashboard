@@ -53,6 +53,11 @@ export function SolanaTopSPLTokens() {
     );
   }
 
+  const truncateAddress = (address: string) => {
+    if (address.length <= 12) return address;
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   const chartData = {
     datasets: [
       {
@@ -65,7 +70,7 @@ export function SolanaTopSPLTokens() {
         label: "Stream Count",
       },
     ],
-    labels: topSPLTokens.map((token) => token.symbol),
+    labels: topSPLTokens.map((token) => truncateAddress(token.mint)),
   };
 
   const options = {
@@ -89,7 +94,7 @@ export function SolanaTopSPLTokens() {
         callbacks: {
           afterLabel: (context: any) => {
             const token = topSPLTokens[context.dataIndex];
-            return token.name;
+            return `Address: ${token.address}`;
           },
           label: (context: any) => {
             const value = new Intl.NumberFormat().format(context.parsed.x);
@@ -97,7 +102,7 @@ export function SolanaTopSPLTokens() {
           },
           title: (context: any) => {
             const token = topSPLTokens[context[0].dataIndex];
-            return `${token.symbol} - ${token.name}`;
+            return truncateAddress(token.mint);
           },
         },
         cornerRadius: 6,
