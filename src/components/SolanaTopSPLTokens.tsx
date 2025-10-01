@@ -15,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
+import { TokenLogo } from "./TokenLogo";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -70,7 +71,7 @@ export function SolanaTopSPLTokens() {
         label: "Stream Count",
       },
     ],
-    labels: topSPLTokens.map((token) => truncateAddress(token.mint)),
+    labels: topSPLTokens.map((token) => token.symbol || truncateAddress(token.mint)),
   };
 
   const options = {
@@ -94,7 +95,7 @@ export function SolanaTopSPLTokens() {
         callbacks: {
           afterLabel: (context: any) => {
             const token = topSPLTokens[context.dataIndex];
-            return `Address: ${token.address}`;
+            return `Mint: ${truncateAddress(token.mint)}`;
           },
           label: (context: any) => {
             const value = new Intl.NumberFormat().format(context.parsed.x);
@@ -102,6 +103,9 @@ export function SolanaTopSPLTokens() {
           },
           title: (context: any) => {
             const token = topSPLTokens[context[0].dataIndex];
+            if (token.symbol && token.name) {
+              return `${token.symbol} - ${token.name}`;
+            }
             return truncateAddress(token.mint);
           },
         },
@@ -198,6 +202,40 @@ export function SolanaTopSPLTokens() {
 
       <div className="h-80">
         <Bar data={chartData} options={options} />
+      </div>
+
+      <div className="mt-6 space-y-2">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Token Details</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {topSPLTokens.map((token) => (
+            <div
+              key={token.mint}
+              className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+            >
+              {token.symbol ? (
+                <TokenLogo symbol={token.symbol} size={32} />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs">
+                  ?
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {token.symbol || truncateAddress(token.mint)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {token.name || token.mint}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {token.streamCount}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">streams</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -31,6 +31,9 @@ export interface TopSPLToken {
   mint: string;
   address: string;
   streamCount: number;
+  symbol?: string;
+  name?: string;
+  logoURI?: string;
 }
 
 export interface AssetResponse {
@@ -209,6 +212,8 @@ export async function fetchSolanaTransactions(): Promise<number> {
 }
 
 export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
+  const { resolveTokenMetadata } = await import("./solana-token-metadata");
+
   const query = `
     query GetTopTokens {
       assets(first: 1000) {
@@ -250,7 +255,23 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
       .sort((a, b) => b.streamCount - a.streamCount)
       .slice(0, 10);
 
-    return topTokens;
+    try {
+      const mints = topTokens.map((t) => t.mint);
+      const metadataMap = await resolveTokenMetadata(mints);
+
+      return topTokens.map((token) => {
+        const metadata = metadataMap.get(token.mint);
+        return {
+          ...token,
+          logoURI: metadata?.logoURI,
+          name: metadata?.name,
+          symbol: metadata?.symbol,
+        };
+      });
+    } catch (error) {
+      console.error("Error enriching token metadata:", error);
+      return topTokens;
+    }
   } catch (error) {
     console.error("Error fetching Solana top tokens:", error);
     throw error;

@@ -17,6 +17,9 @@ export interface SolanaAnalyticsData {
     mint: string;
     address: string;
     streamCount: number;
+    symbol?: string;
+    name?: string;
+    logoURI?: string;
   }>;
   totalTransactions: number;
   streams24h: number;
