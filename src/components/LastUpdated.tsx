@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshButton } from "@/components/RefreshButton";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 
 export function LastUpdated() {
   const { data, loading, refetch } = useAnalyticsContext();
   const [relativeTime, setRelativeTime] = useState<string>("");
+  const lastRefetchAttempt = useRef<number>(0);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -20,7 +21,7 @@ export function LastUpdated() {
     });
   };
 
-  const getRelativeTime = (timestamp: string) => {
+  const getRelativeTime = useCallback((timestamp: string) => {
     const now = Date.now();
     const updatedTime = new Date(timestamp).getTime();
     const diffInMinutes = Math.floor((now - updatedTime) / (1000 * 60));
@@ -33,7 +34,7 @@ export function LastUpdated() {
 
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays} day${diffInDays === 1 ? "" : "s"} ago`;
-  };
+  }, []);
 
   const getFreshnessColor = (timestamp: string) => {
     const now = Date.now();
@@ -68,17 +69,17 @@ export function LastUpdated() {
       const updatedTime = new Date(data.lastUpdated).getTime();
       const diffInHours = (now - updatedTime) / (1000 * 60 * 60);
 
-      // Auto-refresh if data is more than 24 hours old
-      if (diffInHours >= 24) {
+      // Only refetch if data is >24h old AND we haven't tried in the last 5 minutes
+      const timeSinceLastAttempt = (now - lastRefetchAttempt.current) / (1000 * 60);
+
+      if (diffInHours >= 24 && timeSinceLastAttempt >= 5) {
         console.log("Data is stale (>24h old), auto-refreshing...");
+        lastRefetchAttempt.current = now;
         void refetch();
       }
     };
 
-    // Check freshness immediately
-    checkDataFreshness();
-
-    // Check every 5 minutes
+    // Check every 5 minutes (not immediately to avoid loop on mount)
     const freshnessInterval = setInterval(checkDataFreshness, 5 * 60 * 1000);
 
     return () => clearInterval(freshnessInterval);
