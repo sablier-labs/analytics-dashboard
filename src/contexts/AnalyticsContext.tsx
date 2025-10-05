@@ -17,11 +17,14 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadAnalytics = useCallback(async () => {
+  const loadAnalytics = useCallback(async (bustCache = false) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/analytics");
+      const url = bustCache ? `/api/analytics?t=${Date.now()}` : "/api/analytics";
+      const response = await fetch(url, {
+        cache: bustCache ? "no-store" : "default",
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch analytics data");
       }
@@ -39,7 +42,9 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   }, [loadAnalytics]);
 
   const refetch = useCallback(async () => {
-    await loadAnalytics();
+    // Add small delay to allow Edge Config to propagate, then bust cache
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await loadAnalytics(true);
   }, [loadAnalytics]);
 
   return (
