@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { StreamProperties as StreamPropertiesType } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
 export function StreamProperties() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fallbackData, setFallbackData] = useState<StreamPropertiesType | null>(null);
   const [fallbackLoading, setFallbackLoading] = useState(false);

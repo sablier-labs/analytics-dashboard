@@ -1,6 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { Activity24Hours } from "@/lib/services/graphql";
 
 interface Activity24HoursData {
@@ -8,7 +8,7 @@ interface Activity24HoursData {
 }
 
 export function Activity24Hours() {
-  const { data, loading } = useAnalytics() as {
+  const { data, loading } = useAnalyticsContext() as {
     data: Activity24HoursData | null;
     loading: boolean;
   };

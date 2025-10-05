@@ -13,7 +13,7 @@ import {
 } from "chart.js";
 import { useEffect, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -30,7 +30,7 @@ ChartJS.register(
 );
 
 export function CumulativeUserChart() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error } = useAnalyticsContext();
   const [fallbackData, setFallbackData] = useState<MonthlyUserGrowth[] | null>(null);
   const [fallbackLoading, setFallbackLoading] = useState(false);
 

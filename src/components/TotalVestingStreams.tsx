@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
 export function TotalVestingStreams() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fallbackData, setFallbackData] = useState<number | null>(null);
   const [fallbackLoading, setFallbackLoading] = useState(false);

@@ -4,7 +4,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useEffect, useRef, useState } from "react";
 import { Pie } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { StreamCategoryDistribution as StreamCategoryDistributionType } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -12,7 +12,7 @@ import { SourceCodeLink } from "./SourceCodeLink";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export function StreamCategoryDistribution() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const [fallbackData, setFallbackData] = useState<StreamCategoryDistributionType | null>(null);

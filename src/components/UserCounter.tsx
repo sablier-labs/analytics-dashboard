@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef } from "react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
 export function UserCounter() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error } = useAnalyticsContext();
   const userCount = data?.totalUsers || null;
   const containerRef = useRef<HTMLDivElement>(null);
 

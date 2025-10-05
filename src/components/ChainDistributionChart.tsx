@@ -4,7 +4,7 @@ import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useRef } from "react";
 import { Pie } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
 import type { ChainDistribution } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -46,7 +46,7 @@ function generateChainColors(chainData: ChainDistribution[]): string[] {
 }
 
 export function ChainDistributionChart() {
-  const { data, loading, error } = useAnalytics();
+  const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 

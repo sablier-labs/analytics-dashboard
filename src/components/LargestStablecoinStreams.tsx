@@ -1,6 +1,6 @@
 "use client";
 
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
 import type { OptimizedStablecoinStream } from "@/lib/services/cache";
 import {
@@ -31,7 +31,7 @@ interface LargestStablecoinStreamsData {
 }
 
 export function LargestStablecoinStreams() {
-  const { data, loading } = useAnalytics() as {
+  const { data, loading } = useAnalyticsContext() as {
     data: LargestStablecoinStreamsData | null;
     loading: boolean;
   };

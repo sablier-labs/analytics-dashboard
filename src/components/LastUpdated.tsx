@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { RefreshButton } from "@/components/RefreshButton";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 
 export function LastUpdated() {
-  const { data, loading, refetch } = useAnalytics();
+  const { data, loading, refetch } = useAnalyticsContext();
   const [relativeTime, setRelativeTime] = useState<string>("");
 
   const formatTimestamp = (timestamp: string) => {
@@ -58,6 +58,31 @@ export function LastUpdated() {
 
     return () => clearInterval(interval);
   }, [data?.lastUpdated, getRelativeTime]);
+
+  // Auto-refresh stale data
+  useEffect(() => {
+    if (!data?.lastUpdated || loading) return;
+
+    const checkDataFreshness = () => {
+      const now = Date.now();
+      const updatedTime = new Date(data.lastUpdated).getTime();
+      const diffInHours = (now - updatedTime) / (1000 * 60 * 60);
+
+      // Auto-refresh if data is more than 24 hours old
+      if (diffInHours >= 24) {
+        console.log("Data is stale (>24h old), auto-refreshing...");
+        void refetch();
+      }
+    };
+
+    // Check freshness immediately
+    checkDataFreshness();
+
+    // Check every 5 minutes
+    const freshnessInterval = setInterval(checkDataFreshness, 5 * 60 * 1000);
+
+    return () => clearInterval(freshnessInterval);
+  }, [data?.lastUpdated, loading, refetch]);
 
   if (loading || !data?.lastUpdated) {
     return (
