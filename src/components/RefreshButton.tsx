@@ -29,8 +29,30 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       const result = await response.json();
       console.log("Manual trigger response:", result);
 
-      if (!response.ok) {
-        throw new Error(result.message || "Failed to refresh data");
+      if (!response.ok || !result.success) {
+        // Extract detailed error message
+        let errorMsg = result.message || "Failed to refresh data";
+        if (result.results) {
+          const errors = [];
+          if (result.results.analytics?.error) {
+            const err = result.results.analytics.error;
+            if (err.includes("403") || err.includes("forbidden")) {
+              errors.push("Analytics: Permission denied (check VERCEL_ACCESS_TOKEN)");
+            } else {
+              errors.push(`Analytics: ${err.substring(0, 100)}`);
+            }
+          }
+          if (result.results.airdrops?.error) {
+            const err = result.results.airdrops.error;
+            if (err.includes("403") || err.includes("forbidden")) {
+              errors.push("Airdrops: Permission denied (check VERCEL_ACCESS_TOKEN)");
+            } else {
+              errors.push(`Airdrops: ${err.substring(0, 100)}`);
+            }
+          }
+          if (errors.length > 0) errorMsg = errors.join("; ");
+        }
+        throw new Error(errorMsg);
       }
 
       // Trigger analytics refetch if callback provided and wait for it
