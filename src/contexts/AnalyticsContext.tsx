@@ -22,6 +22,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       setError(null);
       const url = bustCache ? `/api/analytics?t=${Date.now()}` : "/api/analytics";
+      console.log(`📊 Fetching analytics${bustCache ? " (cache-busted)" : ""}:`, url);
       const response = await fetch(url, {
         cache: bustCache ? "no-store" : "default",
       });
@@ -29,8 +30,10 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Failed to fetch analytics data");
       }
       const analyticsData = await response.json();
+      console.log("📊 Analytics data loaded, lastUpdated:", analyticsData.lastUpdated);
       setData(analyticsData);
     } catch (err) {
+      console.error("❌ Failed to load analytics:", err);
       setError(err instanceof Error ? err.message : "Failed to load analytics data");
     } finally {
       setLoading(false);

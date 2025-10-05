@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface RefreshButtonProps {
-  onRefresh?: () => void;
+  onRefresh?: () => Promise<void> | void;
 }
 
 export function RefreshButton({ onRefresh }: RefreshButtonProps) {
@@ -17,6 +17,8 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       setIsRefreshing(true);
       setMessage(null);
 
+      console.log("🔄 Triggering manual refresh...");
+
       const response = await fetch("/api/manual-trigger", {
         headers: {
           "Content-Type": "application/json",
@@ -25,21 +27,25 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       });
 
       const result = await response.json();
+      console.log("Manual trigger response:", result);
 
       if (!response.ok) {
         throw new Error(result.message || "Failed to refresh data");
       }
 
-      setMessage({ text: "Data refreshed successfully!", type: "success" });
-
-      // Trigger analytics refetch if callback provided
+      // Trigger analytics refetch if callback provided and wait for it
       if (onRefresh) {
-        onRefresh();
+        console.log("🔄 Refetching analytics data...");
+        await onRefresh();
+        console.log("✅ Analytics data refetched");
       }
+
+      setMessage({ text: "Data refreshed successfully!", type: "success" });
 
       // Clear success message after 3 seconds
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
+      console.error("❌ Refresh failed:", error);
       setMessage({
         text: error instanceof Error ? error.message : "Failed to refresh data",
         type: "error",
