@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { StreamDurationStats } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -68,33 +68,11 @@ function formatDuration(seconds: number): { value: string; unit: string } {
 export function MedianStreamDuration() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<StreamDurationStats | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
+    
+    // Use cached data if available, otherwise use fallback data
+  const durationStats = data?.streamDurationStats || null;
 
-  // If cache doesn't have streamDurationStats, fetch directly
-  useEffect(() => {
-    if (!loading && data && !data.streamDurationStats && !fallbackData && !fallbackLoading) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-duration-stats")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback duration stats:", err);
-          // In case of error, set a default object to prevent infinite loading
-          setFallbackData({ average: 0, max: 0, median: 0, min: 0 });
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use cached data if available, otherwise use fallback data
-  const durationStats = data?.streamDurationStats || fallbackData;
-
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

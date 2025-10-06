@@ -11,7 +11,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { MonthlyUserGrowth } from "@/lib/services/graphql";
@@ -31,38 +31,9 @@ ChartJS.register(
 
 export function CumulativeUserChart() {
   const { data, loading, error } = useAnalyticsContext();
-  const [fallbackData, setFallbackData] = useState<MonthlyUserGrowth[] | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
-
-  // If cache doesn't have monthlyUserGrowth, fetch directly
-  useEffect(() => {
-    if (
-      !loading &&
-      data &&
-      (!data.monthlyUserGrowth || data.monthlyUserGrowth.length === 0) &&
-      !fallbackData &&
-      !fallbackLoading
-    ) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-monthly-users")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback monthly user growth:", err);
-          setFallbackData([]);
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use fallback data if available, otherwise use cached data (prefer real data over empty arrays)
-  const hasValidCachedData = data?.monthlyUserGrowth && data.monthlyUserGrowth.length > 0;
-  const userGrowthData = fallbackData || (hasValidCachedData ? data.monthlyUserGrowth : null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const userGrowthData = data?.monthlyUserGrowth || null;
 
   const formatMonth = (monthString: string) => {
     const [year, month] = monthString.split("-");
@@ -73,7 +44,7 @@ export function CumulativeUserChart() {
     });
   };
 
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="animate-pulse">

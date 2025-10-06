@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { TimeBasedUserCounts } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -9,38 +9,8 @@ import { SourceCodeLink } from "./SourceCodeLink";
 export function TimeBasedUserCounters() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<TimeBasedUserCounts | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  // If cache doesn't have timeBasedUsers, fetch directly
-  useEffect(() => {
-    if (
-      !loading &&
-      data &&
-      (!data.timeBasedUsers || Object.values(data.timeBasedUsers).every((v) => v === 0)) &&
-      !fallbackData &&
-      !fallbackLoading
-    ) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-time-users")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback time-based users:", err);
-          setFallbackData({ past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 });
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
-  const hasValidCachedData =
-    data?.timeBasedUsers && !Object.values(data.timeBasedUsers).every((v) => v === 0);
-  const userCounts = fallbackData || (hasValidCachedData ? data.timeBasedUsers : null);
+  const userCounts = data?.timeBasedUsers || null;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -69,7 +39,7 @@ export function TimeBasedUserCounters() {
     },
   ];
 
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {timeRanges.map((range) => (

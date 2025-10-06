@@ -11,7 +11,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
@@ -32,41 +32,11 @@ ChartJS.register(
 export function CumulativeTransactionChart() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<MonthlyTransactionGrowth[] | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
+    
+    // Use fallback data if available, otherwise use cached data (prefer real data over empty arrays)
+  const transactionData = data?.monthlyTransactionGrowth || null;
 
-  // If cache doesn't have monthlyTransactionGrowth, fetch directly
-  useEffect(() => {
-    if (
-      !loading &&
-      data &&
-      (!data.monthlyTransactionGrowth || data.monthlyTransactionGrowth.length === 0) &&
-      !fallbackData &&
-      !fallbackLoading
-    ) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-monthly-transactions")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback monthly transaction data:", err);
-          setFallbackData([]);
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use fallback data if available, otherwise use cached data (prefer real data over empty arrays)
-  const hasValidCachedData =
-    data?.monthlyTransactionGrowth && data.monthlyTransactionGrowth.length > 0;
-  const transactionData =
-    fallbackData || (hasValidCachedData ? data.monthlyTransactionGrowth : null);
-
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

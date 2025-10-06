@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -9,43 +9,8 @@ import { SourceCodeLink } from "./SourceCodeLink";
 export function GrowthRateIndicators() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<GrowthRateMetrics | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  // If cache doesn't have growthRateMetrics, fetch directly
-  useEffect(() => {
-    if (
-      !loading &&
-      data &&
-      (!data.growthRateMetrics || Object.values(data.growthRateMetrics).every((v) => v === 0)) &&
-      !fallbackData &&
-      !fallbackLoading
-    ) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-growth-metrics")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback growth metrics:", err);
-          // In case of error, set a default object to prevent infinite loading
-          setFallbackData({
-            averageTransactionGrowthRate: 0,
-            transactionGrowthRate: 0,
-            userGrowthRate: 0,
-          });
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use fallback data if available, otherwise use cached data (prefer real data over zeros)
-  const hasValidCachedData =
-    data?.growthRateMetrics && !Object.values(data.growthRateMetrics).every((v) => v === 0);
-  const growthMetrics = fallbackData || (hasValidCachedData ? data.growthRateMetrics : null);
+  const growthMetrics = data?.growthRateMetrics || null;
 
   const formatPercentage = (value: number) => {
     const sign = value >= 0 ? "+" : "";
@@ -105,7 +70,7 @@ export function GrowthRateIndicators() {
     );
   };
 
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

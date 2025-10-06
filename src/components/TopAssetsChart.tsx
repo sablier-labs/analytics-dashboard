@@ -9,7 +9,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
@@ -23,26 +23,10 @@ export function TopAssetsChart() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<TopAsset[]>([]);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  // If cache doesn't have topAssets, fetch directly
-  useEffect(() => {
-    if (!loading && data && !data.topAssets && fallbackData.length === 0 && !fallbackLoading) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-assets")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => console.error("Failed to fetch fallback data:", err))
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData.length, fallbackLoading]);
+  const topAssets = data?.topAssets || null;
 
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
@@ -62,11 +46,7 @@ export function TopAssetsChart() {
     );
   }
 
-  // Use cached data if available, otherwise use fallback data
-  const topAssets = data?.topAssets || fallbackData;
-
-
-  if (topAssets.length === 0) {
+  if (!topAssets || topAssets.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <p className="text-gray-600 dark:text-gray-300">No top assets data available</p>

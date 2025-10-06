@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -8,43 +8,15 @@ import { SourceCodeLink } from "./SourceCodeLink";
 export function TotalVestingStreams() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<number | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
-
-  // If cache doesn't have totalVestingStreams, fetch directly
-  useEffect(() => {
-    if (
-      !loading &&
-      data &&
-      !data.totalVestingStreams &&
-      fallbackData === null &&
-      !fallbackLoading
-    ) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-total-streams")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback total vesting streams:", err);
-          // In case of error, set a default value to prevent infinite loading
-          setFallbackData(0);
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use cached data if available, otherwise use fallback data
-  const totalStreams = data?.totalVestingStreams || fallbackData;
+    
+    // Use cached data if available, otherwise use fallback data
+  const totalStreams = data?.totalVestingStreams || null;
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
   };
 
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

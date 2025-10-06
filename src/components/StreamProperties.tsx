@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { StreamProperties as StreamPropertiesType } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -9,33 +9,11 @@ import { SourceCodeLink } from "./SourceCodeLink";
 export function StreamProperties() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<StreamPropertiesType | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
+    
+    // Use cached data if available, otherwise use fallback data
+  const propertiesData = data?.streamProperties || null;
 
-  // If cache doesn't have streamProperties, fetch directly
-  useEffect(() => {
-    if (!loading && data && !data.streamProperties && !fallbackData && !fallbackLoading) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-stream-properties")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback stream properties:", err);
-          // In case of error, set a default object to prevent infinite loading
-          setFallbackData({ both: 0, cancelable: 0, total: 0, transferable: 0 });
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use cached data if available, otherwise use fallback data
-  const propertiesData = data?.streamProperties || fallbackData;
-
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

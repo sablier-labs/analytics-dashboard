@@ -1,7 +1,7 @@
 "use client";
 
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
@@ -15,33 +15,11 @@ export function ActiveVsCompletedStreams() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<ActiveVsCompletedStreamsType | null>(null);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
+    
+    // Use cached data if available, otherwise use fallback data
+  const streamsData = data?.activeVsCompletedStreams || null;
 
-  // If cache doesn't have activeVsCompletedStreams, fetch directly
-  useEffect(() => {
-    if (!loading && data && !data.activeVsCompletedStreams && !fallbackData && !fallbackLoading) {
-      setFallbackLoading(true);
-      fetch("/api/fallback-active-completed")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback active vs completed streams:", err);
-          // In case of error, set a default object to prevent infinite loading
-          setFallbackData({ active: 0, completed: 0, total: 0 });
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData, fallbackLoading]);
-
-  // Use cached data if available, otherwise use fallback data
-  const streamsData = data?.activeVsCompletedStreams || fallbackData;
-
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">

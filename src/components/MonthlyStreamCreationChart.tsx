@@ -11,7 +11,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
@@ -34,40 +34,19 @@ export function MonthlyStreamCreationChart() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fallbackData, setFallbackData] = useState<MonthlyStreamCreation[]>([]);
-  const [fallbackLoading, setFallbackLoading] = useState(false);
 
-  // If cache doesn't have monthlyStreamCreation, fetch directly
-  useEffect(() => {
-    if (
-      !loading &&
-      data &&
-      !data.monthlyStreamCreation &&
-      fallbackData.length === 0 &&
-      !fallbackLoading
-    ) {
-      setFallbackLoading(true);
-      // Use direct GraphQL function for faster response
-      fetch("/api/fallback-monthly-streams")
-        .then((res) => res.json())
-        .then((result) => {
-          if (result.success) {
-            setFallbackData(result.data);
-          }
-        })
-        .catch((err) => {
-          console.error("Failed to fetch fallback monthly stream data:", err);
-          // In case of error, set empty array to prevent infinite loading
-          setFallbackData([]);
-        })
-        .finally(() => setFallbackLoading(false));
-    }
-  }, [data, loading, fallbackData.length, fallbackLoading]);
+  const streamData = data?.monthlyStreamCreation || null;
 
-  // Use cached data if available, otherwise use fallback data
-  const monthlyStreamData = data?.monthlyStreamCreation || fallbackData;
+  const formatMonth = (monthString: string) => {
+    const [year, month] = monthString.split("-");
+    const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  };
 
-  if (loading || fallbackLoading) {
+  if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
         <div className="animate-pulse">
@@ -82,49 +61,40 @@ export function MonthlyStreamCreationChart() {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
-          Error loading monthly stream creation data
+          Error loading stream creation chart
         </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
   }
 
-  if (monthlyStreamData.length === 0) {
+  if (!streamData || streamData.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">
-          No monthly stream creation data available
-        </p>
+        <p className="text-gray-600 dark:text-gray-300">No stream creation data available</p>
       </div>
     );
   }
 
   const chartData = {
+    labels: streamData.map((item) => formatMonth(item.month)),
     datasets: [
       {
-        backgroundColor: "rgba(255, 80, 1, 0.1)",
-        borderColor: "rgb(255, 80, 1)",
-        borderWidth: 3,
-        data: monthlyStreamData.map((item) => item.count),
-        fill: true,
         label: "Streams Created",
-        pointBackgroundColor: "rgb(255, 80, 1)",
-        pointBorderColor: "rgb(255, 80, 1)",
-        pointHoverBackgroundColor: "rgb(255, 80, 1)",
-        pointHoverBorderColor: "rgb(255, 255, 255)",
-        pointHoverBorderWidth: 3,
-        pointHoverRadius: 8,
-        pointRadius: 6,
+        data: streamData.map((item) => item.count),
+        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.1)" : "rgba(255, 80, 1, 0.1)",
+        borderWidth: 2,
+        fill: true,
         tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+        pointBorderColor: "rgb(255, 255, 255)",
+        pointBorderWidth: 2,
+        pointHoverBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
       },
     ],
-    labels: monthlyStreamData.map((item) => {
-      const [year, month] = item.month.split("-");
-      return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString("en-US", {
-        month: "short",
-        year: "2-digit",
-      });
-    }),
   };
 
   const options = {
@@ -151,7 +121,7 @@ export function MonthlyStreamCreationChart() {
           },
           title: (context: any) => {
             const monthIndex = context[0].dataIndex;
-            const [year, month] = monthlyStreamData[monthIndex].month.split("-");
+            const [year, month] = streamData[monthIndex].month.split("-");
             return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString(
               "en-US",
               {
