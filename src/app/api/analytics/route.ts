@@ -3,7 +3,20 @@ import { NextResponse } from "next/server";
 import { isTestnetChain } from "@/lib/constants/chains";
 import type { CachedAnalyticsData, OptimizedStablecoinStream } from "@/lib/services/cache";
 import {
+  fetch24HourMetrics,
+  fetchActiveVsCompletedStreams,
+  fetchChainDistribution,
+  fetchGrowthRateMetrics,
   fetchLargestStablecoinStreams,
+  fetchMonthlyStreamCreation,
+  fetchMonthlyTransactionGrowth,
+  fetchMonthlyUserGrowth,
+  fetchStreamCategoryDistribution,
+  fetchStreamDurationStats,
+  fetchStreamProperties,
+  fetchTimeBasedTransactionCounts,
+  fetchTimeBasedUserCounts,
+  fetchTopAssetsByStreamCount,
   fetchTotalTransactions,
   fetchTotalUsers,
   fetchTotalVestingStreams,
@@ -28,13 +41,94 @@ export async function GET() {
   try {
     console.log("Fetching data directly from GraphQL");
 
-    const [totalVestingStreams, allStablecoinStreams, totalUsers, totalTransactions] =
-      await Promise.all([
-        fetchTotalVestingStreams().catch(() => 0),
-        fetchLargestStablecoinStreams().catch(() => []),
-        fetchTotalUsers().catch(() => 0),
-        fetchTotalTransactions().catch(() => 0),
-      ]);
+    const [
+      totalUsers,
+      totalTransactions,
+      timeBasedUsers,
+      timeBasedTransactions,
+      monthlyUserGrowth,
+      chainDistribution,
+      monthlyTransactionGrowth,
+      topAssets,
+      growthRateMetrics,
+      monthlyStreamCreation,
+      streamDurationStats,
+      streamProperties,
+      streamCategoryDistribution,
+      totalVestingStreams,
+      activeVsCompletedStreams,
+      allStablecoinStreams,
+      activity24Hours,
+    ] = await Promise.all([
+      fetchTotalUsers().catch((err) => {
+        console.error("Error fetching total users:", err);
+        return 0;
+      }),
+      fetchTotalTransactions().catch((err) => {
+        console.error("Error fetching total transactions:", err);
+        return 0;
+      }),
+      fetchTimeBasedUserCounts().catch((err) => {
+        console.error("Error fetching time-based users:", err);
+        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
+      }),
+      fetchTimeBasedTransactionCounts().catch((err) => {
+        console.error("Error fetching time-based transactions:", err);
+        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
+      }),
+      fetchMonthlyUserGrowth().catch((err) => {
+        console.error("Error fetching monthly user growth:", err);
+        return [];
+      }),
+      fetchChainDistribution().catch((err) => {
+        console.error("Error fetching chain distribution:", err);
+        return [];
+      }),
+      fetchMonthlyTransactionGrowth().catch((err) => {
+        console.error("Error fetching monthly transaction growth:", err);
+        return [];
+      }),
+      fetchTopAssetsByStreamCount().catch((err) => {
+        console.error("Error fetching top assets:", err);
+        return [];
+      }),
+      fetchGrowthRateMetrics().catch((err) => {
+        console.error("Error fetching growth rate metrics:", err);
+        return { averageTransactionGrowthRate: 0, transactionGrowthRate: 0, userGrowthRate: 0 };
+      }),
+      fetchMonthlyStreamCreation().catch((err) => {
+        console.error("Error fetching monthly stream creation:", err);
+        return [];
+      }),
+      fetchStreamDurationStats().catch((err) => {
+        console.error("Error fetching stream duration stats:", err);
+        return { average: 0, max: 0, median: 0, min: 0 };
+      }),
+      fetchStreamProperties().catch((err) => {
+        console.error("Error fetching stream properties:", err);
+        return { both: 0, cancelable: 0, total: 0, transferable: 0 };
+      }),
+      fetchStreamCategoryDistribution().catch((err) => {
+        console.error("Error fetching stream category distribution:", err);
+        return { dynamic: 0, linear: 0, total: 0, tranched: 0 };
+      }),
+      fetchTotalVestingStreams().catch((err) => {
+        console.error("Error fetching total vesting streams:", err);
+        return 0;
+      }),
+      fetchActiveVsCompletedStreams().catch((err) => {
+        console.error("Error fetching active vs completed streams:", err);
+        return { active: 0, completed: 0, total: 0 };
+      }),
+      fetchLargestStablecoinStreams().catch((err) => {
+        console.error("Error fetching largest stablecoin streams:", err);
+        return [];
+      }),
+      fetch24HourMetrics().catch((err) => {
+        console.error("Error fetching 24-hour metrics:", err);
+        return { streamsCreated: 0, totalTransactions: 0 };
+      }),
+    ]);
 
     // Optimize stablecoin streams (same logic as cache-update.ts)
     const optimizedStreams = allStablecoinStreams
@@ -64,26 +158,21 @@ export async function GET() {
       })) as OptimizedStablecoinStream[];
 
     const fallbackData: CachedAnalyticsData = {
-      activeVsCompletedStreams: { active: 0, completed: 0, total: 0 },
-      activity24Hours: { streamsCreated: 0, totalTransactions: 0 },
-      chainDistribution: [],
-      growthRateMetrics: {
-        averageTransactionGrowthRate: 0,
-        transactionGrowthRate: 0,
-        userGrowthRate: 0,
-      },
+      activeVsCompletedStreams,
+      activity24Hours,
+      chainDistribution,
+      growthRateMetrics,
       largestStablecoinStreams: optimizedStreams,
       lastUpdated: new Date().toISOString(),
-      monthlyStreamCreation: [],
-      monthlyTransactionGrowth: [],
-      monthlyUserGrowth: [],
-      streamCategoryDistribution: { dynamic: 0, linear: 0, total: 0, tranched: 0 },
-      streamDurationStats: { average: 0, max: 0, median: 0, min: 0 },
-      streamProperties: { both: 0, cancelable: 0, total: 0, transferable: 0 },
-      timeBasedTransactions: { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 },
-      timeBasedUsers: { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 },
-      // Provide minimal data for other required fields
-      topAssets: [],
+      monthlyStreamCreation,
+      monthlyTransactionGrowth,
+      monthlyUserGrowth,
+      streamCategoryDistribution,
+      streamDurationStats,
+      streamProperties,
+      timeBasedTransactions,
+      timeBasedUsers,
+      topAssets,
       totalTransactions,
       totalUsers,
       totalVestingStreams,
