@@ -430,24 +430,17 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
 }
 
 export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
-  // Extended approach: get cumulative counts from Sablier's inception
-  const now = Date.now();
+  // Get last 12 months to prevent query timeout with distinct counts
+  const now = new Date();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
 
-  // Start from when Sablier began (July 1, 2023)
-  const startDate = new Date("2023-07-01");
-  const current = new Date(startDate);
-
-  // Generate monthly timestamps from start date to now
-  while (current.getTime() <= now) {
-    // Use end of month instead of beginning to capture all users in that month
+  // Generate last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
     const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
     const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
-
-    // Move to first day of next month
-    current.setMonth(current.getMonth() + 1);
   }
 
   const queries = timeRanges.map((range, index) => {
