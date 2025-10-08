@@ -1,10 +1,10 @@
 "use client";
 
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
-import type { Activity24Hours } from "@/lib/services/graphql";
+import type { Activity24Hours as Activity24HoursMetrics } from "@/lib/services/graphql";
 
 interface Activity24HoursData {
-  activity24Hours?: Activity24Hours;
+  activity24Hours?: Activity24HoursMetrics;
 }
 
 export function Activity24Hours() {
@@ -15,9 +15,9 @@ export function Activity24Hours() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {[...Array(2)].map((_, i) => (
-          <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, i) => (
+          <div key={`loading-${i}`} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <div className="animate-pulse">
               <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
               <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
@@ -32,7 +32,7 @@ export function Activity24Hours() {
 
   if (!activity) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
           <div className="text-center text-gray-500 dark:text-gray-400">
             No 24-hour activity data available
@@ -43,13 +43,13 @@ export function Activity24Hours() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Streams Created (24h) */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Vesting Streams Created (24h) */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Streams Created (24h)
+              Vesting Streams Created (24h)
             </p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {activity.streamsCreated.toLocaleString()}
@@ -137,6 +137,55 @@ export function Activity24Hours() {
             </svg>
             <span className="text-gray-500 dark:text-gray-400">
               All interactions across Sablier protocols
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Airdrop Claims (24h) */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Airdrop Claims (24h)
+            </p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {activity.claimsCreated.toLocaleString()}
+            </p>
+          </div>
+          <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg">
+            <svg
+              className="w-6 h-6 text-purple-600 dark:text-purple-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+        </div>
+        <div className="mt-4">
+          <div className="flex items-center text-sm">
+            <svg
+              className="w-4 h-4 text-gray-400 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
+              />
+            </svg>
+            <span className="text-gray-500 dark:text-gray-400">
+              Airdrop claims in the last 24 hours
             </span>
           </div>
         </div>

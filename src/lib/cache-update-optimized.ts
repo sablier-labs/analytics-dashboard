@@ -1,24 +1,24 @@
 import { isTestnetChain } from "@/lib/constants/chains";
 import {
+  fetchAggregated24HourMetrics,
+  fetchAggregatedMonthlyTransactionGrowth,
   fetchAggregatedMonthlyUserGrowth,
+  fetchAggregatedTimeBasedTransactionCounts,
   fetchAggregatedTimeBasedUserCounts,
+  fetchAggregatedTotalTransactions,
   fetchAggregatedTotalUsers,
 } from "@/lib/services/aggregated-graphql";
 import type { StablecoinStream } from "@/lib/services/graphql";
 import {
-  fetch24HourMetrics,
   fetchActiveVsCompletedStreams,
   fetchChainDistribution,
   fetchGrowthRateMetrics,
   fetchLargestStablecoinStreams,
   fetchMonthlyStreamCreation,
-  fetchMonthlyTransactionGrowth,
   fetchStreamCategoryDistribution,
   fetchStreamDurationStats,
   fetchStreamProperties,
-  fetchTimeBasedTransactionCounts,
   fetchTopAssetsByStreamCount,
-  fetchTotalTransactions,
   fetchTotalVestingStreams,
 } from "@/lib/services/graphql";
 import { normalizeAmount } from "@/lib/utils/sablier";
@@ -106,16 +106,16 @@ export async function updateAnalyticsCache() {
       console.error("Error fetching aggregated total users:", err);
       return 0;
     }),
-    fetchTotalTransactions().catch((err) => {
-      console.error("Error fetching total transactions:", err);
+    fetchAggregatedTotalTransactions().catch((err) => {
+      console.error("Error fetching aggregated total transactions:", err);
       return 0;
     }),
     fetchAggregatedTimeBasedUserCounts().catch((err) => {
       console.error("Error fetching aggregated time-based users:", err);
       return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
     }),
-    fetchTimeBasedTransactionCounts().catch((err) => {
-      console.error("Error fetching time-based transactions:", err);
+    fetchAggregatedTimeBasedTransactionCounts().catch((err) => {
+      console.error("Error fetching aggregated time-based transactions:", err);
       return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
     }),
     fetchAggregatedMonthlyUserGrowth().catch((err) => {
@@ -126,8 +126,8 @@ export async function updateAnalyticsCache() {
       console.error("Error fetching chain distribution:", err);
       return [];
     }),
-    fetchMonthlyTransactionGrowth().catch((err) => {
-      console.error("Error fetching monthly transaction growth:", err);
+    fetchAggregatedMonthlyTransactionGrowth().catch((err) => {
+      console.error("Error fetching aggregated monthly transaction growth:", err);
       return [];
     }),
     fetchTopAssetsByStreamCount().catch((err) => {
@@ -168,9 +168,9 @@ export async function updateAnalyticsCache() {
         console.error("Error fetching largest stablecoin streams:", err);
         return [];
       }),
-    fetch24HourMetrics().catch((err) => {
-      console.error("Error fetching 24-hour metrics:", err);
-      return { streamsCreated: 0, totalTransactions: 0 };
+    fetchAggregated24HourMetrics().catch((err) => {
+      console.error("Error fetching aggregated 24-hour metrics:", err);
+      return { streamsCreated: 0, totalTransactions: 0, claimsCreated: 0 };
     }),
   ]);
 

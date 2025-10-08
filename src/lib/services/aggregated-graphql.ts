@@ -438,3 +438,524 @@ export async function fetchAggregatedTimeBasedUserCounts(): Promise<{
     throw error;
   }
 }
+
+/**
+ * Fetch total transactions across all data sources
+ */
+export async function fetchAggregatedTotalTransactions(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+
+  try {
+    const [lockupEVMCount, airdropsEVMCount] = await Promise.all([
+      // Lockup EVM - total transaction count from Action
+      (async () => {
+        const query = `
+          query GetLockupEVMTransactions {
+            Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Lockup EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          Action_aggregate: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors)
+          throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return result.data.Action_aggregate.aggregate.count;
+      })().catch((err) => {
+        console.error("Error fetching Lockup EVM transactions:", err);
+        return 0;
+      }),
+
+      // Airdrops EVM - total transaction count from Action
+      (async () => {
+        const query = `
+          query GetAirdropsEVMTransactions {
+            Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          Action_aggregate: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors)
+          throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return result.data.Action_aggregate.aggregate.count;
+      })().catch((err) => {
+        console.error("Error fetching Airdrops EVM transactions:", err);
+        return 0;
+      }),
+    ]);
+
+    // Note: Solana transaction counting would go here if available in schema
+    // For now, we only count EVM transactions
+
+    const total = lockupEVMCount + airdropsEVMCount;
+
+    console.log(`📊 Aggregated transaction counts:
+      - Lockup EVM: ${lockupEVMCount}
+      - Airdrops EVM: ${airdropsEVMCount}
+      - Total: ${total}`);
+
+    return total;
+  } catch (error) {
+    console.error("Error fetching aggregated total transactions:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch time-based transaction counts aggregated across all sources
+ */
+export async function fetchAggregatedTimeBasedTransactionCounts(): Promise<{
+  past30Days: number;
+  past90Days: number;
+  past180Days: number;
+  pastYear: number;
+}> {
+  const testnetChainIds = getTestnetChainIds();
+  const now = Date.now();
+  const thirtyDaysAgo = Math.floor((now - 30 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const ninetyDaysAgo = Math.floor((now - 90 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const oneHundredEightyDaysAgo = Math.floor((now - 180 * 24 * 60 * 60 * 1000) / 1000).toString();
+  const oneYearAgo = Math.floor((now - 365 * 24 * 60 * 60 * 1000) / 1000).toString();
+
+  try {
+    const [lockupEVMCounts, airdropsEVMCounts] = await Promise.all([
+      // Lockup EVM time-based transaction counts
+      (async () => {
+        const query = `
+          query GetLockupEVMTimeBasedTransactions {
+            past30Days: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${thirtyDaysAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+            past90Days: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${ninetyDaysAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+            past180Days: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+            pastYear: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${oneYearAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+          }
+        `;
+
+        const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          past30Days: { aggregate: { count: number } };
+          past90Days: { aggregate: { count: number } };
+          past180Days: { aggregate: { count: number } };
+          pastYear: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors) throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+
+        return {
+          past30Days: result.data.past30Days.aggregate.count,
+          past90Days: result.data.past90Days.aggregate.count,
+          past180Days: result.data.past180Days.aggregate.count,
+          pastYear: result.data.pastYear.aggregate.count,
+        };
+      })().catch((err) => {
+        console.error("Error fetching Lockup EVM time-based transactions:", err);
+        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
+      }),
+
+      // Airdrops EVM time-based transaction counts
+      (async () => {
+        const query = `
+          query GetAirdropsEVMTimeBasedTransactions {
+            past30Days: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${thirtyDaysAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+            past90Days: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${ninetyDaysAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+            past180Days: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+            pastYear: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${oneYearAgo}" }
+              }
+            ) {
+              aggregate { count }
+            }
+          }
+        `;
+
+        const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          past30Days: { aggregate: { count: number } };
+          past90Days: { aggregate: { count: number } };
+          past180Days: { aggregate: { count: number } };
+          pastYear: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors) throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+
+        return {
+          past30Days: result.data.past30Days.aggregate.count,
+          past90Days: result.data.past90Days.aggregate.count,
+          past180Days: result.data.past180Days.aggregate.count,
+          pastYear: result.data.pastYear.aggregate.count,
+        };
+      })().catch((err) => {
+        console.error("Error fetching Airdrops EVM time-based transactions:", err);
+        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
+      }),
+    ]);
+
+    // Aggregate counts from all sources
+    return {
+      past30Days: lockupEVMCounts.past30Days + airdropsEVMCounts.past30Days,
+      past90Days: lockupEVMCounts.past90Days + airdropsEVMCounts.past90Days,
+      past180Days: lockupEVMCounts.past180Days + airdropsEVMCounts.past180Days,
+      pastYear: lockupEVMCounts.pastYear + airdropsEVMCounts.pastYear,
+    };
+  } catch (error) {
+    console.error("Error fetching aggregated time-based transaction counts:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch monthly transaction growth aggregated across all sources
+ */
+export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
+  Array<{ month: string; cumulativeTransactions: number; newTransactions: number }>
+> {
+  const testnetChainIds = getTestnetChainIds();
+  const now = new Date();
+  const timeRanges: Array<{ label: string; timestamp: string }> = [];
+
+  // Generate last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
+    const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
+    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+    timeRanges.push({ label, timestamp });
+  }
+
+  try {
+    // Fetch from both EVM sources in parallel
+    const [lockupEVMData, airdropsEVMData] = await Promise.all([
+      // Lockup EVM monthly cumulative transaction counts
+      (async () => {
+        const queries = timeRanges.map((range, index) => {
+          return `
+            month_${index}: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _lte: "${range.timestamp}" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          `;
+        });
+
+        const query = `query GetLockupEVMMonthlyTransactionGrowth { ${queries.join("\n")} }`;
+
+        const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Lockup EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<any> = await response.json();
+        if (result.errors)
+          throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+      })().catch((err) => {
+        console.error("Error fetching Lockup EVM monthly transaction growth:", err);
+        return timeRanges.map(() => 0);
+      }),
+
+      // Airdrops EVM monthly cumulative transaction counts
+      (async () => {
+        const queries = timeRanges.map((range, index) => {
+          return `
+            month_${index}: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _lte: "${range.timestamp}" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          `;
+        });
+
+        const query = `query GetAirdropsEVMMonthlyTransactionGrowth { ${queries.join("\n")} }`;
+
+        const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<any> = await response.json();
+        if (result.errors)
+          throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+      })().catch((err) => {
+        console.error("Error fetching Airdrops EVM monthly transaction growth:", err);
+        return timeRanges.map(() => 0);
+      }),
+    ]);
+
+    // Aggregate monthly data
+    const monthlyData = timeRanges.map((range, index) => {
+      const cumulativeTransactions = lockupEVMData[index] + airdropsEVMData[index];
+      const previousCumulative =
+        index > 0 ? lockupEVMData[index - 1] + airdropsEVMData[index - 1] : 0;
+      const newTransactions = cumulativeTransactions - previousCumulative;
+
+      return {
+        cumulativeTransactions,
+        month: range.label,
+        newTransactions: Math.max(0, newTransactions),
+      };
+    });
+
+    return monthlyData.filter((data) => data.cumulativeTransactions > 0);
+  } catch (error) {
+    console.error("Error fetching aggregated monthly transaction growth:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch 24-hour metrics aggregated across all sources
+ */
+export async function fetchAggregated24HourMetrics(): Promise<{
+  streamsCreated: number;
+  totalTransactions: number;
+  claimsCreated: number;
+}> {
+  const testnetChainIds = getTestnetChainIds();
+  const twentyFourHoursAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000).toString();
+
+  try {
+    const [lockupEVMMetrics, airdropsEVMMetrics] = await Promise.all([
+      // Lockup EVM 24-hour metrics
+      (async () => {
+        const query = `
+          query GetLockupEVM24HourMetrics {
+            streams24h: Stream_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${twentyFourHoursAgo}" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+            transactions24h: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${twentyFourHoursAgo}" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Lockup EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          streams24h: { aggregate: { count: number } };
+          transactions24h: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors)
+          throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return {
+          streamsCreated: result.data.streams24h.aggregate.count,
+          totalTransactions: result.data.transactions24h.aggregate.count,
+        };
+      })().catch((err) => {
+        console.error("Error fetching Lockup EVM 24h metrics:", err);
+        return { streamsCreated: 0, totalTransactions: 0 };
+      }),
+
+      // Airdrops EVM 24-hour metrics (claims + transactions)
+      (async () => {
+        const query = `
+          query GetAirdropsEVM24HourMetrics {
+            claims24h: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${twentyFourHoursAgo}" }
+                category: { _eq: "Claim" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+            transactions24h: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _gte: "${twentyFourHoursAgo}" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          claims24h: { aggregate: { count: number } };
+          transactions24h: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors)
+          throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return {
+          claimsCreated: result.data.claims24h.aggregate.count,
+          totalTransactions: result.data.transactions24h.aggregate.count,
+        };
+      })().catch((err) => {
+        console.error("Error fetching Airdrops EVM 24h metrics:", err);
+        return { claimsCreated: 0, totalTransactions: 0 };
+      }),
+    ]);
+
+    const aggregatedMetrics = {
+      claimsCreated: airdropsEVMMetrics.claimsCreated,
+      streamsCreated: lockupEVMMetrics.streamsCreated,
+      totalTransactions: lockupEVMMetrics.totalTransactions + airdropsEVMMetrics.totalTransactions,
+    };
+
+    console.log(`📊 Aggregated 24h metrics:
+      - Streams Created: ${aggregatedMetrics.streamsCreated}
+      - Claims Created: ${aggregatedMetrics.claimsCreated}
+      - Total Transactions: ${aggregatedMetrics.totalTransactions}`);
+
+    return aggregatedMetrics;
+  } catch (error) {
+    console.error("Error fetching aggregated 24-hour metrics:", error);
+    throw error;
+  }
+}

@@ -1326,6 +1326,7 @@ export interface StablecoinStream {
 export interface Activity24Hours {
   streamsCreated: number;
   totalTransactions: number;
+  claimsCreated: number;
 }
 
 export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[]> {
@@ -1445,6 +1446,7 @@ export async function fetch24HourMetrics(): Promise<Activity24Hours> {
     }
 
     const metrics: Activity24Hours = {
+      claimsCreated: 0, // Not available in Lockup EVM endpoint
       streamsCreated: result.data.streams24h.aggregate.count,
       totalTransactions: result.data.transactions24h.aggregate.count,
     };

@@ -3,6 +3,7 @@ import { Activity24Hours } from "@/components/Activity24Hours";
 import { AirdropsSection } from "@/components/AirdropsSection";
 import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
+import { CumulativeTransactionGrowthChart } from "@/components/CumulativeTransactionGrowthChart";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
 import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
 import { LargestStablecoinStreams } from "@/components/LargestStablecoinStreams";
@@ -40,13 +41,13 @@ export default function Home() {
             <TotalVestingStreams />
           </div>
 
+          <Activity24Hours />
+
           <TimeBasedUserCounters />
 
           <TimeBasedTransactionCounters />
 
           <GrowthRateIndicators />
-
-          <Activity24Hours />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <MedianStreamDuration />
@@ -57,6 +58,8 @@ export default function Home() {
             <CumulativeUserChart />
             <CumulativeTransactionChart />
           </div>
+
+          <CumulativeTransactionGrowthChart />
 
           <MonthlyStreamCreationChart />
 

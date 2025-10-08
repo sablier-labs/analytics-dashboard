@@ -13,9 +13,8 @@ import {
 } from "chart.js";
 import { useRef } from "react";
 import { Line } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
-import type { MonthlyStreamCreation } from "@/lib/services/graphql";
+import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
@@ -30,12 +29,11 @@ ChartJS.register(
   Filler,
 );
 
-export function MonthlyStreamCreationChart() {
+export function CumulativeTransactionGrowthChart() {
   const { data, loading, error } = useAnalyticsContext();
-  const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const streamData = data?.monthlyStreamCreation || null;
+  const transactionGrowthData = data?.monthlyTransactionGrowth || null;
 
   const formatMonth = (monthString: string) => {
     const [year, month] = monthString.split("-");
@@ -48,10 +46,10 @@ export function MonthlyStreamCreationChart() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-4"></div>
-          <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
       </div>
     );
@@ -59,42 +57,40 @@ export function MonthlyStreamCreationChart() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
-          Error loading stream creation chart
-        </p>
-        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
+        <p className="text-sm text-red-600 mb-2">Error loading transaction growth data</p>
+        <p className="text-xs text-red-500">{error}</p>
       </div>
     );
   }
 
-  if (!streamData || streamData.length === 0) {
+  if (!transactionGrowthData || transactionGrowthData.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No stream creation data available</p>
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <p className="text-gray-600">No transaction growth data available</p>
       </div>
     );
   }
 
   const chartData = {
-    labels: streamData.map((item) => formatMonth(item.month)),
     datasets: [
       {
-        label: "Streams Created",
-        data: streamData.map((item) => item.count),
-        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
-        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.1)" : "rgba(255, 80, 1, 0.1)",
+        backgroundColor: "rgba(255, 80, 1, 0.1)",
+        borderColor: "rgb(255, 80, 1)",
         borderWidth: 2,
+        data: transactionGrowthData.map((data) => data.cumulativeTransactions),
         fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+        label: "Cumulative Transactions",
+        pointBackgroundColor: "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
-        pointHoverBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+        pointHoverBackgroundColor: "rgb(255, 80, 1)",
+        pointHoverRadius: 6,
+        pointRadius: 0,
+        tension: 0.4,
       },
     ],
+    labels: transactionGrowthData.map((data) => formatMonth(data.month)),
   };
 
   const options = {
@@ -117,18 +113,11 @@ export function MonthlyStreamCreationChart() {
         callbacks: {
           label: (context: any) => {
             const value = new Intl.NumberFormat().format(context.parsed.y);
-            return `${value} streams created`;
+            return `${value} transactions`;
           },
           title: (context: any) => {
-            const monthIndex = context[0].dataIndex;
-            const [year, month] = streamData[monthIndex].month.split("-");
-            return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString(
-              "en-US",
-              {
-                month: "long",
-                year: "numeric",
-              },
-            );
+            const dataIndex = context[0].dataIndex;
+            return transactionGrowthData[dataIndex].month;
           },
         },
         cornerRadius: 6,
@@ -151,13 +140,13 @@ export function MonthlyStreamCreationChart() {
           display: false,
         },
         ticks: {
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+          color: "rgb(107, 114, 128)",
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
             weight: "normal" as const,
           },
-          maxRotation: 0,
+          maxTicksLimit: 8,
           padding: 8,
         },
       },
@@ -167,22 +156,21 @@ export function MonthlyStreamCreationChart() {
           display: false,
         },
         grid: {
-          color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
+          color: "rgba(229, 231, 235, 0.5)",
           drawBorder: false,
-          lineWidth: 1,
         },
         ticks: {
-          callback: (tickValue: any) => {
-            const value = Number(tickValue);
-            if (value >= 1000000) {
-              return (value / 1000000).toFixed(1) + "M";
+          callback: (value: any) => {
+            const num = Number(value);
+            if (num >= 1000000) {
+              return (num / 1000000).toFixed(1) + "M";
             }
-            if (value >= 1000) {
-              return (value / 1000).toFixed(0) + "k";
+            if (num >= 1000) {
+              return (num / 1000).toFixed(0) + "k";
             }
-            return new Intl.NumberFormat().format(value);
+            return new Intl.NumberFormat().format(num);
           },
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+          color: "rgb(107, 114, 128)",
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
@@ -204,28 +192,24 @@ export function MonthlyStreamCreationChart() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Monthly Vesting Stream Creation Trends
+              Cumulative Transaction Growth
             </h2>
             <SourceCodeLink
               fileName="graphql.ts"
-              lineNumber={845}
-              tooltip="View fetchMonthlyStreamCreation source"
+              lineNumber={607}
+              tooltip="View fetchMonthlyTransactionGrowth source"
             />
           </div>
           <SharePanel
-            title="Monthly Vesting Stream Creation Trends"
+            title="Cumulative Transaction Growth"
             elementRef={containerRef}
-            description="Number of new vesting streams created each month over the past year"
+            description="Total transactions across all Sablier protocols over time"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-          Vesting streams created per month over the past 12 months
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Total transactions across all Sablier protocols over time
         </p>
-        <div className="flex items-center gap-6 text-xs text-gray-500 dark:text-gray-400">
-          <span>12-month period</span>
-        </div>
       </div>
-
       <div className="h-80">
         <Line data={chartData} options={options} />
       </div>
