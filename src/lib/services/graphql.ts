@@ -174,16 +174,17 @@ export interface MonthlyUserGrowthResponse {
 export async function fetchTotalUsers(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
 
-  // Get unique users from Action.from (tx.origin)
+  // Count distinct users using aggregate with distinct on from field
   const query = `
     query GetTotalUsers {
-      actions: Action(
+      Action_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
     }
   `;
@@ -201,13 +202,14 @@ export async function fetchTotalUsers(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<{ actions: Array<{ from: string }> }> = await response.json();
+    const result: GraphQLResponse<{ Action_aggregate: { aggregate: { count: number } } }> =
+      await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    return result.data.actions.length;
+    return result.data.Action_aggregate.aggregate.count;
   } catch (error) {
     console.error("Error fetching total users:", error);
     throw error;
@@ -268,41 +270,45 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
 
   const query = `
     query GetTimeBasedUserCounts {
-      past30Days: Action(
+      past30Days: Action_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${thirtyDaysAgo}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
-      past90Days: Action(
+      past90Days: Action_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${ninetyDaysAgo}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
-      past180Days: Action(
+      past180Days: Action_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${oneHundredEightyDaysAgo}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
-      pastYear: Action(
+      pastYear: Action_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${oneYearAgo}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
     }
   `;
@@ -320,22 +326,17 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<{
-      past30Days: Array<{ from: string }>;
-      past90Days: Array<{ from: string }>;
-      past180Days: Array<{ from: string }>;
-      pastYear: Array<{ from: string }>;
-    }> = await response.json();
+    const result: GraphQLResponse<TimeBasedUserResponse> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
     return {
-      past30Days: result.data.past30Days.length,
-      past90Days: result.data.past90Days.length,
-      past180Days: result.data.past180Days.length,
-      pastYear: result.data.pastYear.length,
+      past30Days: result.data.past30Days.aggregate.count,
+      past90Days: result.data.past90Days.aggregate.count,
+      past180Days: result.data.past180Days.aggregate.count,
+      pastYear: result.data.pastYear.aggregate.count,
     };
   } catch (error) {
     console.error("Error fetching time-based user counts:", error);
@@ -451,13 +452,14 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
 
   const queries = timeRanges.map((range, index) => {
     return `
-      month_${index}: Action(
+      month_${index}: Action_aggregate(
         where: {
           timestamp: { _lte: "${range.timestamp}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
     `;
   });
@@ -492,7 +494,7 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
 
     timeRanges.forEach((range, index) => {
       const key = `month_${index}`;
-      const cumulativeUsers = result.data[key].length;
+      const cumulativeUsers = result.data[key].aggregate.count;
       const previousCumulative = index > 0 ? monthlyData[index - 1].cumulativeUsers : 0;
       const newUsers = cumulativeUsers - previousCumulative;
 
@@ -548,16 +550,17 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     const uniqueChains = chainResult.data.Action.map((a) => a.chainId);
 
-    // Now create queries to get distinct users for each chain
+    // Now create aggregate queries to count distinct users for each chain
     const chainQueries = uniqueChains.map((chainId, index) => {
       return `
-        chain_${index}: Action(
+        chain_${index}: Action_aggregate(
           where: {
             chainId: { _eq: "${chainId}" }
           }
-          distinct_on: from
         ) {
-          from
+          aggregate {
+            count(columns: from, distinct: true)
+          }
         }
       `;
     });
@@ -591,7 +594,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     uniqueChains.forEach((chainId, index) => {
       const key = `chain_${index}`;
-      const count = result.data[key].length;
+      const count = result.data[key].aggregate.count;
 
       if (count > 0) {
         chainDistribution.push({
@@ -702,21 +705,23 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
 
   const query = `
     query GetGrowthRateMetrics {
-      currentMonthUsers: Action(
+      currentMonthUsers: Action_aggregate(
         where: {
           timestamp: { _gte: "${lastMonthTimestamp}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
-      previousMonthUsers: Action(
+      previousMonthUsers: Action_aggregate(
         where: {
           timestamp: { _gte: "${twoMonthsAgoTimestamp}", _lt: "${lastMonthTimestamp}" }
         }
-        distinct_on: from
       ) {
-        from
+        aggregate {
+          count(columns: from, distinct: true)
+        }
       }
       currentMonthTransactions: Action_aggregate(
         where: {
@@ -753,8 +758,8 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
     }
 
     const result: GraphQLResponse<{
-      currentMonthUsers: Array<{ from: string }>;
-      previousMonthUsers: Array<{ from: string }>;
+      currentMonthUsers: { aggregate: { count: number } };
+      previousMonthUsers: { aggregate: { count: number } };
       currentMonthTransactions: { aggregate: { count: number } };
       previousMonthTransactions: { aggregate: { count: number } };
     }> = await response.json();
@@ -763,8 +768,8 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    const currentUsers = result.data.currentMonthUsers.length;
-    const previousUsers = result.data.previousMonthUsers.length;
+    const currentUsers = result.data.currentMonthUsers.aggregate.count;
+    const previousUsers = result.data.previousMonthUsers.aggregate.count;
     const currentTransactions = result.data.currentMonthTransactions.aggregate.count;
     const previousTransactions = result.data.previousMonthTransactions.aggregate.count;
 
