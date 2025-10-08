@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/update-cache",
+      "path": "/api/update-all-caches",
       "schedule": "0 6 * * *"
     }
   ]
