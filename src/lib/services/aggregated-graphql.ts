@@ -168,6 +168,118 @@ export async function fetchAggregatedTotalUsers(): Promise<number> {
 }
 
 /**
+ * Fetch monthly user growth aggregated across all sources
+ */
+export async function fetchAggregatedMonthlyUserGrowth(): Promise<
+  Array<{ month: string; cumulativeUsers: number; newUsers: number }>
+> {
+  const testnetChainIds = getTestnetChainIds();
+  const now = new Date();
+  const timeRanges: Array<{ label: string; timestamp: string }> = [];
+
+  // Generate last 12 months
+  for (let i = 11; i >= 0; i--) {
+    const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
+    const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
+    const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+    timeRanges.push({ label, timestamp });
+  }
+
+  try {
+    // Fetch from both EVM sources in parallel
+    const [lockupEVMData, airdropsEVMData] = await Promise.all([
+      // Lockup EVM monthly cumulative counts
+      (async () => {
+        const queries = timeRanges.map((range, index) => {
+          return `
+            month_${index}: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _lte: "${range.timestamp}" }
+              }
+            ) {
+              aggregate {
+                count(columns: from, distinct: true)
+              }
+            }
+          `;
+        });
+
+        const query = `query GetLockupEVMMonthlyGrowth { ${queries.join("\n")} }`;
+
+        const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Lockup EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<any> = await response.json();
+        if (result.errors)
+          throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+      })(),
+
+      // Airdrops EVM monthly cumulative counts
+      (async () => {
+        const queries = timeRanges.map((range, index) => {
+          return `
+            month_${index}: Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                timestamp: { _lte: "${range.timestamp}" }
+              }
+            ) {
+              aggregate {
+                count(columns: from, distinct: true)
+              }
+            }
+          `;
+        });
+
+        const query = `query GetAirdropsEVMMonthlyGrowth { ${queries.join("\n")} }`;
+
+        const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<any> = await response.json();
+        if (result.errors)
+          throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+      })(),
+    ]);
+
+    // Aggregate monthly data
+    const monthlyData = timeRanges.map((range, index) => {
+      const cumulativeUsers = lockupEVMData[index] + airdropsEVMData[index];
+      const previousCumulative =
+        index > 0 ? lockupEVMData[index - 1] + airdropsEVMData[index - 1] : 0;
+      const newUsers = cumulativeUsers - previousCumulative;
+
+      return {
+        cumulativeUsers,
+        month: range.label,
+        newUsers: Math.max(0, newUsers),
+      };
+    });
+
+    return monthlyData.filter((data) => data.cumulativeUsers > 0);
+  } catch (error) {
+    console.error("Error fetching aggregated monthly user growth:", error);
+    throw error;
+  }
+}
+
+/**
  * Fetch time-based user counts aggregated across all sources
  */
 export async function fetchAggregatedTimeBasedUserCounts(): Promise<{

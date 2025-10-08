@@ -1,5 +1,6 @@
 import { isTestnetChain } from "@/lib/constants/chains";
 import {
+  fetchAggregatedMonthlyUserGrowth,
   fetchAggregatedTimeBasedUserCounts,
   fetchAggregatedTotalUsers,
 } from "@/lib/services/aggregated-graphql";
@@ -12,7 +13,6 @@ import {
   fetchLargestStablecoinStreams,
   fetchMonthlyStreamCreation,
   fetchMonthlyTransactionGrowth,
-  fetchMonthlyUserGrowth,
   fetchStreamCategoryDistribution,
   fetchStreamDurationStats,
   fetchStreamProperties,
@@ -116,8 +116,8 @@ export async function updateAnalyticsCache() {
       console.error("Error fetching time-based transactions:", err);
       return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
     }),
-    fetchMonthlyUserGrowth().catch((err) => {
-      console.error("Error fetching monthly user growth:", err);
+    fetchAggregatedMonthlyUserGrowth().catch((err) => {
+      console.error("Error fetching aggregated monthly user growth:", err);
       return [];
     }),
     fetchChainDistribution().catch((err) => {
