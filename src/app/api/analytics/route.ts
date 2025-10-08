@@ -1,6 +1,10 @@
 import { get } from "@vercel/edge-config";
 import { NextResponse } from "next/server";
 import { isTestnetChain } from "@/lib/constants/chains";
+import {
+  fetchAggregatedTimeBasedUserCounts,
+  fetchAggregatedTotalUsers,
+} from "@/lib/services/aggregated-graphql";
 import type { CachedAnalyticsData, OptimizedStablecoinStream } from "@/lib/services/cache";
 import {
   fetch24HourMetrics,
@@ -15,10 +19,8 @@ import {
   fetchStreamDurationStats,
   fetchStreamProperties,
   fetchTimeBasedTransactionCounts,
-  fetchTimeBasedUserCounts,
   fetchTopAssetsByStreamCount,
   fetchTotalTransactions,
-  fetchTotalUsers,
   fetchTotalVestingStreams,
 } from "@/lib/services/graphql";
 import { normalizeAmount } from "@/lib/utils/sablier";
@@ -60,16 +62,16 @@ export async function GET() {
       allStablecoinStreams,
       activity24Hours,
     ] = await Promise.all([
-      fetchTotalUsers().catch((err) => {
-        console.error("Error fetching total users:", err);
+      fetchAggregatedTotalUsers().catch((err) => {
+        console.error("Error fetching aggregated total users:", err);
         return 0;
       }),
       fetchTotalTransactions().catch((err) => {
         console.error("Error fetching total transactions:", err);
         return 0;
       }),
-      fetchTimeBasedUserCounts().catch((err) => {
-        console.error("Error fetching time-based users:", err);
+      fetchAggregatedTimeBasedUserCounts().catch((err) => {
+        console.error("Error fetching aggregated time-based users:", err);
         return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
       }),
       fetchTimeBasedTransactionCounts().catch((err) => {
