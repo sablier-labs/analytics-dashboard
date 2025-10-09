@@ -56,7 +56,7 @@ export function AirdropsChainDistribution() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -67,7 +67,7 @@ export function AirdropsChainDistribution() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading chain distribution
         </p>
@@ -78,8 +78,8 @@ export function AirdropsChainDistribution() {
 
   if (!chainData || chainData.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No chain distribution data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No chain distribution data available</p>
       </div>
     );
   }
@@ -175,12 +175,12 @@ export function AirdropsChainDistribution() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chain Distribution</h2>
+            <h2 className="text-2xl font-bold text-text-primary">Chain Distribution</h2>
             <SourceCodeLink
               fileName="airdrops-graphql.ts"
               lineNumber={476}
@@ -193,7 +193,7 @@ export function AirdropsChainDistribution() {
             description="Distribution of airdrop campaigns across blockchain networks"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Distribution of airdrop campaigns across blockchain networks
         </p>
       </div>

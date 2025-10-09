@@ -15,6 +15,7 @@ import type {
   TimeBasedUserCounts,
   TopAsset,
 } from "./graphql";
+import { fetchAggregatedTotalClaims } from "./aggregated-graphql";
 import {
   fetchActiveVsCompletedStreams,
   fetchChainDistribution,
@@ -51,6 +52,7 @@ export interface OptimizedStablecoinStream {
 export interface CachedAnalyticsData {
   totalUsers: number;
   totalTransactions: number;
+  totalClaims: number;
   timeBasedUsers: TimeBasedUserCounts;
   timeBasedTransactions: TimeBasedTransactionCounts;
   monthlyUserGrowth: MonthlyUserGrowth[];
@@ -95,6 +97,15 @@ export async function getCachedTotalTransactions(): Promise<number> {
   }
   console.log("Cache miss - fetching total transactions from GraphQL");
   return fetchTotalTransactions();
+}
+
+export async function getCachedTotalClaims(): Promise<number> {
+  const cached = await getCachedData();
+  if (cached?.totalClaims !== undefined) {
+    return cached.totalClaims;
+  }
+  console.log("Cache miss - fetching total claims from GraphQL");
+  return fetchAggregatedTotalClaims();
 }
 
 export async function getCachedTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {

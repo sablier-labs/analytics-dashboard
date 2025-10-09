@@ -21,7 +21,7 @@ export function StreamCategoryDistribution() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -32,7 +32,7 @@ export function StreamCategoryDistribution() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading stream category distribution
         </p>
@@ -43,8 +43,8 @@ export function StreamCategoryDistribution() {
 
   if (!categoryData || categoryData.total === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No stream category data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No stream category data available</p>
       </div>
     );
   }
@@ -122,12 +122,12 @@ export function StreamCategoryDistribution() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Stream Category Distribution
             </h2>
             <SourceCodeLink
@@ -142,7 +142,7 @@ export function StreamCategoryDistribution() {
             description="Distribution of vesting stream types across the protocol"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Breakdown of vesting stream categories
         </p>
       </div>
@@ -156,19 +156,19 @@ export function StreamCategoryDistribution() {
           <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             {((categoryData.linear / categoryData.total) * 100).toFixed(1)}%
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">Linear</div>
+          <div className="text-sm text-text-secondary">Linear</div>
         </div>
         <div>
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {((categoryData.dynamic / categoryData.total) * 100).toFixed(1)}%
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">Dynamic</div>
+          <div className="text-sm text-text-secondary">Dynamic</div>
         </div>
         <div>
           <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
             {((categoryData.tranched / categoryData.total) * 100).toFixed(1)}%
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">Tranched</div>
+          <div className="text-sm text-text-secondary">Tranched</div>
         </div>
       </div>
     </div>

@@ -44,10 +44,10 @@ export function MonthlyClaimTrends() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -55,17 +55,17 @@ export function MonthlyClaimTrends() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading monthly claim trends data</p>
-        <p className="text-xs text-red-500">{error.message}</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading monthly claim trends data</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
     );
   }
 
   if (!claimData || claimData.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-        <p className="text-gray-600">No monthly claim trends data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No monthly claim trends data available</p>
       </div>
     );
   }
@@ -187,12 +187,12 @@ export function MonthlyClaimTrends() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Monthly Airdrop Claim Trends
             </h2>
             <SourceCodeLink
@@ -207,7 +207,7 @@ export function MonthlyClaimTrends() {
             description="Number of claims per month across all airdrop campaigns"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Number of claims per month across all airdrop campaigns
         </p>
       </div>

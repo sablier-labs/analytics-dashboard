@@ -16,7 +16,7 @@ export function SolanaClaims24h() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-2"></div>
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
@@ -27,7 +27,7 @@ export function SolanaClaims24h() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading claims (24h)</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
@@ -37,11 +37,11 @@ export function SolanaClaims24h() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="text-sm font-medium text-text-secondary">
             Claims (24h) - Solana
           </p>
           <SourceCodeLink
@@ -58,8 +58,8 @@ export function SolanaClaims24h() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {claims24h !== null ? formatNumber(claims24h) : "—"}
+          <p className="text-2xl font-bold text-text-primary">
+            {formatNumber(claims24h ?? 0)}
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-sablier-100 dark:bg-sablier-900 rounded-lg">

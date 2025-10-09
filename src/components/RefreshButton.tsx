@@ -85,8 +85,8 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       <button
         onClick={handleRefresh}
         disabled={isRefreshing}
-        className="flex items-center space-x-2 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        title="Refresh all analytics data"
+        className="px-6 py-2.5 bg-accent-primary hover:bg-accent-hover text-white font-semibold rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+        title="Refresh analytics data"
       >
         <svg
           className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`}

@@ -18,7 +18,7 @@ export function TotalVestingStreams() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6">
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2"></div>
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-36"></div>
@@ -29,7 +29,7 @@ export function TotalVestingStreams() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-lg p-6">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading total vesting streams
         </p>
@@ -40,8 +40,8 @@ export function TotalVestingStreams() {
 
   if (totalStreams === null) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No total vesting streams data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6">
+        <p className="text-text-secondary">No total vesting streams data available</p>
       </div>
     );
   }
@@ -49,11 +49,11 @@ export function TotalVestingStreams() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="text-sm font-semibold text-text-secondary">
             Total Vesting Streams
           </p>
           <SourceCodeLink
@@ -71,13 +71,13 @@ export function TotalVestingStreams() {
 
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <p className="text-3xl font-bold text-text-primary">
             {formatNumber(totalStreams)}
           </p>
         </div>
-        <div className="flex items-center justify-center w-12 h-12 bg-sablier-100 dark:bg-sablier-900 rounded-lg">
+        <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-accent-primary/10 to-accent-primary/20 dark:from-accent-primary/20 dark:to-accent-primary/30 rounded-xl">
           <svg
-            className="w-6 h-6 text-sablier-600 dark:text-sablier-400"
+            className="w-7 h-7 text-accent-primary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

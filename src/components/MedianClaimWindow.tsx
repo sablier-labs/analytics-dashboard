@@ -21,10 +21,10 @@ export function MedianClaimWindow() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-          <div className="h-8 bg-gray-200 rounded w-20"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
         </div>
       </div>
     );
@@ -32,9 +32,9 @@ export function MedianClaimWindow() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading median claim window</p>
-        <p className="text-xs text-red-500">{error.message}</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading median claim window</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
     );
   }
@@ -42,11 +42,11 @@ export function MedianClaimWindow() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <p className="text-sm font-medium text-text-secondary">
             Median Claim Window
           </p>
           <SourceCodeLink
@@ -63,7 +63,7 @@ export function MedianClaimWindow() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <p className="text-2xl font-bold text-text-primary">
             {medianClaimWindow !== null ? formatDays(medianClaimWindow) : "—"}
           </p>
         </div>

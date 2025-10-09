@@ -14,7 +14,7 @@ export function AirdropsSection() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Sablier Airdrops</h2>
+        <h2 className="text-3xl font-bold text-text-primary mb-8 pb-4 border-b-2 border-border-default">Airdrops Analytics</h2>
 
         {/* Row 1: Metric cards - First Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

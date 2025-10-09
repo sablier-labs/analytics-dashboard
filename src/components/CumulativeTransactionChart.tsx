@@ -38,7 +38,7 @@ export function CumulativeTransactionChart() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-4"></div>
           <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -49,7 +49,7 @@ export function CumulativeTransactionChart() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading transaction growth chart
         </p>
@@ -60,8 +60,8 @@ export function CumulativeTransactionChart() {
 
   if (!transactionData || transactionData.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No transaction growth data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No transaction growth data available</p>
       </div>
     );
   }
@@ -189,12 +189,12 @@ export function CumulativeTransactionChart() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Cumulative Transaction Growth
             </h2>
             <SourceCodeLink
@@ -209,7 +209,7 @@ export function CumulativeTransactionChart() {
             description="Monthly transaction growth and cumulative transactions since inception"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Monthly transaction growth and cumulative transaction volume since inception
         </p>
       </div>

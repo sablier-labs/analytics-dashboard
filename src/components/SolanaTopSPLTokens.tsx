@@ -26,7 +26,7 @@ export function SolanaTopSPLTokens() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -37,7 +37,7 @@ export function SolanaTopSPLTokens() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading top SPL tokens</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
@@ -48,8 +48,8 @@ export function SolanaTopSPLTokens() {
 
   if (topSPLTokens.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No SPL token data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No SPL token data available</p>
       </div>
     );
   }
@@ -172,12 +172,12 @@ export function SolanaTopSPLTokens() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Top SPL Tokens by Stream Count
             </h2>
             <SourceCodeLink
@@ -192,10 +192,10 @@ export function SolanaTopSPLTokens() {
             description="Most popular SPL tokens being used for streaming on Solana"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-sm text-text-secondary mb-4">
           Most popular SPL tokens being used for streaming on Solana
         </p>
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4 text-xs text-text-tertiary">
           <span>Top {topSPLTokens.length} tokens shown</span>
         </div>
       </div>
@@ -205,7 +205,7 @@ export function SolanaTopSPLTokens() {
       </div>
 
       <div className="mt-6 space-y-2">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Token Details</h3>
+        <h3 className="text-sm font-medium text-text-secondary">Token Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {topSPLTokens.map((token) => (
             <div
@@ -220,18 +220,18 @@ export function SolanaTopSPLTokens() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-text-primary">
                   {token.symbol || truncateAddress(token.mint)}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-xs text-text-tertiary truncate">
                   {token.name || token.mint}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                <p className="text-sm font-semibold text-text-primary">
                   {token.streamCount}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">streams</p>
+                <p className="text-xs text-text-tertiary">streams</p>
               </div>
             </div>
           ))}

@@ -15,7 +15,7 @@ export function StreamProperties() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="grid grid-cols-3 gap-4">
@@ -30,7 +30,7 @@ export function StreamProperties() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading stream properties data
         </p>
@@ -41,8 +41,8 @@ export function StreamProperties() {
 
   if (!propertiesData) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No stream properties data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No stream properties data available</p>
       </div>
     );
   }
@@ -58,12 +58,12 @@ export function StreamProperties() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Stream Properties</h2>
+            <h2 className="text-2xl font-bold text-text-primary">Stream Properties</h2>
             <SourceCodeLink
               fileName="graphql.ts"
               lineNumber={1060}
@@ -76,7 +76,7 @@ export function StreamProperties() {
             description="Breakdown of cancelable and transferable stream properties"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Flexibility options available on vesting streams
         </p>
       </div>
@@ -87,10 +87,10 @@ export function StreamProperties() {
           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
             {formatNumber(propertiesData.cancelable)}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-sm text-text-tertiary mb-2">
             {formatPercentage(propertiesData.cancelable, propertiesData.total)}
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-white">Cancelable</div>
+          <div className="text-sm font-medium text-text-primary">Cancelable</div>
         </div>
 
         {/* Transferable Streams */}
@@ -98,10 +98,10 @@ export function StreamProperties() {
           <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
             {formatNumber(propertiesData.transferable)}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-sm text-text-tertiary mb-2">
             {formatPercentage(propertiesData.transferable, propertiesData.total)}
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-white">Transferable</div>
+          <div className="text-sm font-medium text-text-primary">Transferable</div>
         </div>
 
         {/* Both Properties */}
@@ -109,15 +109,15 @@ export function StreamProperties() {
           <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
             {formatNumber(propertiesData.both)}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-sm text-text-tertiary mb-2">
             {formatPercentage(propertiesData.both, propertiesData.total)}
           </div>
-          <div className="text-sm font-medium text-gray-900 dark:text-white">Both</div>
+          <div className="text-sm font-medium text-text-primary">Both</div>
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+      <div className="mt-4 pt-4 border-t border-border-subtle">
+        <p className="text-xs text-text-tertiary text-center">
           Total streams: {formatNumber(propertiesData.total)}
         </p>
       </div>

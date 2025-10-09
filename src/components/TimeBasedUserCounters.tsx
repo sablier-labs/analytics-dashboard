@@ -45,7 +45,7 @@ export function TimeBasedUserCounters() {
         {timeRanges.map((range) => (
           <div
             key={range.key}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
           >
             <div className="animate-pulse">
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
@@ -59,7 +59,7 @@ export function TimeBasedUserCounters() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading time-based user counts
         </p>
@@ -74,7 +74,7 @@ export function TimeBasedUserCounters() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1"></div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Active Users by Time Period
             </h2>
             <SourceCodeLink
@@ -91,7 +91,7 @@ export function TimeBasedUserCounters() {
             />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-text-secondary">
           Users who have made transactions within each time range
         </p>
       </div>
@@ -100,14 +100,14 @@ export function TimeBasedUserCounters() {
         {timeRanges.map((range) => (
           <div
             key={range.key}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                <p className="text-sm font-medium text-text-secondary mb-1">
                   {range.label}
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-2xl font-bold text-text-primary">
                   {userCounts ? formatNumber(userCounts[range.key]) : "—"}
                 </p>
               </div>
@@ -126,8 +126,8 @@ export function TimeBasedUserCounters() {
             </div>
 
             {userCounts && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+              <div className="mt-4 pt-4 border-t border-border-subtle">
+                <div className="flex items-center text-xs text-text-tertiary">
                   <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"

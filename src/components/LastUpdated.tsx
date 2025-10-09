@@ -42,7 +42,7 @@ export function LastUpdated() {
     const diffInHours = (now - updatedTime) / (1000 * 60 * 60);
 
     if (diffInHours < 1) return "text-green-600 dark:text-green-400";
-    if (diffInHours < 24) return "text-yellow-600 dark:text-yellow-400";
+    if (diffInHours < 2) return "text-yellow-600 dark:text-yellow-400";
     return "text-red-600 dark:text-red-400";
   };
 
@@ -69,11 +69,11 @@ export function LastUpdated() {
       const updatedTime = new Date(data.lastUpdated).getTime();
       const diffInHours = (now - updatedTime) / (1000 * 60 * 60);
 
-      // Only refetch if data is >24h old AND we haven't tried in the last 5 minutes
+      // Only refetch if data is >1h old AND we haven't tried in the last 5 minutes
       const timeSinceLastAttempt = (now - lastRefetchAttempt.current) / (1000 * 60);
 
-      if (diffInHours >= 24 && timeSinceLastAttempt >= 5) {
-        console.log("Data is stale (>24h old), auto-refreshing...");
+      if (diffInHours >= 1 && timeSinceLastAttempt >= 5) {
+        console.log("Data is stale (>1h old), auto-refreshing...");
         lastRefetchAttempt.current = now;
         void refetch();
       }

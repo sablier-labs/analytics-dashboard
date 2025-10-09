@@ -17,7 +17,7 @@ export function Activity24Hours() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
-          <div key={`loading-${i}`} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div key={`loading-${i}`} className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
             <div className="animate-pulse">
               <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
               <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
@@ -33,8 +33,8 @@ export function Activity24Hours() {
   if (!activity) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <div className="text-center text-gray-500 dark:text-gray-400">
+        <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+          <div className="text-center text-text-secondary">
             No 24-hour activity data available
           </div>
         </div>
@@ -45,13 +45,13 @@ export function Activity24Hours() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Vesting Streams Created (24h) */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <p className="text-sm font-medium text-text-secondary">
               Vesting Streams Created (24h)
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-text-primary">
               {(activity.streamsCreated ?? 0).toLocaleString()}
             </p>
           </div>
@@ -86,7 +86,7 @@ export function Activity24Hours() {
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-text-secondary">
               New vesting streams in the last 24 hours
             </span>
           </div>
@@ -94,13 +94,13 @@ export function Activity24Hours() {
       </div>
 
       {/* Total Transactions (24h) */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <p className="text-sm font-medium text-text-secondary">
               Total Transactions (24h)
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-text-primary">
               {(activity.totalTransactions ?? 0).toLocaleString()}
             </p>
           </div>
@@ -135,7 +135,7 @@ export function Activity24Hours() {
                 d="M13 10V3L4 14h7v7l9-11h-7z"
               />
             </svg>
-            <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-text-secondary">
               All interactions across Sablier protocols
             </span>
           </div>
@@ -143,13 +143,13 @@ export function Activity24Hours() {
       </div>
 
       {/* Airdrop Claims (24h) */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <p className="text-sm font-medium text-text-secondary">
               Airdrop Claims (24h)
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+            <p className="text-3xl font-bold text-text-primary">
               {(activity.claimsCreated ?? 0).toLocaleString()}
             </p>
           </div>
@@ -184,7 +184,7 @@ export function Activity24Hours() {
                 d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"
               />
             </svg>
-            <span className="text-gray-500 dark:text-gray-400">
+            <span className="text-text-secondary">
               Airdrop claims in the last 24 hours
             </span>
           </div>

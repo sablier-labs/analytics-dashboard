@@ -16,10 +16,10 @@ export function TotalCampaigns() {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-          <div className="h-8 bg-gray-200 rounded w-28"></div>
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-28"></div>
         </div>
       </div>
     );
@@ -27,9 +27,9 @@ export function TotalCampaigns() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading total campaigns</p>
-        <p className="text-xs text-red-500">{error.message}</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-lg p-6">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading total campaigns</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
     );
   }
@@ -37,11 +37,11 @@ export function TotalCampaigns() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Campaigns</p>
+          <p className="text-sm font-semibold text-text-secondary">Total Campaigns</p>
           <SourceCodeLink
             fileName="airdrops-graphql.ts"
             lineNumber={41}
@@ -56,13 +56,13 @@ export function TotalCampaigns() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <p className="text-3xl font-bold text-text-primary">
             {totalCampaigns !== null ? formatNumber(totalCampaigns) : "—"}
           </p>
         </div>
-        <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg">
+        <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-accent-primary/10 to-accent-primary/20 dark:from-accent-primary/20 dark:to-accent-primary/30 rounded-xl">
           <svg
-            className="w-6 h-6 text-blue-600 dark:text-blue-400"
+            className="w-7 h-7 text-accent-primary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

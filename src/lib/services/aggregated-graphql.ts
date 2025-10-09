@@ -540,6 +540,80 @@ export async function fetchAggregatedTotalTransactions(): Promise<number> {
 }
 
 /**
+ * Fetch total claims aggregated across all sources
+ * Combines claim counts from:
+ * - Airdrops EVM Action (category: "Claim")
+ * - Solana Airdrops (if schema supports claims)
+ */
+export async function fetchAggregatedTotalClaims(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+
+  try {
+    const [airdropsEVMCount, solanaCount] = await Promise.all([
+      // Airdrops EVM - count of Claim actions
+      (async () => {
+        const query = `
+          query GetAirdropsEVMClaims {
+            Action_aggregate(
+              where: {
+                chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+                category: { _eq: "Claim" }
+              }
+            ) {
+              aggregate {
+                count
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+          body: JSON.stringify({ query }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+
+        if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
+
+        const result: GraphQLResponse<{
+          Action_aggregate: { aggregate: { count: number } };
+        }> = await response.json();
+
+        if (result.errors)
+          throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
+
+        return result.data.Action_aggregate.aggregate.count;
+      })().catch((err) => {
+        console.error("Error fetching Airdrops EVM claims:", err);
+        return 0;
+      }),
+
+      // Solana Airdrops - count of claims (if available in schema)
+      // Note: Schema may not support claim counting, return 0 for now
+      (async () => {
+        // TODO: Add Solana claims query when schema is confirmed
+        return 0;
+      })().catch((err) => {
+        console.error("Error fetching Solana claims:", err);
+        return 0;
+      }),
+    ]);
+
+    const total = airdropsEVMCount + solanaCount;
+
+    console.log(`📊 Aggregated claim counts:
+      - Airdrops EVM: ${airdropsEVMCount}
+      - Solana: ${solanaCount}
+      - Total: ${total}`);
+
+    return total;
+  } catch (error) {
+    console.error("Error fetching aggregated total claims:", error);
+    return 0;
+  }
+}
+
+/**
  * Fetch time-based transaction counts aggregated across all sources
  */
 export async function fetchAggregatedTimeBasedTransactionCounts(): Promise<{

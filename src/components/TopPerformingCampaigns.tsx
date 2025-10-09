@@ -47,7 +47,7 @@ export function TopPerformingCampaigns() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="space-y-3">
@@ -62,7 +62,7 @@ export function TopPerformingCampaigns() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading top performing campaigns data
         </p>
@@ -75,8 +75,8 @@ export function TopPerformingCampaigns() {
 
   if (campaigns.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No top performing campaigns data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No top performing campaigns data available</p>
       </div>
     );
   }
@@ -84,12 +84,12 @@ export function TopPerformingCampaigns() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Top Performing Campaigns
             </h2>
             <SourceCodeLink
@@ -104,7 +104,7 @@ export function TopPerformingCampaigns() {
             description="Top 10 airdrop campaigns ranked by number of claimers"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Top 10 airdrop campaigns ranked by number of claimers
         </p>
       </div>
@@ -112,30 +112,30 @@ export function TopPerformingCampaigns() {
       <div className="overflow-x-auto">
         <div className="max-h-96 overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-white dark:bg-gray-800">
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+            <thead className="sticky top-0 bg-white dark:bg-bg-secondary">
+              <tr className="border-b border-border-default">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Rank
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Campaign
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Claimers
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Claim Rate
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Chain
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Start Date
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Admin
                 </th>
-                <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">
                   Link
                 </th>
               </tr>
@@ -147,7 +147,7 @@ export function TopPerformingCampaigns() {
                 return (
                   <tr
                     key={campaign.id}
-                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="border-b border-border-default hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <td className="py-3 px-2">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-semibold">
@@ -165,22 +165,22 @@ export function TopPerformingCampaigns() {
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="font-semibold text-gray-900 dark:text-white">
+                      <div className="font-semibold text-text-primary">
                         {campaign.claimRate}%
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="text-gray-600 dark:text-gray-300">
+                      <div className="text-text-secondary">
                         {campaign.chainName}
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="text-gray-600 dark:text-gray-300">
+                      <div className="text-text-secondary">
                         {formatDate(campaign.timestamp)}
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="font-mono text-xs text-gray-600 dark:text-gray-300">
+                      <div className="font-mono text-xs text-text-secondary">
                         {shortenAddress(campaign.admin)}
                       </div>
                     </td>

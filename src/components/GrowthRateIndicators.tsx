@@ -72,7 +72,7 @@ export function GrowthRateIndicators() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -90,7 +90,7 @@ export function GrowthRateIndicators() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading growth metrics</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
@@ -99,8 +99,8 @@ export function GrowthRateIndicators() {
 
   if (!growthMetrics) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No growth metrics available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No growth metrics available</p>
       </div>
     );
   }
@@ -132,7 +132,7 @@ export function GrowthRateIndicators() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1"></div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Growth Rate Indicators
             </h2>
             <SourceCodeLink
@@ -149,19 +149,19 @@ export function GrowthRateIndicators() {
             />
           </div>
         </div>
-        <p className="text-gray-600 dark:text-gray-300">Month-over-month growth metrics</p>
+        <p className="text-text-secondary">Month-over-month growth metrics</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  <p className="text-sm font-medium text-text-secondary">
                     {metric.label}
                   </p>
                   {metric.hasSourceLink && (
@@ -175,7 +175,7 @@ export function GrowthRateIndicators() {
                 <p className={`text-2xl font-bold ${getGrowthColor(metric.value)}`}>
                   {formatPercentage(metric.value)}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-text-tertiary mt-1">
                   {metric.description}
                 </p>
               </div>

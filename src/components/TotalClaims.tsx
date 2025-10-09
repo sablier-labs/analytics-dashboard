@@ -1,25 +1,25 @@
 "use client";
 
 import { useRef } from "react";
-import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
+import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function SolanaTotalCampaigns() {
-  const { data, isLoading, error } = useSolanaAnalytics();
-  const totalCampaigns = data?.totalCampaigns || null;
+export function TotalClaims() {
+  const { data, loading, error } = useAnalyticsContext();
+  const totalClaims = data?.totalClaims || null;
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 mb-2"></div>
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+          <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+          <div className="h-8 bg-gray-200 rounded w-24"></div>
         </div>
       </div>
     );
@@ -27,9 +27,9 @@ export function SolanaTotalCampaigns() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading campaigns</p>
-        <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
+      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
+        <p className="text-sm text-red-600 mb-2">Error loading total claims</p>
+        <p className="text-xs text-red-500">{error}</p>
       </div>
     );
   }
@@ -37,29 +37,27 @@ export function SolanaTotalCampaigns() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
+      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-text-secondary">
-            Total Campaigns (Solana)
-          </p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Claims</p>
           <SourceCodeLink
-            fileName="solana-graphql.ts"
-            lineNumber={1}
-            tooltip="View fetchSolanaTotalCampaigns source"
+            fileName="aggregated-graphql.ts"
+            lineNumber={548}
+            tooltip="View fetchTotalClaims source"
           />
         </div>
         <SharePanel
-          title="Total Campaigns (Solana)"
+          title="Total Claims"
           elementRef={containerRef}
-          description="Total airdrop campaigns on the Sablier Solana protocol"
+          description="Total number of airdrop claims across all Sablier protocols"
         />
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-text-primary">
-            {totalCampaigns !== null ? formatNumber(totalCampaigns) : "—"}
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+            {totalClaims !== null ? formatNumber(totalClaims) : "—"}
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-sablier-100 dark:bg-sablier-900 rounded-lg">

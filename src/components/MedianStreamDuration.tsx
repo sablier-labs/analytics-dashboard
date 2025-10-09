@@ -74,7 +74,7 @@ export function MedianStreamDuration() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
@@ -90,7 +90,7 @@ export function MedianStreamDuration() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading stream duration data
         </p>
@@ -101,8 +101,8 @@ export function MedianStreamDuration() {
 
   if (!durationStats) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No stream duration data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No stream duration data available</p>
       </div>
     );
   }
@@ -112,12 +112,12 @@ export function MedianStreamDuration() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Median Vesting Stream Duration
             </h2>
             <SourceCodeLink
@@ -132,17 +132,17 @@ export function MedianStreamDuration() {
             description="Median duration of vesting streams longer than 24 hours"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-text-secondary">
           Median duration for vesting streams longer than 24 hours
         </p>
       </div>
 
       {/* Simple Median Display */}
       <div className="text-center">
-        <div className="text-5xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-5xl font-bold text-text-primary mb-2">
           {medianDuration.value}
         </div>
-        <div className="text-lg text-gray-600 dark:text-gray-300 capitalize">
+        <div className="text-lg text-text-secondary capitalize">
           {medianDuration.unit}
         </div>
       </div>

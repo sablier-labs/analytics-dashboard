@@ -38,7 +38,7 @@ export function LargestStablecoinStreams() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
@@ -55,43 +55,43 @@ export function LargestStablecoinStreams() {
   const streams = data?.largestStablecoinStreams || [];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+    <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <h2 className="text-2xl font-bold text-text-primary mb-6">
         Largest Stablecoin Vesting Streams
       </h2>
 
       {streams.length === 0 ? (
-        <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+        <div className="text-center text-text-secondary py-8">
           No stablecoin streams data available
         </div>
       ) : (
         <div className="overflow-x-auto">
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white dark:bg-gray-800">
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+              <thead className="sticky top-0 bg-white dark:bg-bg-secondary">
+                <tr className="border-b border-border-default">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Rank
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Amount
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Token
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Start Date
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Duration
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Status
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Chain
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Link
                   </th>
                 </tr>
@@ -109,10 +109,10 @@ export function LargestStablecoinStreams() {
                   return (
                     <tr
                       key={stream.id}
-                      className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                      className="border-b border-border-subtle hover:bg-surface-hover transition-colors duration-200"
                     >
-                      <td className="py-3 px-2 text-gray-900 dark:text-white">#{index + 1}</td>
-                      <td className="py-3 px-2 font-medium text-gray-900 dark:text-white">
+                      <td className="py-3 px-2 text-text-primary">#{index + 1}</td>
+                      <td className="py-3 px-2 font-medium text-text-primary">
                         {formatAmount(stream.depositAmount, stream.asset.decimals)}
                       </td>
                       <td className="py-3 px-2">
@@ -123,10 +123,10 @@ export function LargestStablecoinStreams() {
                           </span>
                         </div>
                       </td>
-                      <td className="py-3 px-2 text-gray-600 dark:text-gray-400">
+                      <td className="py-3 px-2 text-text-secondary">
                         {formatDate(stream.startTime)}
                       </td>
-                      <td className="py-3 px-2 text-gray-600 dark:text-gray-400">{duration}</td>
+                      <td className="py-3 px-2 text-text-secondary">{duration}</td>
                       <td className="py-3 px-2">
                         <span
                           className={`inline-block px-2 py-1 text-xs font-medium rounded ${

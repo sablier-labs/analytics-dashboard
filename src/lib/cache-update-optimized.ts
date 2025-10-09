@@ -5,6 +5,7 @@ import {
   fetchAggregatedMonthlyUserGrowth,
   fetchAggregatedTimeBasedTransactionCounts,
   fetchAggregatedTimeBasedUserCounts,
+  fetchAggregatedTotalClaims,
   fetchAggregatedTotalTransactions,
   fetchAggregatedTotalUsers,
 } from "@/lib/services/aggregated-graphql";
@@ -86,6 +87,7 @@ export async function updateAnalyticsCache() {
   const [
     totalUsers,
     totalTransactions,
+    totalClaims,
     timeBasedUsers,
     timeBasedTransactions,
     monthlyUserGrowth,
@@ -108,6 +110,10 @@ export async function updateAnalyticsCache() {
     }),
     fetchAggregatedTotalTransactions().catch((err) => {
       console.error("Error fetching aggregated total transactions:", err);
+      return 0;
+    }),
+    fetchAggregatedTotalClaims().catch((err) => {
+      console.error("Error fetching aggregated total claims:", err);
       return 0;
     }),
     fetchAggregatedTimeBasedUserCounts().catch((err) => {
@@ -192,6 +198,7 @@ export async function updateAnalyticsCache() {
     timeBasedTransactions,
     timeBasedUsers,
     topAssets,
+    totalClaims,
     totalTransactions,
     totalUsers,
     totalVestingStreams,

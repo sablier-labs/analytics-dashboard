@@ -28,7 +28,7 @@ export function TopAssetsChart() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
           <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -39,7 +39,7 @@ export function TopAssetsChart() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-700 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading top assets</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
@@ -48,10 +48,10 @@ export function TopAssetsChart() {
 
   if (!topAssets || topAssets.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6">
-        <p className="text-gray-600 dark:text-gray-300">No top assets data available</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <p className="text-text-secondary">No top assets data available</p>
         {data && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-xs text-text-tertiary mt-2">
             Debug: Data loaded but topAssets is empty. Available keys:{" "}
             {Object.keys(data).join(", ")}
           </p>
@@ -172,12 +172,12 @@ export function TopAssetsChart() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-text-primary">
               Top Assets by Vesting Stream Count
             </h2>
             <SourceCodeLink
@@ -192,10 +192,10 @@ export function TopAssetsChart() {
             description="Most popular ERC-20 tokens being used for streaming, ranked by total number of streams"
           />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+        <p className="text-sm text-text-secondary mb-4">
           Most popular ERC-20 tokens being used for streaming
         </p>
-        <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4 text-xs text-text-tertiary">
           <span>Top {topAssets.length} assets shown</span>
         </div>
       </div>
