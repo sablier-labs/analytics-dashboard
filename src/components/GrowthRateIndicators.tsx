@@ -72,7 +72,7 @@ export function GrowthRateIndicators() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
         <div className="animate-pulse">
           <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-32 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -90,7 +90,7 @@ export function GrowthRateIndicators() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading growth metrics</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
@@ -99,7 +99,7 @@ export function GrowthRateIndicators() {
 
   if (!growthMetrics) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
         <p className="text-text-secondary">No growth metrics available</p>
       </div>
     );
@@ -156,7 +156,7 @@ export function GrowthRateIndicators() {
         {metrics.map((metric, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 "
           >
             <div className="flex items-center justify-between">
               <div className="flex-1">

@@ -56,7 +56,7 @@ export function ChainDistributionChart() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200">
         <div className="animate-pulse">
           <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
           <div className="h-64 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
@@ -67,7 +67,7 @@ export function ChainDistributionChart() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading chain distribution
         </p>
@@ -78,7 +78,7 @@ export function ChainDistributionChart() {
 
   if (!chainData || chainData.length === 0) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200">
         <p className="text-text-secondary">No chain distribution data available</p>
       </div>
     );
@@ -175,7 +175,7 @@ export function ChainDistributionChart() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

@@ -37,7 +37,7 @@ export function TotalCampaigns() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 "
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">

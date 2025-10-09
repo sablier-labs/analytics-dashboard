@@ -45,7 +45,7 @@ export function TimeBasedUserCounters() {
         {timeRanges.map((range) => (
           <div
             key={range.key}
-            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 "
           >
             <div className="animate-pulse">
               <div className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded w-24 mb-2"></div>
@@ -59,7 +59,7 @@ export function TimeBasedUserCounters() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading time-based user counts
         </p>
@@ -100,7 +100,7 @@ export function TimeBasedUserCounters() {
         {timeRanges.map((range) => (
           <div
             key={range.key}
-            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 "
           >
             <div className="flex items-center justify-between">
               <div>

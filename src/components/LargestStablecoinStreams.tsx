@@ -38,7 +38,7 @@ export function LargestStablecoinStreams() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
         <div className="animate-pulse">
           <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
@@ -55,7 +55,7 @@ export function LargestStablecoinStreams() {
   const streams = data?.largestStablecoinStreams || [];
 
   return (
-    <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
+    <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
       <h2 className="text-2xl font-bold text-text-primary mb-6">
         Largest Stablecoin Vesting Streams
       </h2>

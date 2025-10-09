@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { RefreshCw } from "lucide-react";
 
 interface RefreshButtonProps {
   onRefresh?: () => Promise<void> | void;
@@ -88,19 +89,7 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
         className="px-6 py-2.5 bg-accent-primary hover:bg-accent-hover text-white font-semibold rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 hover:scale-[1.02]"
         title="Refresh analytics data"
       >
-        <svg
-          className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-          />
-        </svg>
+        <RefreshCw className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`} />
         <span>{isRefreshing ? "Refreshing..." : "Refresh"}</span>
       </button>
 

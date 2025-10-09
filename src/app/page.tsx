@@ -26,7 +26,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 transition-colors">
       <div className="px-16 py-8">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h1 className="text-5xl font-bold text-text-primary mb-6">
+          <h1 className="text-2xl font-semibold text-text-primary mb-6">
             Sablier Analytics
           </h1>
           <p className="text-xl text-text-secondary mb-6">
@@ -35,8 +35,8 @@ export default function Home() {
           <LastUpdated />
         </div>
 
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
             <UserCounter />
             <TransactionCounter />
             <TotalVestingStreams />
@@ -51,12 +51,12 @@ export default function Home() {
 
           <GrowthRateIndicators />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <MedianStreamDuration />
             <StreamProperties />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <CumulativeUserChart />
             <CumulativeTransactionChart />
           </div>
@@ -65,12 +65,12 @@ export default function Home() {
 
           <MonthlyStreamCreationChart />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ChainDistributionChart />
             <TopAssetsChart />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <StreamCategoryDistribution />
             <ActiveVsCompletedStreams />
           </div>
