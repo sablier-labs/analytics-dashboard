@@ -26,10 +26,10 @@ export function SolanaTopSPLTokens() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
-          <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
+          <div className="h-80 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
         </div>
       </div>
     );
@@ -37,7 +37,7 @@ export function SolanaTopSPLTokens() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading top SPL tokens</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
@@ -48,7 +48,7 @@ export function SolanaTopSPLTokens() {
 
   if (topSPLTokens.length === 0) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-text-secondary">No SPL token data available</p>
       </div>
     );
@@ -172,7 +172,7 @@ export function SolanaTopSPLTokens() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -210,12 +210,12 @@ export function SolanaTopSPLTokens() {
           {topSPLTokens.map((token) => (
             <div
               key={token.mint}
-              className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+              className="flex items-center gap-3 p-2 rounded-lg bg-bg-tertiary dark:bg-surface-raised/50"
             >
               {token.symbol ? (
                 <TokenLogo symbol={token.symbol} size={32} />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs">
+                <div className="w-8 h-8 rounded-full bg-bg-tertiary dark:bg-surface-hover flex items-center justify-center text-xs">
                   ?
                 </div>
               )}

@@ -85,7 +85,7 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       <button
         onClick={handleRefresh}
         disabled={isRefreshing}
-        className="px-6 py-2.5 bg-accent-primary hover:bg-accent-hover text-white font-semibold rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+        className="px-6 py-2.5 bg-accent-primary hover:bg-accent-hover text-white font-semibold rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 hover:scale-[1.02]"
         title="Refresh analytics data"
       >
         <svg

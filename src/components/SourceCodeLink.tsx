@@ -18,7 +18,7 @@ export function SourceCodeLink({
       href={githubUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center w-6 h-6 text-gray-400 hover:text-sablier-500 dark:text-gray-500 dark:hover:text-sablier-400 transition-colors"
+      className="inline-flex items-center justify-center w-6 h-6 text-text-muted hover:text-sablier-500 dark:hover:text-sablier-400 transition-colors"
       title={tooltip}
       aria-label={tooltip}
     >

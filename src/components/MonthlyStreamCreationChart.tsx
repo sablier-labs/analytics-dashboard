@@ -48,10 +48,10 @@ export function MonthlyStreamCreationChart() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-64 mb-4"></div>
-          <div className="h-80 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-64 mb-4"></div>
+          <div className="h-80 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
         </div>
       </div>
     );
@@ -59,7 +59,7 @@ export function MonthlyStreamCreationChart() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading stream creation chart
         </p>
@@ -70,7 +70,7 @@ export function MonthlyStreamCreationChart() {
 
   if (!streamData || streamData.length === 0) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-text-secondary">No stream creation data available</p>
       </div>
     );
@@ -198,7 +198,7 @@ export function MonthlyStreamCreationChart() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

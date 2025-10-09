@@ -44,10 +44,10 @@ export function CampaignCreationTrend() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
+          <div className="h-64 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
         </div>
       </div>
     );
@@ -55,7 +55,7 @@ export function CampaignCreationTrend() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading campaign creation data</p>
         <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
@@ -64,7 +64,7 @@ export function CampaignCreationTrend() {
 
   if (!campaignData || campaignData.length === 0) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-text-secondary">No campaign creation data available</p>
       </div>
     );
@@ -184,7 +184,7 @@ export function CampaignCreationTrend() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

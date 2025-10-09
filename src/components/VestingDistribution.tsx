@@ -19,13 +19,13 @@ export function VestingDistribution() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
+          <div className="h-64 bg-bg-tertiary dark:bg-surface-hover rounded mb-4"></div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-16 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
+            <div className="h-16 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@ export function VestingDistribution() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading vesting distribution data
         </p>
@@ -45,7 +45,7 @@ export function VestingDistribution() {
 
   if (!vestingData || (vestingData.instant === 0 && vestingData.vesting === 0)) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <p className="text-text-secondary">No vesting distribution data available</p>
       </div>
     );
@@ -114,7 +114,7 @@ export function VestingDistribution() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

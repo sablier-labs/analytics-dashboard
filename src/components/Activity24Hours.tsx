@@ -17,10 +17,10 @@ export function Activity24Hours() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
-          <div key={`loading-${i}`} className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+          <div key={`loading-${i}`} className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
             <div className="animate-pulse">
-              <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-4"></div>
-              <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
+              <div className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded w-1/2 mb-4"></div>
+              <div className="h-8 bg-bg-tertiary dark:bg-surface-hover rounded w-1/3"></div>
             </div>
           </div>
         ))}
@@ -33,7 +33,7 @@ export function Activity24Hours() {
   if (!activity) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+        <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
           <div className="text-center text-text-secondary">
             No 24-hour activity data available
           </div>
@@ -45,7 +45,7 @@ export function Activity24Hours() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Vesting Streams Created (24h) */}
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-text-secondary">
@@ -74,7 +74,7 @@ export function Activity24Hours() {
         <div className="mt-4">
           <div className="flex items-center text-sm">
             <svg
-              className="w-4 h-4 text-gray-400 mr-1"
+              className="w-4 h-4 text-text-muted mr-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -94,7 +94,7 @@ export function Activity24Hours() {
       </div>
 
       {/* Total Transactions (24h) */}
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-text-secondary">
@@ -123,7 +123,7 @@ export function Activity24Hours() {
         <div className="mt-4">
           <div className="flex items-center text-sm">
             <svg
-              className="w-4 h-4 text-gray-400 mr-1"
+              className="w-4 h-4 text-text-muted mr-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -143,7 +143,7 @@ export function Activity24Hours() {
       </div>
 
       {/* Airdrop Claims (24h) */}
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-text-secondary">
@@ -172,7 +172,7 @@ export function Activity24Hours() {
         <div className="mt-4">
           <div className="flex items-center text-sm">
             <svg
-              className="w-4 h-4 text-gray-400 mr-1"
+              className="w-4 h-4 text-text-muted mr-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

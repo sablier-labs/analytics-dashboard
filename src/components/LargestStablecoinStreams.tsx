@@ -38,12 +38,12 @@ export function LargestStablecoinStreams() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-4"></div>
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-4 bg-gray-300 dark:bg-gray-600 rounded"></div>
+              <div key={i} className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
             ))}
           </div>
         </div>
@@ -55,7 +55,7 @@ export function LargestStablecoinStreams() {
   const streams = data?.largestStablecoinStreams || [];
 
   return (
-    <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-md p-8 transition-colors duration-200">
+    <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5">
       <h2 className="text-2xl font-bold text-text-primary mb-6">
         Largest Stablecoin Vesting Streams
       </h2>
@@ -132,14 +132,14 @@ export function LargestStablecoinStreams() {
                           className={`inline-block px-2 py-1 text-xs font-medium rounded ${
                             status === "active"
                               ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                              : "bg-bg-tertiary dark:bg-surface-raised text-text-primary"
                           }`}
                         >
                           {status === "active" ? "Active" : "Completed"}
                         </span>
                       </td>
                       <td className="py-3 px-2">
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+                        <span className="inline-block px-2 py-1 text-xs font-medium bg-bg-tertiary dark:bg-surface-raised text-text-primary rounded">
                           {getMainnetChainName(stream.chainId)}
                         </span>
                       </td>

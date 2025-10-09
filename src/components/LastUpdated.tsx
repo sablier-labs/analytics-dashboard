@@ -87,9 +87,9 @@ export function LastUpdated() {
 
   if (loading || !data?.lastUpdated) {
     return (
-      <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex items-center justify-center text-sm text-text-tertiary">
         <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-text-muted rounded-full animate-pulse"></div>
           <span>Loading data status...</span>
         </div>
       </div>
@@ -98,10 +98,10 @@ export function LastUpdated() {
 
   return (
     <div className="flex flex-col items-center space-y-3">
-      <div className="flex items-center justify-center text-sm text-gray-600 dark:text-gray-300">
+      <div className="flex items-center justify-center text-sm text-text-secondary">
         <div className="flex items-center space-x-2">
           <svg
-            className="w-4 h-4 text-gray-500 dark:text-gray-400"
+            className="w-4 h-4 text-text-tertiary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -120,8 +120,8 @@ export function LastUpdated() {
           >
             {relativeTime}
           </span>
-          <span className="text-gray-400 dark:text-gray-500">•</span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-text-muted">•</span>
+          <span className="text-xs text-text-tertiary">
             {formatTimestamp(data.lastUpdated)}
           </span>
         </div>

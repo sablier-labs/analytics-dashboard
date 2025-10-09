@@ -56,12 +56,12 @@ export function SharePanel({ title, elementRef, description }: SharePanelProps) 
       <button
         onClick={handleDownload}
         disabled={isDownloading}
-        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+        className="p-1.5 rounded-md hover:bg-surface-hover dark:hover:bg-surface-hover transition-colors disabled:opacity-50"
         title="Download as image"
         aria-label="Download as image"
       >
         {isDownloading ? (
-          <svg className="w-4 h-4 text-gray-500 animate-spin" fill="none" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-text-tertiary animate-spin" fill="none" viewBox="0 0 24 24">
             <circle
               className="opacity-25"
               cx="12"
@@ -78,7 +78,7 @@ export function SharePanel({ title, elementRef, description }: SharePanelProps) 
           </svg>
         ) : (
           <svg
-            className="w-4 h-4 text-gray-500 dark:text-gray-400"
+            className="w-4 h-4 text-text-tertiary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -95,12 +95,12 @@ export function SharePanel({ title, elementRef, description }: SharePanelProps) 
 
       <button
         onClick={handleShareOnX}
-        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        className="p-1.5 rounded-md hover:bg-surface-hover dark:hover:bg-surface-hover transition-colors"
         title="Share on X"
         aria-label="Share on X"
       >
         <svg
-          className="w-4 h-4 text-gray-500 dark:text-gray-400"
+          className="w-4 h-4 text-text-tertiary"
           fill="currentColor"
           viewBox="0 0 24 24"
         >

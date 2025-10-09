@@ -16,10 +16,10 @@ export function TotalClaims() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
-          <div className="h-8 bg-gray-200 rounded w-24"></div>
+          <div className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded w-20 mb-2"></div>
+          <div className="h-8 bg-bg-tertiary dark:bg-surface-hover rounded w-24"></div>
         </div>
       </div>
     );
@@ -27,9 +27,9 @@ export function TotalClaims() {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
-        <p className="text-sm text-red-600 mb-2">Error loading total claims</p>
-        <p className="text-xs text-red-500">{error}</p>
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading total claims</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );
   }
@@ -37,11 +37,11 @@ export function TotalClaims() {
   return (
     <div
       ref={containerRef}
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6"
+      className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Claims</p>
+          <p className="text-sm font-semibold text-text-secondary">Total Claims</p>
           <SourceCodeLink
             fileName="aggregated-graphql.ts"
             lineNumber={548}
@@ -56,7 +56,7 @@ export function TotalClaims() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          <p className="text-3xl font-bold text-text-primary">
             {totalClaims !== null ? formatNumber(totalClaims) : "—"}
           </p>
         </div>

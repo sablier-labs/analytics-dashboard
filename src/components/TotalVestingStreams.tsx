@@ -20,8 +20,8 @@ export function TotalVestingStreams() {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2"></div>
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-36"></div>
+          <div className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded w-32 mb-2"></div>
+          <div className="h-8 bg-bg-tertiary dark:bg-surface-hover rounded w-36"></div>
         </div>
       </div>
     );
@@ -29,7 +29,7 @@ export function TotalVestingStreams() {
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-200 dark:border-red-700 shadow-lg p-6">
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6">
         <p className="text-sm text-red-600 dark:text-red-400 mb-2">
           Error loading total vesting streams
         </p>
