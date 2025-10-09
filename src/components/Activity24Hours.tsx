@@ -52,7 +52,7 @@ export function Activity24Hours() {
               Vesting Streams Created (24h)
             </p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {activity.streamsCreated.toLocaleString()}
+              {(activity.streamsCreated ?? 0).toLocaleString()}
             </p>
           </div>
           <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -101,7 +101,7 @@ export function Activity24Hours() {
               Total Transactions (24h)
             </p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {activity.totalTransactions.toLocaleString()}
+              {(activity.totalTransactions ?? 0).toLocaleString()}
             </p>
           </div>
           <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -150,7 +150,7 @@ export function Activity24Hours() {
               Airdrop Claims (24h)
             </p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {activity.claimsCreated.toLocaleString()}
+              {(activity.claimsCreated ?? 0).toLocaleString()}
             </p>
           </div>
           <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg">
