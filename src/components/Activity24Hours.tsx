@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, BarChart3, Gift, Clock, Zap } from "lucide-react";
+import { BarChart3, Clock, Gift, Plus, Zap } from "lucide-react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { Activity24Hours as Activity24HoursMetrics } from "@/lib/services/graphql";
 
@@ -18,7 +18,10 @@ export function Activity24Hours() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
-          <div key={`loading-${i}`} className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
+          <div
+            key={`loading-${i}`}
+            className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 "
+          >
             <div className="animate-pulse">
               <div className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded w-1/2 mb-4"></div>
               <div className="h-8 bg-bg-tertiary dark:bg-surface-hover rounded w-1/3"></div>
@@ -35,9 +38,7 @@ export function Activity24Hours() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
-          <div className="text-center text-text-secondary">
-            No 24-hour activity data available
-          </div>
+          <div className="text-center text-text-secondary">No 24-hour activity data available</div>
         </div>
       </div>
     );
@@ -49,9 +50,7 @@ export function Activity24Hours() {
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-text-secondary">
-              Vesting Streams Created (24h)
-            </p>
+            <p className="text-sm font-medium text-text-secondary">Vesting Streams Created (24h)</p>
             <p className="text-3xl font-bold text-text-primary">
               {(activity.streamsCreated ?? 0).toLocaleString()}
             </p>
@@ -63,9 +62,7 @@ export function Activity24Hours() {
         <div className="mt-4">
           <div className="flex items-center text-sm">
             <Clock className="w-4 h-4 text-text-muted mr-1" />
-            <span className="text-text-secondary">
-              New vesting streams in the last 24 hours
-            </span>
+            <span className="text-text-secondary">New vesting streams in the last 24 hours</span>
           </div>
         </div>
       </div>
@@ -74,9 +71,7 @@ export function Activity24Hours() {
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-text-secondary">
-              Total Transactions (24h)
-            </p>
+            <p className="text-sm font-medium text-text-secondary">Total Transactions (24h)</p>
             <p className="text-3xl font-bold text-text-primary">
               {(activity.totalTransactions ?? 0).toLocaleString()}
             </p>
@@ -88,9 +83,7 @@ export function Activity24Hours() {
         <div className="mt-4">
           <div className="flex items-center text-sm">
             <Zap className="w-4 h-4 text-text-muted mr-1" />
-            <span className="text-text-secondary">
-              All interactions across Sablier protocols
-            </span>
+            <span className="text-text-secondary">All interactions across Sablier protocols</span>
           </div>
         </div>
       </div>
@@ -99,9 +92,7 @@ export function Activity24Hours() {
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-text-secondary">
-              Airdrop Claims (24h)
-            </p>
+            <p className="text-sm font-medium text-text-secondary">Airdrop Claims (24h)</p>
             <p className="text-3xl font-bold text-text-primary">
               {(activity.claimsCreated ?? 0).toLocaleString()}
             </p>
@@ -113,9 +104,7 @@ export function Activity24Hours() {
         <div className="mt-4">
           <div className="flex items-center text-sm">
             <Gift className="w-4 h-4 text-text-muted mr-1" />
-            <span className="text-text-secondary">
-              Airdrop claims in the last 24 hours
-            </span>
+            <span className="text-text-secondary">Airdrop claims in the last 24 hours</span>
           </div>
         </div>
       </div>

@@ -33,7 +33,9 @@ export function MedianClaimWindow() {
   if (error) {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading median claim window</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading median claim window
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
     );
@@ -46,9 +48,7 @@ export function MedianClaimWindow() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-text-secondary">
-            Median Claim Window
-          </p>
+          <p className="text-sm font-medium text-text-secondary">Median Claim Window</p>
           <SourceCodeLink
             fileName="airdrops-graphql.ts"
             lineNumber={336}

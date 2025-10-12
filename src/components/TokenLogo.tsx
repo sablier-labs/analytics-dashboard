@@ -2,13 +2,32 @@ import { TokenIcon } from "@web3icons/react";
 import { useState } from "react";
 
 interface TokenLogoProps {
-  symbol: string;
-  size?: number;
   className?: string;
+  logoURI?: string;
+  size?: number;
+  symbol: string;
 }
 
-export function TokenLogo({ symbol, size = 24, className = "" }: TokenLogoProps) {
+export function TokenLogo({ className = "", logoURI, size = 24, symbol }: TokenLogoProps) {
   const [hasError, setHasError] = useState(false);
+  const [logoURIError, setLogoURIError] = useState(false);
+
+  // If we have a logoURI and it hasn't failed, try it first
+  if (logoURI && !logoURIError && !hasError) {
+    return (
+      <img
+        src={logoURI}
+        alt={symbol}
+        width={size}
+        height={size}
+        className={`rounded-full ${className}`}
+        onError={() => {
+          setLogoURIError(true);
+          // After logoURI fails, will try @web3icons
+        }}
+      />
+    );
+  }
 
   if (hasError) {
     // Fallback: Show first letter of symbol

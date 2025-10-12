@@ -13,8 +13,8 @@ import {
 } from "chart.js";
 import { useRef } from "react";
 import { Line } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { MonthlyStreamCreation } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -77,24 +77,24 @@ export function MonthlyStreamCreationChart() {
   }
 
   const chartData = {
-    labels: streamData.map((item) => formatMonth(item.month)),
     datasets: [
       {
-        label: "Streams Created",
-        data: streamData.map((item) => item.count),
-        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.1)" : "rgba(255, 80, 1, 0.1)",
+        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         borderWidth: 2,
+        data: streamData.map((item) => item.count),
         fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 6,
+        label: "Streams Created",
         pointBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
         pointHoverBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+        pointHoverRadius: 6,
+        pointRadius: 0,
+        tension: 0.4,
       },
     ],
+    labels: streamData.map((item) => formatMonth(item.month)),
   };
 
   const options = {
@@ -199,7 +199,6 @@ export function MonthlyStreamCreationChart() {
     <div
       ref={containerRef}
       className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200"
-      style={{ background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)' }}
     >
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">

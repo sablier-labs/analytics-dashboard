@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Clock } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshButton } from "@/components/RefreshButton";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 
@@ -110,9 +110,7 @@ export function LastUpdated() {
             {relativeTime}
           </span>
           <span className="text-text-muted">•</span>
-          <span className="text-xs text-text-tertiary">
-            {formatTimestamp(data.lastUpdated)}
-          </span>
+          <span className="text-xs text-text-tertiary">{formatTimestamp(data.lastUpdated)}</span>
         </div>
       </div>
       <RefreshButton onRefresh={refetch} />

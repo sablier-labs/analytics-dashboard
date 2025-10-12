@@ -68,8 +68,8 @@ function formatDuration(seconds: number): { value: string; unit: string } {
 export function MedianStreamDuration() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-    
-    // Use cached data if available, otherwise use fallback data
+
+  // Use cached data if available, otherwise use fallback data
   const durationStats = data?.streamDurationStats || null;
 
   if (loading) {
@@ -117,9 +117,7 @@ export function MedianStreamDuration() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Median Vesting Stream Duration
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Median Vesting Stream Duration</h2>
             <SourceCodeLink
               fileName="graphql.ts"
               lineNumber={924}
@@ -139,12 +137,8 @@ export function MedianStreamDuration() {
 
       {/* Simple Median Display */}
       <div className="text-center">
-        <div className="text-5xl font-bold text-text-primary mb-2">
-          {medianDuration.value}
-        </div>
-        <div className="text-lg text-text-secondary capitalize">
-          {medianDuration.unit}
-        </div>
+        <div className="text-5xl font-bold text-text-primary mb-2">{medianDuration.value}</div>
+        <div className="text-lg text-text-secondary capitalize">{medianDuration.unit}</div>
       </div>
     </div>
   );

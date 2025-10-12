@@ -3,8 +3,8 @@
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useRef } from "react";
 import { Pie } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
 import type { ChainDistribution } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -180,9 +180,7 @@ export function ChainDistributionChart() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              User Distribution by Chain
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">User Distribution by Chain</h2>
             <SourceCodeLink
               fileName="graphql.ts"
               lineNumber={466}

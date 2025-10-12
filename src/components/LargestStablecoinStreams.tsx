@@ -70,30 +70,16 @@ export function LargestStablecoinStreams() {
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-white dark:bg-bg-secondary">
                 <tr className="border-b border-border-default">
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Rank
-                  </th>
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Amount
-                  </th>
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Token
-                  </th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Rank</th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Amount</th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Token</th>
                   <th className="text-left py-3 px-2 font-medium text-text-secondary">
                     Start Date
                   </th>
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Duration
-                  </th>
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Chain
-                  </th>
-                  <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                    Link
-                  </th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Duration</th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Status</th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Chain</th>
+                  <th className="text-left py-3 px-2 font-medium text-text-secondary">Link</th>
                 </tr>
               </thead>
               <tbody>

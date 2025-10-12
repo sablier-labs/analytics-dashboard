@@ -14,6 +14,7 @@ import {
 import { useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { MonthlyTransactionGrowth } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -31,6 +32,7 @@ ChartJS.register(
 
 export function CumulativeTransactionGrowthChart() {
   const { data, loading, error } = useAnalyticsContext();
+  const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const transactionGrowthData = data?.monthlyTransactionGrowth || null;
@@ -75,16 +77,16 @@ export function CumulativeTransactionGrowthChart() {
   const chartData = {
     datasets: [
       {
-        backgroundColor: "rgba(255, 80, 1, 0.1)",
-        borderColor: "rgb(255, 80, 1)",
+        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.1)" : "rgba(255, 80, 1, 0.1)",
+        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         borderWidth: 2,
         data: transactionGrowthData.map((data) => data.cumulativeTransactions),
         fill: true,
         label: "Cumulative Transactions",
-        pointBackgroundColor: "rgb(255, 80, 1)",
+        pointBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         pointBorderColor: "rgb(255, 255, 255)",
         pointBorderWidth: 2,
-        pointHoverBackgroundColor: "rgb(255, 80, 1)",
+        pointHoverBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         pointHoverRadius: 6,
         pointRadius: 0,
         tension: 0.4,
@@ -140,7 +142,7 @@ export function CumulativeTransactionGrowthChart() {
           display: false,
         },
         ticks: {
-          color: "rgb(107, 114, 128)",
+          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
@@ -156,7 +158,7 @@ export function CumulativeTransactionGrowthChart() {
           display: false,
         },
         grid: {
-          color: "rgba(229, 231, 235, 0.5)",
+          color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
           drawBorder: false,
         },
         ticks: {
@@ -170,7 +172,7 @@ export function CumulativeTransactionGrowthChart() {
             }
             return new Intl.NumberFormat().format(num);
           },
-          color: "rgb(107, 114, 128)",
+          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
           font: {
             family: "Inter, system-ui, sans-serif",
             size: 11,
@@ -191,9 +193,7 @@ export function CumulativeTransactionGrowthChart() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Cumulative Transaction Growth
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Cumulative Transaction Growth</h2>
             <SourceCodeLink
               fileName="graphql.ts"
               lineNumber={607}

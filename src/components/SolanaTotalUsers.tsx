@@ -41,9 +41,7 @@ export function SolanaTotalUsers() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-text-secondary">
-            Total Users (Solana)
-          </p>
+          <p className="text-sm font-medium text-text-secondary">Total Users (Solana)</p>
           <SourceCodeLink
             fileName="solana-graphql.ts"
             lineNumber={1}

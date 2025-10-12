@@ -119,9 +119,7 @@ export function VestingDistribution() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Vesting Distribution
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Vesting Distribution</h2>
             <SourceCodeLink
               fileName="airdrops-graphql.ts"
               lineNumber={407}
@@ -145,9 +143,7 @@ export function VestingDistribution() {
           {/* Center text */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-2xl font-bold text-text-primary">
-                {formatNumber(total)}
-              </div>
+              <div className="text-2xl font-bold text-text-primary">{formatNumber(total)}</div>
               <div className="text-sm text-text-tertiary">Total Campaigns</div>
             </div>
           </div>

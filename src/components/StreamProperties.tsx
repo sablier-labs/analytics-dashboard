@@ -9,8 +9,8 @@ import { SourceCodeLink } from "./SourceCodeLink";
 export function StreamProperties() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
-    
-    // Use cached data if available, otherwise use fallback data
+
+  // Use cached data if available, otherwise use fallback data
   const propertiesData = data?.streamProperties || null;
 
   if (loading) {

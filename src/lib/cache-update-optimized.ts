@@ -176,7 +176,7 @@ export async function updateAnalyticsCache() {
       }),
     fetchAggregated24HourMetrics().catch((err) => {
       console.error("Error fetching aggregated 24-hour metrics:", err);
-      return { streamsCreated: 0, totalTransactions: 0, claimsCreated: 0 };
+      return { claimsCreated: 0, streamsCreated: 0, totalTransactions: 0 };
     }),
   ]);
 

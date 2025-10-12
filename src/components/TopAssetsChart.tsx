@@ -11,8 +11,8 @@ import {
 } from "chart.js";
 import { useRef } from "react";
 import { Bar } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { TopAsset } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -63,8 +63,8 @@ export function TopAssetsChart() {
   const chartData = {
     datasets: [
       {
-        backgroundColor: "rgba(255, 80, 1, 0.8)",
-        borderColor: "rgb(255, 80, 1)",
+        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.8)" : "rgba(255, 80, 1, 0.8)",
+        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         borderRadius: 4,
         borderSkipped: false,
         borderWidth: 1,
@@ -125,7 +125,7 @@ export function TopAssetsChart() {
           display: false,
         },
         grid: {
-          color: "rgba(229, 231, 235, 0.5)",
+          color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
           drawBorder: false,
           lineWidth: 1,
         },

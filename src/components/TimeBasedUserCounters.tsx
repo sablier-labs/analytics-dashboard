@@ -74,9 +74,7 @@ export function TimeBasedUserCounters() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1"></div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Active Users by Time Period
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Active Users by Time Period</h2>
             <SourceCodeLink
               fileName="graphql.ts"
               lineNumber={213}
@@ -104,9 +102,7 @@ export function TimeBasedUserCounters() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-text-secondary mb-1">
-                  {range.label}
-                </p>
+                <p className="text-sm font-medium text-text-secondary mb-1">{range.label}</p>
                 <p className="text-2xl font-bold text-text-primary">
                   {userCounts ? formatNumber(userCounts[range.key]) : "—"}
                 </p>

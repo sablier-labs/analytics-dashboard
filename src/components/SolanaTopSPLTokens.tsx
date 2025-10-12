@@ -62,8 +62,8 @@ export function SolanaTopSPLTokens() {
   const chartData = {
     datasets: [
       {
-        backgroundColor: "rgba(255, 80, 1, 0.8)",
-        borderColor: "rgb(255, 80, 1)",
+        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.8)" : "rgba(255, 80, 1, 0.8)",
+        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
         borderRadius: 4,
         borderSkipped: false,
         borderWidth: 1,
@@ -177,9 +177,7 @@ export function SolanaTopSPLTokens() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Top SPL Tokens by Stream Count
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Top SPL Tokens by Stream Count</h2>
             <SourceCodeLink
               fileName="solana-graphql.ts"
               lineNumber={1}
@@ -213,7 +211,7 @@ export function SolanaTopSPLTokens() {
               className="flex items-center gap-3 p-2 rounded-lg bg-bg-tertiary dark:bg-surface-raised/50"
             >
               {token.symbol ? (
-                <TokenLogo symbol={token.symbol} size={32} />
+                <TokenLogo symbol={token.symbol} logoURI={token.logoURI} size={32} />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-bg-tertiary dark:bg-surface-hover flex items-center justify-center text-xs">
                   ?
@@ -223,14 +221,10 @@ export function SolanaTopSPLTokens() {
                 <p className="text-sm font-medium text-text-primary">
                   {token.symbol || truncateAddress(token.mint)}
                 </p>
-                <p className="text-xs text-text-tertiary truncate">
-                  {token.name || token.mint}
-                </p>
+                <p className="text-xs text-text-tertiary truncate">{token.name || token.mint}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-text-primary">
-                  {token.streamCount}
-                </p>
+                <p className="text-sm font-semibold text-text-primary">{token.streamCount}</p>
                 <p className="text-xs text-text-tertiary">streams</p>
               </div>
             </div>

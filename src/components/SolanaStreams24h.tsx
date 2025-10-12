@@ -41,9 +41,7 @@ export function SolanaStreams24h() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-text-secondary">
-            Streams (24h) - Solana
-          </p>
+          <p className="text-sm font-medium text-text-secondary">Streams (24h) - Solana</p>
           <SourceCodeLink
             fileName="solana-graphql.ts"
             lineNumber={1}
@@ -58,9 +56,7 @@ export function SolanaStreams24h() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-text-primary">
-            {formatNumber(streams24h ?? 0)}
-          </p>
+          <p className="text-2xl font-bold text-text-primary">{formatNumber(streams24h ?? 0)}</p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-sablier-100 dark:bg-sablier-900 rounded-lg">
           <svg

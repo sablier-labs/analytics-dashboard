@@ -32,7 +32,6 @@ function shortenCampaignId(id: string): string {
   return `${address.slice(0, 8)}...${address.slice(-4)}-${chain}`;
 }
 
-
 interface TopPerformingCampaignsData {
   topPerformingCampaigns?: TopPerformingCampaign[];
 }
@@ -52,7 +51,10 @@ export function TopPerformingCampaigns() {
           <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
           <div className="space-y-3">
             {Array.from({ length: 10 }, (_, i) => (
-              <div key={`skeleton-row-${i}`} className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
+              <div
+                key={`skeleton-row-${i}`}
+                className="h-4 bg-bg-tertiary dark:bg-surface-hover rounded"
+              ></div>
             ))}
           </div>
         </div>
@@ -89,9 +91,7 @@ export function TopPerformingCampaigns() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Top Performing Campaigns
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Top Performing Campaigns</h2>
             <SourceCodeLink
               fileName="airdrops-graphql.ts"
               lineNumber={569}
@@ -114,30 +114,14 @@ export function TopPerformingCampaigns() {
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-white dark:bg-bg-secondary">
               <tr className="border-b border-border-default">
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Rank
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Campaign
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Claimers
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Claim Rate
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Chain
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Start Date
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Admin
-                </th>
-                <th className="text-left py-3 px-2 font-medium text-text-secondary">
-                  Link
-                </th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Rank</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Campaign</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Claimers</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Claim Rate</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Chain</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Start Date</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Admin</th>
+                <th className="text-left py-3 px-2 font-medium text-text-secondary">Link</th>
               </tr>
             </thead>
             <tbody>
@@ -155,29 +139,22 @@ export function TopPerformingCampaigns() {
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="font-mono text-xs">
-                        {shortenCampaignId(campaign.id)}
-                      </div>
+                      <div className="font-mono text-xs">{shortenCampaignId(campaign.id)}</div>
                     </td>
                     <td className="py-3 px-2">
                       <div className="font-semibold">
-                        {formatAmount(campaign.claimedCount)} / {formatAmount(campaign.totalRecipients)}
+                        {formatAmount(campaign.claimedCount)} /{" "}
+                        {formatAmount(campaign.totalRecipients)}
                       </div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="font-semibold text-text-primary">
-                        {campaign.claimRate}%
-                      </div>
+                      <div className="font-semibold text-text-primary">{campaign.claimRate}%</div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="text-text-secondary">
-                        {campaign.chainName}
-                      </div>
+                      <div className="text-text-secondary">{campaign.chainName}</div>
                     </td>
                     <td className="py-3 px-2">
-                      <div className="text-text-secondary">
-                        {formatDate(campaign.timestamp)}
-                      </div>
+                      <div className="text-text-secondary">{formatDate(campaign.timestamp)}</div>
                     </td>
                     <td className="py-3 px-2">
                       <div className="font-mono text-xs text-text-secondary">
@@ -191,20 +168,20 @@ export function TopPerformingCampaigns() {
                         rel="noopener noreferrer"
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
                       >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </a>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                          />
+                        </svg>
+                      </a>
                     </td>
                   </tr>
                 );

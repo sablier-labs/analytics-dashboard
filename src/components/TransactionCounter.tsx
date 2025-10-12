@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import { Activity } from "lucide-react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
@@ -30,7 +30,9 @@ export function TransactionCounter() {
   if (error) {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading transaction count</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading transaction count
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       </div>
     );

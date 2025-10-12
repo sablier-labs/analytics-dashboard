@@ -41,9 +41,7 @@ export function SolanaTotalCampaigns() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-text-secondary">
-            Total Campaigns (Solana)
-          </p>
+          <p className="text-sm font-medium text-text-secondary">Total Campaigns (Solana)</p>
           <SourceCodeLink
             fileName="solana-graphql.ts"
             lineNumber={1}

@@ -3,8 +3,8 @@
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { ActiveVsCompletedStreams as ActiveVsCompletedStreamsType } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -15,8 +15,8 @@ export function ActiveVsCompletedStreams() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-    
-    // Use cached data if available, otherwise use fallback data
+
+  // Use cached data if available, otherwise use fallback data
   const streamsData = data?.activeVsCompletedStreams || null;
 
   if (loading) {
@@ -48,9 +48,7 @@ export function ActiveVsCompletedStreams() {
   if (!streamsData || streamsData.total === 0) {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
-        <p className="text-text-secondary">
-          No active vs completed streams data available
-        </p>
+        <p className="text-text-secondary">No active vs completed streams data available</p>
       </div>
     );
   }
@@ -136,9 +134,7 @@ export function ActiveVsCompletedStreams() {
             description="Current status of all vesting streams on the protocol"
           />
         </div>
-        <p className="text-sm text-text-secondary">
-          Current vesting status across all streams
-        </p>
+        <p className="text-sm text-text-secondary">Current vesting status across all streams</p>
       </div>
 
       <div className="flex items-center justify-center mb-6">

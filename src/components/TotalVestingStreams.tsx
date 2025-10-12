@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import { Waves } from "lucide-react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
@@ -11,7 +11,7 @@ export function TotalVestingStreams() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
-    // Use cached data if available, otherwise use fallback data
+  // Use cached data if available, otherwise use fallback data
   const totalStreams = data?.totalVestingStreams || null;
 
   const formatNumber = (num: number) => {
@@ -55,9 +55,7 @@ export function TotalVestingStreams() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-text-secondary">
-            Total Vesting Streams
-          </p>
+          <p className="text-sm font-semibold text-text-secondary">Total Vesting Streams</p>
           <SourceCodeLink
             fileName="graphql.ts"
             lineNumber={1224}
@@ -73,9 +71,7 @@ export function TotalVestingStreams() {
 
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-text-primary">
-            {formatNumber(totalStreams)}
-          </p>
+          <p className="text-2xl font-bold text-text-primary">{formatNumber(totalStreams)}</p>
         </div>
         <div className="flex items-center justify-center w-14 h-14 bg-gradient-to-br from-accent-primary/10 to-accent-primary/20 dark:from-accent-primary/20 dark:to-accent-primary/30 rounded-xl">
           <Waves className="w-5 h-5 text-accent-primary" />

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import { Gift } from "lucide-react";
+import { useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";

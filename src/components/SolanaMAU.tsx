@@ -41,9 +41,7 @@ export function SolanaMAU() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-text-secondary">
-            Monthly Active Users (Solana)
-          </p>
+          <p className="text-sm font-medium text-text-secondary">Monthly Active Users (Solana)</p>
           <SourceCodeLink
             fileName="solana-graphql.ts"
             lineNumber={1}

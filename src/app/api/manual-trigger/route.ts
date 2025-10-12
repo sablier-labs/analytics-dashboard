@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { updateAirdropsCache } from "@/lib/airdrops-cache-update";
 import { updateAnalyticsCache } from "@/lib/cache-update-optimized";
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     console.log("🔄 Manual refresh triggered from UI...");
 

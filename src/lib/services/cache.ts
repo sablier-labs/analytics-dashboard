@@ -1,4 +1,5 @@
 import { get } from "@vercel/edge-config";
+import { fetchAggregatedTotalClaims } from "./aggregated-graphql";
 import type {
   ActiveVsCompletedStreams,
   Activity24Hours,
@@ -15,7 +16,6 @@ import type {
   TimeBasedUserCounts,
   TopAsset,
 } from "./graphql";
-import { fetchAggregatedTotalClaims } from "./aggregated-graphql";
 import {
   fetchActiveVsCompletedStreams,
   fetchChainDistribution,

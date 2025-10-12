@@ -6,20 +6,20 @@
  */
 
 import { get } from "@vercel/edge-config";
-import type { CachedAnalyticsData } from "../src/lib/services/cache";
 import type { CachedAirdropsData } from "../src/lib/services/airdrops-graphql";
+import type { CachedAnalyticsData } from "../src/lib/services/cache";
 
 function estimateObjectSize(obj: any): number {
   const str = JSON.stringify(obj);
-  return Buffer.byteLength(str, 'utf8');
+  return Buffer.byteLength(str, "utf8");
 }
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / k ** i).toFixed(2)) + " " + sizes[i];
 }
 
 async function analyzeStorage() {
@@ -38,47 +38,53 @@ async function analyzeStorage() {
 
       // Analyze individual fields
       const fieldSizes = {
-        totalUsers: estimateObjectSize(analyticsCache.totalUsers),
-        totalTransactions: estimateObjectSize(analyticsCache.totalTransactions),
-        timeBasedUsers: estimateObjectSize(analyticsCache.timeBasedUsers),
-        timeBasedTransactions: estimateObjectSize(analyticsCache.timeBasedTransactions),
-        monthlyUserGrowth: estimateObjectSize(analyticsCache.monthlyUserGrowth),
+        activeVsCompletedStreams: estimateObjectSize(analyticsCache.activeVsCompletedStreams),
+        activity24Hours: estimateObjectSize(analyticsCache.activity24Hours),
         chainDistribution: estimateObjectSize(analyticsCache.chainDistribution),
-        monthlyTransactionGrowth: estimateObjectSize(analyticsCache.monthlyTransactionGrowth),
-        topAssets: estimateObjectSize(analyticsCache.topAssets),
         growthRateMetrics: estimateObjectSize(analyticsCache.growthRateMetrics),
+        largestStablecoinStreams: estimateObjectSize(analyticsCache.largestStablecoinStreams),
         monthlyStreamCreation: estimateObjectSize(analyticsCache.monthlyStreamCreation),
+        monthlyTransactionGrowth: estimateObjectSize(analyticsCache.monthlyTransactionGrowth),
+        monthlyUserGrowth: estimateObjectSize(analyticsCache.monthlyUserGrowth),
+        streamCategoryDistribution: estimateObjectSize(analyticsCache.streamCategoryDistribution),
         streamDurationStats: estimateObjectSize(analyticsCache.streamDurationStats),
         streamProperties: estimateObjectSize(analyticsCache.streamProperties),
-        streamCategoryDistribution: estimateObjectSize(analyticsCache.streamCategoryDistribution),
+        timeBasedTransactions: estimateObjectSize(analyticsCache.timeBasedTransactions),
+        timeBasedUsers: estimateObjectSize(analyticsCache.timeBasedUsers),
+        topAssets: estimateObjectSize(analyticsCache.topAssets),
+        totalTransactions: estimateObjectSize(analyticsCache.totalTransactions),
+        totalUsers: estimateObjectSize(analyticsCache.totalUsers),
         totalVestingStreams: estimateObjectSize(analyticsCache.totalVestingStreams),
-        activeVsCompletedStreams: estimateObjectSize(analyticsCache.activeVsCompletedStreams),
-        largestStablecoinStreams: estimateObjectSize(analyticsCache.largestStablecoinStreams),
-        activity24Hours: estimateObjectSize(analyticsCache.activity24Hours),
       };
 
       // Sort by size (largest first)
       const sortedFields = Object.entries(fieldSizes)
-        .sort(([,a], [,b]) => b - a)
-        .map(([field, size]) => ({ field, size, percentage: (size / totalSize * 100).toFixed(1) }));
+        .sort(([, a], [, b]) => b - a)
+        .map(([field, size]) => ({
+          field,
+          percentage: ((size / totalSize) * 100).toFixed(1),
+          size,
+        }));
 
       sortedFields.forEach(({ field, size, percentage }) => {
         console.log(`     ${field}: ${formatBytes(size)} (${percentage}%)`);
 
         // Additional details for large array fields
-        if (field === 'monthlyUserGrowth' && analyticsCache.monthlyUserGrowth) {
+        if (field === "monthlyUserGrowth" && analyticsCache.monthlyUserGrowth) {
           console.log(`       → ${analyticsCache.monthlyUserGrowth.length} months of data`);
         }
-        if (field === 'monthlyTransactionGrowth' && analyticsCache.monthlyTransactionGrowth) {
+        if (field === "monthlyTransactionGrowth" && analyticsCache.monthlyTransactionGrowth) {
           console.log(`       → ${analyticsCache.monthlyTransactionGrowth.length} months of data`);
         }
-        if (field === 'largestStablecoinStreams' && analyticsCache.largestStablecoinStreams) {
-          console.log(`       → ${analyticsCache.largestStablecoinStreams.length} streams (limit: 25)`);
+        if (field === "largestStablecoinStreams" && analyticsCache.largestStablecoinStreams) {
+          console.log(
+            `       → ${analyticsCache.largestStablecoinStreams.length} streams (limit: 25)`,
+          );
         }
-        if (field === 'topAssets' && analyticsCache.topAssets) {
+        if (field === "topAssets" && analyticsCache.topAssets) {
           console.log(`       → ${analyticsCache.topAssets.length} assets`);
         }
-        if (field === 'chainDistribution' && analyticsCache.chainDistribution) {
+        if (field === "chainDistribution" && analyticsCache.chainDistribution) {
           console.log(`       → ${analyticsCache.chainDistribution.length} chains`);
         }
       });
@@ -96,27 +102,29 @@ async function analyzeStorage() {
       console.log(`   Data Points:`);
 
       const fieldSizes = {
-        totalCampaigns: estimateObjectSize(airdropsCache.totalCampaigns),
-        monthlyCampaignCreation: estimateObjectSize(airdropsCache.monthlyCampaignCreation),
-        recipientParticipation: estimateObjectSize(airdropsCache.recipientParticipation),
+        chainDistribution: estimateObjectSize(airdropsCache.chainDistribution),
         medianClaimers: estimateObjectSize(airdropsCache.medianClaimers),
         medianClaimWindow: estimateObjectSize(airdropsCache.medianClaimWindow),
-        vestingDistribution: estimateObjectSize(airdropsCache.vestingDistribution),
-        chainDistribution: estimateObjectSize(airdropsCache.chainDistribution),
+        monthlyCampaignCreation: estimateObjectSize(airdropsCache.monthlyCampaignCreation),
+        recipientParticipation: estimateObjectSize(airdropsCache.recipientParticipation),
         topPerformingCampaigns: estimateObjectSize(airdropsCache.topPerformingCampaigns),
+        totalCampaigns: estimateObjectSize(airdropsCache.totalCampaigns),
+        vestingDistribution: estimateObjectSize(airdropsCache.vestingDistribution),
       };
 
       Object.entries(fieldSizes)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .forEach(([field, size]) => {
-          const percentage = (size / totalSize * 100).toFixed(1);
+          const percentage = ((size / totalSize) * 100).toFixed(1);
           console.log(`     ${field}: ${formatBytes(size)} (${percentage}%)`);
 
-          if (field === 'monthlyCampaignCreation' && airdropsCache.monthlyCampaignCreation) {
+          if (field === "monthlyCampaignCreation" && airdropsCache.monthlyCampaignCreation) {
             console.log(`       → ${airdropsCache.monthlyCampaignCreation.length} months of data`);
           }
-          if (field === 'topPerformingCampaigns' && airdropsCache.topPerformingCampaigns) {
-            console.log(`       → ${airdropsCache.topPerformingCampaigns.length} campaigns (limit: 10)`);
+          if (field === "topPerformingCampaigns" && airdropsCache.topPerformingCampaigns) {
+            console.log(
+              `       → ${airdropsCache.topPerformingCampaigns.length} campaigns (limit: 10)`,
+            );
           }
         });
     } else {
@@ -129,32 +137,49 @@ async function analyzeStorage() {
     const totalStorage = analyticsSize + airdropsSize;
 
     console.log(`\n📊 Total Edge Config Storage: ${formatBytes(totalStorage)}`);
-    console.log(`   Analytics: ${formatBytes(analyticsSize)} (${analyticsSize > 0 ? ((analyticsSize / totalStorage) * 100).toFixed(1) : 0}%)`);
-    console.log(`   Airdrops: ${formatBytes(airdropsSize)} (${airdropsSize > 0 ? ((airdropsSize / totalStorage) * 100).toFixed(1) : 0}%)`);
+    console.log(
+      `   Analytics: ${formatBytes(analyticsSize)} (${analyticsSize > 0 ? ((analyticsSize / totalStorage) * 100).toFixed(1) : 0}%)`,
+    );
+    console.log(
+      `   Airdrops: ${formatBytes(airdropsSize)} (${airdropsSize > 0 ? ((airdropsSize / totalStorage) * 100).toFixed(1) : 0}%)`,
+    );
 
     // Recommendations
     console.log("\n🎯 Optimization Recommendations:");
 
     if (analyticsCache?.monthlyUserGrowth && analyticsCache.monthlyUserGrowth.length > 24) {
-      console.log(`   • Limit monthlyUserGrowth to 24 months (currently: ${analyticsCache.monthlyUserGrowth.length})`);
+      console.log(
+        `   • Limit monthlyUserGrowth to 24 months (currently: ${analyticsCache.monthlyUserGrowth.length})`,
+      );
     }
 
-    if (analyticsCache?.monthlyTransactionGrowth && analyticsCache.monthlyTransactionGrowth.length > 24) {
-      console.log(`   • Limit monthlyTransactionGrowth to 24 months (currently: ${analyticsCache.monthlyTransactionGrowth.length})`);
+    if (
+      analyticsCache?.monthlyTransactionGrowth &&
+      analyticsCache.monthlyTransactionGrowth.length > 24
+    ) {
+      console.log(
+        `   • Limit monthlyTransactionGrowth to 24 months (currently: ${analyticsCache.monthlyTransactionGrowth.length})`,
+      );
     }
 
-    if (analyticsCache?.largestStablecoinStreams && analyticsCache.largestStablecoinStreams.length > 20) {
-      console.log(`   • Consider reducing stablecoin streams from ${analyticsCache.largestStablecoinStreams.length} to 20`);
+    if (
+      analyticsCache?.largestStablecoinStreams &&
+      analyticsCache.largestStablecoinStreams.length > 20
+    ) {
+      console.log(
+        `   • Consider reducing stablecoin streams from ${analyticsCache.largestStablecoinStreams.length} to 20`,
+      );
     }
 
-    if (totalStorage > 500000) { // 500KB threshold
+    if (totalStorage > 500000) {
+      // 500KB threshold
       console.log(`   ⚠️  Storage is above 500KB - consider implementing data retention limits`);
     }
 
-    if (totalStorage > 1000000) { // 1MB threshold
+    if (totalStorage > 1000000) {
+      // 1MB threshold
       console.log(`   🚨 Storage is above 1MB - immediate optimization needed`);
     }
-
   } catch (error) {
     console.error("Error analyzing storage:", error);
   }

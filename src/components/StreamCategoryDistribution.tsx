@@ -3,8 +3,8 @@
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { useRef } from "react";
 import { Pie } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { StreamCategoryDistribution as StreamCategoryDistributionType } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
@@ -15,8 +15,8 @@ export function StreamCategoryDistribution() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-    
-    // Use cached data if available, otherwise use fallback data
+
+  // Use cached data if available, otherwise use fallback data
   const categoryData = data?.streamCategoryDistribution || null;
 
   if (loading) {
@@ -127,9 +127,7 @@ export function StreamCategoryDistribution() {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-text-primary">
-              Stream Category Distribution
-            </h2>
+            <h2 className="text-2xl font-bold text-text-primary">Stream Category Distribution</h2>
             <SourceCodeLink
               fileName="graphql.ts"
               lineNumber={1150}
@@ -142,9 +140,7 @@ export function StreamCategoryDistribution() {
             description="Distribution of vesting stream types across the protocol"
           />
         </div>
-        <p className="text-sm text-text-secondary">
-          Breakdown of vesting stream categories
-        </p>
+        <p className="text-sm text-text-secondary">Breakdown of vesting stream categories</p>
       </div>
 
       <div className="h-64">

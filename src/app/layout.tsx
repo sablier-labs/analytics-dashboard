@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export const metadata: Metadata = {
   description:

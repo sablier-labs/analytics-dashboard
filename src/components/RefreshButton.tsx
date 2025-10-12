@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { RefreshCw } from "lucide-react";
+import { useState } from "react";
 
 interface RefreshButtonProps {
   onRefresh?: () => Promise<void> | void;

@@ -13,7 +13,9 @@ export function SolanaSection() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold text-text-primary mb-8 pb-4 border-b-2 border-border-default">Sablier on Solana</h2>
+        <h2 className="text-3xl font-bold text-text-primary mb-8 pb-4 border-b-2 border-border-default">
+          Sablier on Solana
+        </h2>
 
         {/* Row 1: 4 main counters */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

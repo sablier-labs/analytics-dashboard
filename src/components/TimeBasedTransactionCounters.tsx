@@ -104,9 +104,7 @@ export function TimeBasedTransactionCounters() {
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-text-secondary mb-1">
-                  {range.label}
-                </p>
+                <p className="text-sm font-medium text-text-secondary mb-1">{range.label}</p>
                 <p className="text-2xl font-bold text-text-primary">
                   {transactionCounts ? formatNumber(transactionCounts[range.key]) : "—"}
                 </p>
