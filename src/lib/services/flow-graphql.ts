@@ -84,6 +84,8 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
   const query = `
     query GetFlowStablecoinVolume {
       Stream(
+        first: 10000
+        order_by: { depositedAmount: desc }
         where: {
           asset: {
             symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
@@ -139,6 +141,8 @@ export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<
   const query = `
     query GetFlowStablecoinVolumeTimeRange {
       Stream(
+        first: 10000
+        order_by: { depositedAmount: desc }
         where: {
           timestamp: { _gte: "${timestamp}" }
           asset: {

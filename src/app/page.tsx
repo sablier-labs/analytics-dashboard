@@ -46,9 +46,6 @@ export default function Home() {
           {/* Total Stablecoin Volume */}
           <TotalStablecoinVolume />
 
-          {/* Stablecoin Volume by Time Period */}
-          <TimeBasedStablecoinVolume />
-
           {/* Stream Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <TotalVestingStreams />
@@ -61,6 +58,9 @@ export default function Home() {
           <TimeBasedUserCounters />
 
           <TimeBasedTransactionCounters />
+
+          {/* Stablecoin Volume by Time Period */}
+          <TimeBasedStablecoinVolume />
 
           <GrowthRateIndicators />
 

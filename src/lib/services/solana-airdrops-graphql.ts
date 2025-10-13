@@ -121,7 +121,7 @@ export interface CampaignVolumeResponse {
 export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
   const query = `
     query GetSolanaAirdropsVolume {
-      campaigns(first: 1000, where: {aggregateAmount_gt: "0"}) {
+      campaigns(first: 10000, where: {aggregateAmount_gt: "0"}) {
         aggregateAmount
         asset {
           decimals
@@ -172,7 +172,7 @@ export async function fetchSolanaAirdropsStablecoinVolumeTimeRange(days: number)
 
   const query = `
     query GetSolanaAirdropsVolumeTimeRange {
-      campaigns(first: 1000, where: {aggregateAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
+      campaigns(first: 10000, where: {aggregateAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
         aggregateAmount
         asset {
           decimals

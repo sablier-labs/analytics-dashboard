@@ -1484,6 +1484,8 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
   const query = `
     query GetLockupStablecoinVolume {
       Stream(
+        first: 10000
+        order_by: { depositAmount: desc }
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           asset: {
@@ -1548,6 +1550,8 @@ export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promis
   const query = `
     query GetLockupStablecoinVolumeTimeRange {
       Stream(
+        first: 10000
+        order_by: { depositAmount: desc }
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${timestamp}" }

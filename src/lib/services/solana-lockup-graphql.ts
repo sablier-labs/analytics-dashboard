@@ -352,7 +352,7 @@ export interface StreamVolumeResponse {
 export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
   const query = `
     query GetSolanaLockupVolume {
-      streams(first: 1000, where: {depositAmount_gt: "0"}) {
+      streams(first: 10000, where: {depositAmount_gt: "0"}) {
         depositAmount
         asset {
           decimals
@@ -403,7 +403,7 @@ export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): 
 
   const query = `
     query GetSolanaLockupVolumeTimeRange {
-      streams(first: 1000, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
+      streams(first: 10000, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
         depositAmount
         asset {
           decimals
