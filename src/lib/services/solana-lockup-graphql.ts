@@ -332,14 +332,19 @@ export async function fetchSolanaStreams24h(): Promise<number> {
   }
 }
 
-const SOLANA_STABLECOINS = ["PYUSD", "USDC", "USDH", "USDT"];
+// Solana stablecoin mint addresses (mainnet)
+const SOLANA_STABLECOIN_MINTS = [
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC
+  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT
+  "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", // PYUSD
+];
 
 export interface StreamVolumeResponse {
   streams: Array<{
     depositAmount: string;
     asset: {
       decimals: number;
-      symbol: string;
+      mint: string;
     };
   }>;
 }
@@ -351,7 +356,7 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
         depositAmount
         asset {
           decimals
-          symbol
+          mint
         }
       }
     }
@@ -376,11 +381,11 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    // Filter stablecoins and sum normalized amounts
+    // Filter stablecoins by mint address and sum normalized amounts
     const totalVolume = result.data.streams
-      .filter((stream) => SOLANA_STABLECOINS.includes(stream.asset.symbol))
+      .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
       .reduce((sum, stream) => {
-        const decimals = stream.asset.decimals;
+        const decimals = Number(stream.asset.decimals);
         const depositAmount = BigInt(stream.depositAmount);
         const normalized = Number(depositAmount / BigInt(10 ** decimals));
         return sum + normalized;

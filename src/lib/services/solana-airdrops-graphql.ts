@@ -101,14 +101,19 @@ export async function fetchSolanaClaims24h(): Promise<number> {
   }
 }
 
-const SOLANA_STABLECOINS = ["PYUSD", "USDC", "USDH", "USDT"];
+// Solana stablecoin mint addresses (mainnet)
+const SOLANA_STABLECOIN_MINTS = [
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC
+  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT
+  "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", // PYUSD
+];
 
 export interface CampaignVolumeResponse {
   campaigns: Array<{
     aggregateAmount: string;
     asset: {
       decimals: number;
-      symbol: string;
+      mint: string;
     };
   }>;
 }
@@ -120,7 +125,7 @@ export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
         aggregateAmount
         asset {
           decimals
-          symbol
+          mint
         }
       }
     }
@@ -145,11 +150,11 @@ export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    // Filter stablecoins and sum normalized amounts
+    // Filter stablecoins by mint address and sum normalized amounts
     const totalVolume = result.data.campaigns
-      .filter((campaign) => SOLANA_STABLECOINS.includes(campaign.asset.symbol))
+      .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
       .reduce((sum, campaign) => {
-        const decimals = campaign.asset.decimals;
+        const decimals = Number(campaign.asset.decimals);
         const aggregateAmount = BigInt(campaign.aggregateAmount);
         const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
         return sum + normalized;
