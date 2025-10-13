@@ -382,7 +382,7 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
       .reduce((sum, stream) => {
         const decimals = stream.asset.decimals;
         const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount) / 10 ** decimals;
+        const normalized = Number(depositAmount / BigInt(10 ** decimals));
         return sum + normalized;
       }, 0);
 

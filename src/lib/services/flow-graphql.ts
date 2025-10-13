@@ -105,7 +105,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
 
     // Convert from smallest unit to USD (assuming 6 decimals)
     const volumeInSmallestUnit = BigInt(sumString);
-    const volumeInUSD = Number(volumeInSmallestUnit) / 1000000;
+    const volumeInUSD = Number(volumeInSmallestUnit / BigInt(1000000));
 
     return volumeInUSD;
   } catch (error) {

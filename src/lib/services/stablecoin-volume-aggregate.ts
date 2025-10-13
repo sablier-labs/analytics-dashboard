@@ -58,12 +58,31 @@ export async function fetchTotalStablecoinVolume(): Promise<StablecoinVolumeBrea
     console.error("  ❌ Solana Airdrops fetch failed:", solanaAirdropsResult.reason);
   }
 
-  // Log individual results
-  console.log("  EVM Lockup: $" + evmLockup.toLocaleString());
-  console.log("  EVM Flow: $" + evmFlow.toLocaleString());
-  console.log("  EVM Airdrops: $" + evmAirdrops.toLocaleString());
-  console.log("  Solana Lockup: $" + solanaLockup.toLocaleString());
-  console.log("  Solana Airdrops: $" + solanaAirdrops.toLocaleString());
+  // Log individual results with suspicious value detection
+  console.log(`📊 EVM Lockup volume: $${evmLockup.toLocaleString()}`);
+  if (evmLockup > 1_000_000_000_000) {
+    console.error(`⚠️  EVM Lockup volume looks suspicious! Raw value: ${evmLockup}`);
+  }
+
+  console.log(`📊 EVM Flow volume: $${evmFlow.toLocaleString()}`);
+  if (evmFlow > 1_000_000_000_000) {
+    console.error(`⚠️  EVM Flow volume looks suspicious! Raw value: ${evmFlow}`);
+  }
+
+  console.log(`📊 EVM Airdrops volume: $${evmAirdrops.toLocaleString()}`);
+  if (evmAirdrops > 1_000_000_000_000) {
+    console.error(`⚠️  EVM Airdrops volume looks suspicious! Raw value: ${evmAirdrops}`);
+  }
+
+  console.log(`📊 Solana Lockup volume: $${solanaLockup.toLocaleString()}`);
+  if (solanaLockup > 1_000_000_000_000) {
+    console.error(`⚠️  Solana Lockup volume looks suspicious! Raw value: ${solanaLockup}`);
+  }
+
+  console.log(`📊 Solana Airdrops volume: $${solanaAirdrops.toLocaleString()}`);
+  if (solanaAirdrops > 1_000_000_000_000) {
+    console.error(`⚠️  Solana Airdrops volume looks suspicious! Raw value: ${solanaAirdrops}`);
+  }
 
   const total = evmLockup + evmFlow + evmAirdrops + solanaLockup + solanaAirdrops;
 

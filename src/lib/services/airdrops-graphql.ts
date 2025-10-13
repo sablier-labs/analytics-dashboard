@@ -917,7 +917,7 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
 
     // aggregateAmount is in smallest unit (18 decimals for EVM)
     const volumeInSmallestUnit = BigInt(sumString);
-    const volumeInUSD = Number(volumeInSmallestUnit) / 10 ** 18;
+    const volumeInUSD = Number(volumeInSmallestUnit / BigInt(10 ** 18));
 
     return volumeInUSD;
   } catch (error) {

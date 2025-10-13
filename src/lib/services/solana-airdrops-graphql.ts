@@ -151,7 +151,7 @@ export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
       .reduce((sum, campaign) => {
         const decimals = campaign.asset.decimals;
         const aggregateAmount = BigInt(campaign.aggregateAmount);
-        const normalized = Number(aggregateAmount) / 10 ** decimals;
+        const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
         return sum + normalized;
       }, 0);
 

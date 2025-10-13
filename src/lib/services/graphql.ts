@@ -1530,7 +1530,7 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
     const totalVolume = result.data.Stream.reduce((sum, stream) => {
       const decimals = parseInt(stream.asset.decimals, 10);
       const depositAmount = BigInt(stream.depositAmount);
-      const normalized = Number(depositAmount) / 10 ** decimals;
+      const normalized = Number(depositAmount / BigInt(10 ** decimals));
       return sum + normalized;
     }, 0);
 
