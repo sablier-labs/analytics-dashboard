@@ -331,3 +331,64 @@ export async function fetchSolanaStreams24h(): Promise<number> {
     throw error;
   }
 }
+
+const SOLANA_STABLECOINS = ["PYUSD", "USDC", "USDH", "USDT"];
+
+export interface StreamVolumeResponse {
+  streams: Array<{
+    depositAmount: string;
+    asset: {
+      decimals: number;
+      symbol: string;
+    };
+  }>;
+}
+
+export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
+  const query = `
+    query GetSolanaLockupVolume {
+      streams(first: 1000, where: {depositAmount_gt: "0"}) {
+        depositAmount
+        asset {
+          decimals
+          symbol
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<StreamVolumeResponse> = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Filter stablecoins and sum normalized amounts
+    const totalVolume = result.data.streams
+      .filter((stream) => SOLANA_STABLECOINS.includes(stream.asset.symbol))
+      .reduce((sum, stream) => {
+        const decimals = stream.asset.decimals;
+        const depositAmount = BigInt(stream.depositAmount);
+        const normalized = Number(depositAmount) / 10 ** decimals;
+        return sum + normalized;
+      }, 0);
+
+    return totalVolume;
+  } catch (error) {
+    console.error("Error fetching Solana Lockup stablecoin volume:", error);
+    throw error;
+  }
+}

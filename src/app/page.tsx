@@ -18,6 +18,7 @@ import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionC
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
 import { TopAssetsChart } from "@/components/TopAssetsChart";
 import { TotalClaims } from "@/components/TotalClaims";
+import { TotalStablecoinVolume } from "@/components/TotalStablecoinVolume";
 import { TotalVestingStreams } from "@/components/TotalVestingStreams";
 import { TransactionCounter } from "@/components/TransactionCounter";
 import { UserCounter } from "@/components/UserCounter";
@@ -40,6 +41,9 @@ export default function Home() {
             <UserCounter />
             <TransactionCounter />
           </div>
+
+          {/* Total Stablecoin Volume */}
+          <TotalStablecoinVolume />
 
           {/* Stream Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

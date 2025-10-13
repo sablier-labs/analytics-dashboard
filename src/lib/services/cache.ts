@@ -53,6 +53,7 @@ export interface CachedAnalyticsData {
   totalUsers: number;
   totalTransactions: number;
   totalClaims: number;
+  totalStablecoinVolume: number;
   timeBasedUsers: TimeBasedUserCounts;
   timeBasedTransactions: TimeBasedTransactionCounts;
   monthlyUserGrowth: MonthlyUserGrowth[];

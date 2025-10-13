@@ -1457,3 +1457,86 @@ export async function fetch24HourMetrics(): Promise<Activity24Hours> {
     throw error;
   }
 }
+
+const STABLECOINS = [
+  "BUSD",
+  "DAI",
+  "FRAX",
+  "GHO",
+  "GUSD",
+  "LUSD",
+  "PYUSD",
+  "TUSD",
+  "USDB",
+  "USDC",
+  "USDC.e",
+  "USDbC",
+  "USDD",
+  "USDP",
+  "USDT",
+  "crvUSD",
+  "sUSD",
+];
+
+export async function fetchLockupStablecoinVolume(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetLockupStablecoinVolume {
+      Stream(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          asset: {
+            symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+          }
+        }
+      ) {
+        depositAmount
+        asset {
+          decimals
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      Stream: Array<{
+        depositAmount: string;
+        asset: {
+          decimals: string;
+        };
+      }>;
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Sum all normalized deposit amounts
+    const totalVolume = result.data.Stream.reduce((sum, stream) => {
+      const decimals = parseInt(stream.asset.decimals, 10);
+      const depositAmount = BigInt(stream.depositAmount);
+      const normalized = Number(depositAmount) / 10 ** decimals;
+      return sum + normalized;
+    }, 0);
+
+    return totalVolume;
+  } catch (error) {
+    console.error("Error fetching lockup stablecoin volume:", error);
+    throw error;
+  }
+}

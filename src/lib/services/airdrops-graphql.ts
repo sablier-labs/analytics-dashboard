@@ -838,3 +838,90 @@ export async function getAirdropsCacheInfo(): Promise<{
     lastUpdated: cached.lastUpdated,
   };
 }
+
+const EVM_STABLECOINS = [
+  "BUSD",
+  "DAI",
+  "FRAX",
+  "GHO",
+  "GUSD",
+  "LUSD",
+  "PYUSD",
+  "TUSD",
+  "USDB",
+  "USDC",
+  "USDC.e",
+  "USDbC",
+  "USDD",
+  "USDP",
+  "USDT",
+  "crvUSD",
+  "sUSD",
+];
+
+export interface StablecoinVolumeResponse {
+  Campaign_aggregate: {
+    aggregate: {
+      sum: {
+        aggregateAmount: string | null;
+      };
+    };
+  };
+}
+
+export async function fetchAirdropsStablecoinVolume(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+
+  const query = `
+    query GetAirdropsStablecoinVolume {
+      Campaign_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          asset: {
+            symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
+          }
+        }
+      ) {
+        aggregate {
+          sum {
+            aggregateAmount
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<StablecoinVolumeResponse> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const sumString = result.data.Campaign_aggregate.aggregate.sum.aggregateAmount;
+
+    if (!sumString) return 0;
+
+    // aggregateAmount is in smallest unit (18 decimals for EVM)
+    const volumeInSmallestUnit = BigInt(sumString);
+    const volumeInUSD = Number(volumeInSmallestUnit) / 10 ** 18;
+
+    return volumeInUSD;
+  } catch (error) {
+    console.error("Error fetching airdrops stablecoin volume:", error);
+    throw error;
+  }
+}

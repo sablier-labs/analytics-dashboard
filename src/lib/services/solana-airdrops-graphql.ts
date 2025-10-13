@@ -100,3 +100,64 @@ export async function fetchSolanaClaims24h(): Promise<number> {
     throw error;
   }
 }
+
+const SOLANA_STABLECOINS = ["PYUSD", "USDC", "USDH", "USDT"];
+
+export interface CampaignVolumeResponse {
+  campaigns: Array<{
+    aggregateAmount: string;
+    asset: {
+      decimals: number;
+      symbol: string;
+    };
+  }>;
+}
+
+export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
+  const query = `
+    query GetSolanaAirdropsVolume {
+      campaigns(first: 1000, where: {aggregateAmount_gt: "0"}) {
+        aggregateAmount
+        asset {
+          decimals
+          symbol
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<CampaignVolumeResponse> = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Filter stablecoins and sum normalized amounts
+    const totalVolume = result.data.campaigns
+      .filter((campaign) => SOLANA_STABLECOINS.includes(campaign.asset.symbol))
+      .reduce((sum, campaign) => {
+        const decimals = campaign.asset.decimals;
+        const aggregateAmount = BigInt(campaign.aggregateAmount);
+        const normalized = Number(aggregateAmount) / 10 ** decimals;
+        return sum + normalized;
+      }, 0);
+
+    return totalVolume;
+  } catch (error) {
+    console.error("Error fetching Solana Airdrops stablecoin volume:", error);
+    throw error;
+  }
+}

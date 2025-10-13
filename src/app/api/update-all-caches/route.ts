@@ -4,6 +4,7 @@ import { updateAirdropsCache } from "@/lib/airdrops-cache-update";
 import { updateAnalyticsCache } from "@/lib/cache-update-optimized";
 import { updateFlowCache } from "@/lib/flow-cache-update";
 import { updateSolanaCache } from "@/lib/solana-cache-update";
+import { updateStablecoinVolumeCache } from "@/lib/stablecoin-volume-cache-update";
 
 // Verify the request is from Vercel Cron or has correct API key
 function verifyRequest(request: NextRequest) {
@@ -56,12 +57,14 @@ export async function POST(request: NextRequest) {
     console.log("🚀 Starting optimized update for all caches...");
 
     // Update all caches in parallel for efficiency
-    const [analyticsResult, airdropsResult, flowResult, solanaResult] = await Promise.allSettled([
-      updateAnalyticsCache(),
-      updateAirdropsCache(),
-      updateFlowCache(),
-      updateSolanaCache(),
-    ]);
+    const [analyticsResult, airdropsResult, flowResult, solanaResult, stablecoinVolumeResult] =
+      await Promise.allSettled([
+        updateAnalyticsCache(),
+        updateAirdropsCache(),
+        updateFlowCache(),
+        updateSolanaCache(),
+        updateStablecoinVolumeCache(),
+      ]);
 
     const results = {
       airdrops:
@@ -80,13 +83,18 @@ export async function POST(request: NextRequest) {
         solanaResult.status === "fulfilled"
           ? solanaResult.value
           : { error: solanaResult.reason?.message || "Unknown error", success: false },
+      stablecoinVolume:
+        stablecoinVolumeResult.status === "fulfilled"
+          ? stablecoinVolumeResult.value
+          : { error: stablecoinVolumeResult.reason?.message || "Unknown error", success: false },
     };
 
     const overallSuccess =
       results.analytics.success &&
       results.airdrops.success &&
       results.flow.success &&
-      results.solana.success;
+      results.solana.success &&
+      results.stablecoinVolume.success;
 
     return NextResponse.json({
       message: overallSuccess
