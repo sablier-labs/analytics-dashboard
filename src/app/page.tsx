@@ -35,15 +35,16 @@ export default function Home() {
         </div>
 
         <div className="max-w-6xl mx-auto space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          {/* Primary Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UserCounter />
             <TransactionCounter />
-            <TotalVestingStreams />
-            <TotalClaims />
           </div>
 
-          {/* Flow (Open-Ended Streaming) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Stream Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <TotalVestingStreams />
+            <TotalClaims />
             <FlowTotalStreams />
           </div>
 

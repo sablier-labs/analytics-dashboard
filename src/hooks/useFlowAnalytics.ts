@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 interface FlowAnalyticsData {
   lastUpdated: string;
-  totalStreams: number;
+  totalDeposits: number;
 }
 
 export function useFlowAnalytics() {

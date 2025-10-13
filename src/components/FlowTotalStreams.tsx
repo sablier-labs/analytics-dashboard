@@ -8,7 +8,7 @@ import { SharePanel } from "./SharePanel";
 
 export function FlowTotalStreams() {
   const { data, isLoading, error } = useFlowAnalytics();
-  const totalStreams = data?.totalStreams || null;
+  const totalStreams = data?.totalDeposits || null;
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatNumber = (num: number) => {
@@ -29,7 +29,9 @@ export function FlowTotalStreams() {
   if (error) {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading Flow streams</p>
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading Payroll deposits
+        </p>
         <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
       </div>
     );
@@ -38,7 +40,7 @@ export function FlowTotalStreams() {
   if (totalStreams === null) {
     return (
       <div className={containerVariants({ elevation: "sm", rounded: "lg", spacing: "default" })}>
-        <p className="text-text-secondary">No Flow streams data available</p>
+        <p className="text-text-secondary">No Payroll deposits data available</p>
       </div>
     );
   }
@@ -50,12 +52,12 @@ export function FlowTotalStreams() {
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-text-secondary">Total Flow Streams</p>
+          <p className="text-sm font-semibold text-text-secondary">Total Payroll Deposits</p>
         </div>
         <SharePanel
-          title="Total Flow Streams"
+          title="Total Payroll Deposits"
           elementRef={containerRef}
-          description="Total number of open-ended payment streams created"
+          description="Deposit transactions for payroll streams"
         />
       </div>
 

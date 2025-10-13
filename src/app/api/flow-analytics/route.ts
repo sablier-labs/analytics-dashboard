@@ -18,13 +18,13 @@ export async function GET() {
 
   // Fallback: direct GraphQL fetch
   try {
-    const { fetchFlowStreams } = await import("@/lib/services/flow-graphql");
+    const { fetchFlowDeposits } = await import("@/lib/services/flow-graphql");
 
-    const totalStreams = await fetchFlowStreams().catch(() => 0);
+    const totalDeposits = await fetchFlowDeposits().catch(() => 0);
 
     const fallbackData: FlowAnalyticsData = {
       lastUpdated: new Date().toISOString(),
-      totalStreams,
+      totalDeposits,
     };
 
     return NextResponse.json(fallbackData);

@@ -5,18 +5,18 @@ interface GraphQLResponse<T> {
   errors?: Array<{ message: string }>;
 }
 
-interface StreamAggregateResponse {
-  Stream_aggregate: {
+interface DepositAggregateResponse {
+  Action_aggregate: {
     aggregate: {
       count: number;
     };
   };
 }
 
-export async function fetchFlowStreams(): Promise<number> {
+export async function fetchFlowDeposits(): Promise<number> {
   const query = `
-    query GetFlowStreams {
-      Stream_aggregate(where: { category: { _eq: Flow } }) {
+    query GetFlowDeposits {
+      Action_aggregate(where: { category: { _eq: "Deposit" } }) {
         aggregate {
           count
         }
@@ -37,15 +37,15 @@ export async function fetchFlowStreams(): Promise<number> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const result: GraphQLResponse<StreamAggregateResponse> = await response.json();
+    const result: GraphQLResponse<DepositAggregateResponse> = await response.json();
 
     if (result.errors) {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    return result.data.Stream_aggregate.aggregate.count;
+    return result.data.Action_aggregate.aggregate.count;
   } catch (error) {
-    console.error("Error fetching Flow streams:", error);
+    console.error("Error fetching Flow deposits:", error);
     throw error;
   }
 }

@@ -1,13 +1,13 @@
-import { fetchFlowStreams } from "./services/flow-graphql";
+import { fetchFlowDeposits } from "./services/flow-graphql";
 
 export type FlowAnalyticsData = {
   lastUpdated: string;
-  totalStreams: number;
+  totalDeposits: number;
 };
 
 export async function updateFlowCache(): Promise<{
   dataPoints: {
-    totalStreams: number;
+    totalDeposits: number;
   };
   lastUpdated: string;
   message: string;
@@ -15,16 +15,16 @@ export async function updateFlowCache(): Promise<{
 }> {
   console.log("🌊 Starting Flow analytics cache update...");
 
-  const results = await Promise.allSettled([fetchFlowStreams()]);
+  const results = await Promise.allSettled([fetchFlowDeposits()]);
 
-  const [totalStreamsResult] = results;
+  const [totalDepositsResult] = results;
 
-  const totalStreams = totalStreamsResult.status === "fulfilled" ? totalStreamsResult.value : 0;
+  const totalDeposits = totalDepositsResult.status === "fulfilled" ? totalDepositsResult.value : 0;
 
   const timestamp = new Date().toISOString();
   const cachedData: FlowAnalyticsData = {
     lastUpdated: timestamp,
-    totalStreams,
+    totalDeposits,
   };
 
   // Update Vercel Edge Config
@@ -34,7 +34,7 @@ export async function updateFlowCache(): Promise<{
   if (!edgeConfigId || !vercelAccessToken) {
     console.warn("⚠️ Edge Config credentials not available, skipping cache update");
     return {
-      dataPoints: { totalStreams },
+      dataPoints: { totalDeposits },
       lastUpdated: timestamp,
       message: "Edge Config credentials not configured",
       success: false,
@@ -64,10 +64,10 @@ export async function updateFlowCache(): Promise<{
     }
 
     console.log("✅ Flow analytics cache update completed successfully");
-    console.log(`   Total Streams: ${totalStreams}`);
+    console.log(`   Total Deposits: ${totalDeposits}`);
 
     return {
-      dataPoints: { totalStreams },
+      dataPoints: { totalDeposits },
       lastUpdated: timestamp,
       message: "Flow cache updated successfully",
       success: true,
@@ -75,7 +75,7 @@ export async function updateFlowCache(): Promise<{
   } catch (error) {
     console.error("❌ Error updating Flow cache:", error);
     return {
-      dataPoints: { totalStreams },
+      dataPoints: { totalDeposits },
       lastUpdated: timestamp,
       message: error instanceof Error ? error.message : "Unknown error",
       success: false,
