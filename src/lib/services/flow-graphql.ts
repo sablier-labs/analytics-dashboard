@@ -6,14 +6,20 @@ interface GraphQLResponse<T> {
 }
 
 interface StreamAggregateResponse {
-  streams: Array<{ id: string }>;
+  Stream_aggregate: {
+    aggregate: {
+      count: number;
+    };
+  };
 }
 
 export async function fetchFlowStreams(): Promise<number> {
   const query = `
     query GetFlowStreams {
-      streams(first: 1000, where: { category: Flow }) {
-        id
+      Stream_aggregate(where: { category: { _eq: Flow } }) {
+        aggregate {
+          count
+        }
       }
     }
   `;
@@ -37,7 +43,7 @@ export async function fetchFlowStreams(): Promise<number> {
       throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
     }
 
-    return result.data.streams.length;
+    return result.data.Stream_aggregate.aggregate.count;
   } catch (error) {
     console.error("Error fetching Flow streams:", error);
     throw error;
