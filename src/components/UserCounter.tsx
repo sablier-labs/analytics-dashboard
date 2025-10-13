@@ -58,7 +58,7 @@ export function UserCounter() {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-2xl font-bold text-text-primary">
+          <p className="text-3xl font-bold text-text-primary">
             {userCount !== null ? formatNumber(userCount) : "—"}
           </p>
         </div>

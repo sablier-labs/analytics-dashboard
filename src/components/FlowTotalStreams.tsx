@@ -8,7 +8,7 @@ import { SharePanel } from "./SharePanel";
 
 export function FlowTotalStreams() {
   const { data, isLoading, error } = useFlowAnalytics();
-  const totalStreams = data?.totalDeposits || null;
+  const totalStreams = data?.totalDeposits ?? null;
   const containerRef = useRef<HTMLDivElement>(null);
 
   const formatNumber = (num: number) => {
@@ -37,7 +37,7 @@ export function FlowTotalStreams() {
     );
   }
 
-  if (totalStreams === null) {
+  if (totalStreams === null || totalStreams === undefined) {
     return (
       <div className={containerVariants({ elevation: "sm", rounded: "lg", spacing: "default" })}>
         <p className="text-text-secondary">No Payroll deposits data available</p>

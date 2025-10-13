@@ -20,7 +20,7 @@ export async function GET() {
   try {
     const { fetchFlowDeposits } = await import("@/lib/services/flow-graphql");
 
-    const totalDeposits = await fetchFlowDeposits().catch(() => 0);
+    const totalDeposits = await fetchFlowDeposits();
 
     const fallbackData: FlowAnalyticsData = {
       lastUpdated: new Date().toISOString(),
@@ -28,7 +28,8 @@ export async function GET() {
     };
 
     return NextResponse.json(fallbackData);
-  } catch (_error) {
+  } catch (error) {
+    console.error("Failed to fetch Flow analytics data:", error);
     return NextResponse.json({ error: "Failed to fetch Flow analytics data" }, { status: 500 });
   }
 }
