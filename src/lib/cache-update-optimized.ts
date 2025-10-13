@@ -22,6 +22,7 @@ import {
   fetchTopAssetsByStreamCount,
   fetchTotalVestingStreams,
 } from "@/lib/services/graphql";
+import { fetchTotalStablecoinVolume } from "@/lib/services/stablecoin-volume-aggregate";
 import { normalizeAmount } from "@/lib/utils/sablier";
 import {
   CACHE_LIMITS,
@@ -88,6 +89,7 @@ export async function updateAnalyticsCache() {
     totalUsers,
     totalTransactions,
     totalClaims,
+    totalStablecoinVolumeBreakdown,
     timeBasedUsers,
     timeBasedTransactions,
     monthlyUserGrowth,
@@ -115,6 +117,17 @@ export async function updateAnalyticsCache() {
     fetchAggregatedTotalClaims().catch((err) => {
       console.error("Error fetching aggregated total claims:", err);
       return 0;
+    }),
+    fetchTotalStablecoinVolume().catch((err) => {
+      console.error("Error fetching total stablecoin volume:", err);
+      return {
+        evmAirdrops: 0,
+        evmFlow: 0,
+        evmLockup: 0,
+        solanaAirdrops: 0,
+        solanaLockup: 0,
+        total: 0,
+      };
     }),
     fetchAggregatedTimeBasedUserCounts().catch((err) => {
       console.error("Error fetching aggregated time-based users:", err);
@@ -199,6 +212,7 @@ export async function updateAnalyticsCache() {
     timeBasedUsers,
     topAssets,
     totalClaims,
+    totalStablecoinVolume: totalStablecoinVolumeBreakdown.total,
     totalTransactions,
     totalUsers,
     totalVestingStreams,
