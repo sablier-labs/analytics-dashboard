@@ -119,46 +119,61 @@ export interface CampaignVolumeResponse {
 }
 
 export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
-  const query = `
-    query GetSolanaAirdropsVolume {
-      campaigns(first: 10000, where: {aggregateAmount_gt: "0"}) {
-        aggregateAmount
-        asset {
-          decimals
-          mint
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaAirdropsVolume {
+          campaigns(first: ${first}, skip: ${skip}, where: {aggregateAmount_gt: "0"}) {
+            aggregateAmount
+            asset {
+              decimals
+              mint
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<CampaignVolumeResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.campaigns;
+
+      // Accumulate normalized volumes for this batch (stablecoins only)
+      const batchVolume = batch
+        .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
+        .reduce((sum, campaign) => {
+          const decimals = Number(campaign.asset.decimals);
+          const aggregateAmount = BigInt(campaign.aggregateAmount);
+          const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
+          return sum + normalized;
+        }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === first;
+      skip += first;
     }
-
-    const result: GraphQLResponse<CampaignVolumeResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Filter stablecoins by mint address and sum normalized amounts
-    const totalVolume = result.data.campaigns
-      .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
-      .reduce((sum, campaign) => {
-        const decimals = Number(campaign.asset.decimals);
-        const aggregateAmount = BigInt(campaign.aggregateAmount);
-        const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
-        return sum + normalized;
-      }, 0);
 
     return totalVolume;
   } catch (error) {
@@ -169,47 +184,61 @@ export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
 
 export async function fetchSolanaAirdropsStablecoinVolumeTimeRange(days: number): Promise<number> {
   const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000);
-
-  const query = `
-    query GetSolanaAirdropsVolumeTimeRange {
-      campaigns(first: 10000, where: {aggregateAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
-        aggregateAmount
-        asset {
-          decimals
-          mint
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaAirdropsVolumeTimeRange {
+          campaigns(first: ${first}, skip: ${skip}, where: {aggregateAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
+            aggregateAmount
+            asset {
+              decimals
+              mint
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<CampaignVolumeResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.campaigns;
+
+      // Accumulate normalized volumes for this batch (stablecoins only)
+      const batchVolume = batch
+        .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
+        .reduce((sum, campaign) => {
+          const decimals = Number(campaign.asset.decimals);
+          const aggregateAmount = BigInt(campaign.aggregateAmount);
+          const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
+          return sum + normalized;
+        }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === first;
+      skip += first;
     }
-
-    const result: GraphQLResponse<CampaignVolumeResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Filter stablecoins by mint address and sum normalized amounts
-    const totalVolume = result.data.campaigns
-      .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
-      .reduce((sum, campaign) => {
-        const decimals = Number(campaign.asset.decimals);
-        const aggregateAmount = BigInt(campaign.aggregateAmount);
-        const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
-        return sum + normalized;
-      }, 0);
 
     return totalVolume;
   } catch (error) {

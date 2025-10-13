@@ -350,46 +350,61 @@ export interface StreamVolumeResponse {
 }
 
 export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
-  const query = `
-    query GetSolanaLockupVolume {
-      streams(first: 10000, where: {depositAmount_gt: "0"}) {
-        depositAmount
-        asset {
-          decimals
-          mint
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaLockupVolume {
+          streams(first: ${first}, skip: ${skip}, where: {depositAmount_gt: "0"}) {
+            depositAmount
+            asset {
+              decimals
+              mint
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamVolumeResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.streams;
+
+      // Accumulate normalized volumes for this batch (stablecoins only)
+      const batchVolume = batch
+        .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
+        .reduce((sum, stream) => {
+          const decimals = Number(stream.asset.decimals);
+          const depositAmount = BigInt(stream.depositAmount);
+          const normalized = Number(depositAmount / BigInt(10 ** decimals));
+          return sum + normalized;
+        }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === first;
+      skip += first;
     }
-
-    const result: GraphQLResponse<StreamVolumeResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Filter stablecoins by mint address and sum normalized amounts
-    const totalVolume = result.data.streams
-      .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
-      .reduce((sum, stream) => {
-        const decimals = Number(stream.asset.decimals);
-        const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount / BigInt(10 ** decimals));
-        return sum + normalized;
-      }, 0);
 
     return totalVolume;
   } catch (error) {
@@ -400,47 +415,61 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
 
 export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): Promise<number> {
   const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000);
-
-  const query = `
-    query GetSolanaLockupVolumeTimeRange {
-      streams(first: 10000, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
-        depositAmount
-        asset {
-          decimals
-          mint
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaLockupVolumeTimeRange {
+          streams(first: ${first}, skip: ${skip}, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
+            depositAmount
+            asset {
+              decimals
+              mint
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamVolumeResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.streams;
+
+      // Accumulate normalized volumes for this batch (stablecoins only)
+      const batchVolume = batch
+        .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
+        .reduce((sum, stream) => {
+          const decimals = Number(stream.asset.decimals);
+          const depositAmount = BigInt(stream.depositAmount);
+          const normalized = Number(depositAmount / BigInt(10 ** decimals));
+          return sum + normalized;
+        }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === first;
+      skip += first;
     }
-
-    const result: GraphQLResponse<StreamVolumeResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Filter stablecoins by mint address and sum normalized amounts
-    const totalVolume = result.data.streams
-      .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
-      .reduce((sum, stream) => {
-        const decimals = Number(stream.asset.decimals);
-        const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount / BigInt(10 ** decimals));
-        return sum + normalized;
-      }, 0);
 
     return totalVolume;
   } catch (error) {

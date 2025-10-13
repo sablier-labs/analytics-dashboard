@@ -1480,61 +1480,75 @@ const STABLECOINS = [
 
 export async function fetchLockupStablecoinVolume(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetLockupStablecoinVolume {
-      Stream(
-        first: 10000
-        order_by: { depositAmount: desc }
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          asset: {
-            symbol: { _in: ${JSON.stringify(STABLECOINS)} }
-          }
-        }
-      ) {
-        depositAmount
-        asset {
-          decimals
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetLockupStablecoinVolume {
+          Stream(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              asset: {
+                symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+              }
+            }
+          ) {
+            depositAmount
+            asset {
+              decimals
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<{
+        Stream: Array<{
+          depositAmount: string;
+          asset: {
+            decimals: string;
+          };
+        }>;
+      }> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Stream;
+
+      // Accumulate normalized volumes for this batch
+      const batchVolume = batch.reduce((sum, stream) => {
+        const decimals = parseInt(stream.asset.decimals, 10);
+        const depositAmount = BigInt(stream.depositAmount);
+        const normalized = Number(depositAmount / BigInt(10 ** decimals));
+        return sum + normalized;
+      }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
-
-    const result: GraphQLResponse<{
-      Stream: Array<{
-        depositAmount: string;
-        asset: {
-          decimals: string;
-        };
-      }>;
-    }> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Sum all normalized deposit amounts
-    const totalVolume = result.data.Stream.reduce((sum, stream) => {
-      const decimals = parseInt(stream.asset.decimals, 10);
-      const depositAmount = BigInt(stream.depositAmount);
-      const normalized = Number(depositAmount / BigInt(10 ** decimals));
-      return sum + normalized;
-    }, 0);
 
     return totalVolume;
   } catch (error) {
@@ -1546,62 +1560,76 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
 export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
   const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
-
-  const query = `
-    query GetLockupStablecoinVolumeTimeRange {
-      Stream(
-        first: 10000
-        order_by: { depositAmount: desc }
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          timestamp: { _gte: "${timestamp}" }
-          asset: {
-            symbol: { _in: ${JSON.stringify(STABLECOINS)} }
-          }
-        }
-      ) {
-        depositAmount
-        asset {
-          decimals
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetLockupStablecoinVolumeTimeRange {
+          Stream(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              timestamp: { _gte: "${timestamp}" }
+              asset: {
+                symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+              }
+            }
+          ) {
+            depositAmount
+            asset {
+              decimals
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<{
+        Stream: Array<{
+          depositAmount: string;
+          asset: {
+            decimals: string;
+          };
+        }>;
+      }> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Stream;
+
+      // Accumulate normalized volumes for this batch
+      const batchVolume = batch.reduce((sum, stream) => {
+        const decimals = parseInt(stream.asset.decimals, 10);
+        const depositAmount = BigInt(stream.depositAmount);
+        const normalized = Number(depositAmount / BigInt(10 ** decimals));
+        return sum + normalized;
+      }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
-
-    const result: GraphQLResponse<{
-      Stream: Array<{
-        depositAmount: string;
-        asset: {
-          decimals: string;
-        };
-      }>;
-    }> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Sum all normalized deposit amounts
-    const totalVolume = result.data.Stream.reduce((sum, stream) => {
-      const decimals = parseInt(stream.asset.decimals, 10);
-      const depositAmount = BigInt(stream.depositAmount);
-      const normalized = Number(depositAmount / BigInt(10 ** decimals));
-      return sum + normalized;
-    }, 0);
 
     return totalVolume;
   } catch (error) {

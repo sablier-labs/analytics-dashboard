@@ -80,52 +80,66 @@ const FLOW_STABLECOINS = [
 ];
 
 export async function fetchFlowStablecoinVolume(): Promise<number> {
-  // Fetch individual streams with their decimals to handle mixed decimal places
-  const query = `
-    query GetFlowStablecoinVolume {
-      Stream(
-        first: 10000
-        order_by: { depositedAmount: desc }
-        where: {
-          asset: {
-            symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
-          }
-        }
-      ) {
-        depositedAmount
-        asset {
-          decimals
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetFlowStablecoinVolume {
+          Stream(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              asset: {
+                symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
+              }
+            }
+          ) {
+            depositedAmount
+            asset {
+              decimals
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamsWithDecimalsResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Stream;
+
+      // Accumulate normalized volumes for this batch
+      const batchVolume = batch.reduce((sum, stream) => {
+        const depositedAmount = BigInt(stream.depositedAmount);
+        const decimals = Number(stream.asset.decimals);
+        const normalized = Number(depositedAmount / BigInt(10 ** decimals));
+        return sum + normalized;
+      }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
-
-    const result: GraphQLResponse<StreamsWithDecimalsResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Normalize each stream amount by its decimals, then sum
-    const totalVolume = result.data.Stream.reduce((sum, stream) => {
-      const depositedAmount = BigInt(stream.depositedAmount);
-      const decimals = Number(stream.asset.decimals);
-      const normalized = Number(depositedAmount / BigInt(10 ** decimals));
-      return sum + normalized;
-    }, 0);
 
     return totalVolume;
   } catch (error) {
@@ -136,54 +150,67 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
 
 export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<number> {
   const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
-
-  // Fetch individual streams with their decimals to handle mixed decimal places
-  const query = `
-    query GetFlowStablecoinVolumeTimeRange {
-      Stream(
-        first: 10000
-        order_by: { depositedAmount: desc }
-        where: {
-          timestamp: { _gte: "${timestamp}" }
-          asset: {
-            symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
-          }
-        }
-      ) {
-        depositedAmount
-        asset {
-          decimals
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetFlowStablecoinVolumeTimeRange {
+          Stream(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              timestamp: { _gte: "${timestamp}" }
+              asset: {
+                symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
+              }
+            }
+          ) {
+            depositedAmount
+            asset {
+              decimals
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamsWithDecimalsResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Stream;
+
+      // Accumulate normalized volumes for this batch
+      const batchVolume = batch.reduce((sum, stream) => {
+        const depositedAmount = BigInt(stream.depositedAmount);
+        const decimals = Number(stream.asset.decimals);
+        const normalized = Number(depositedAmount / BigInt(10 ** decimals));
+        return sum + normalized;
+      }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
-
-    const result: GraphQLResponse<StreamsWithDecimalsResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Normalize each stream amount by its decimals, then sum
-    const totalVolume = result.data.Stream.reduce((sum, stream) => {
-      const depositedAmount = BigInt(stream.depositedAmount);
-      const decimals = Number(stream.asset.decimals);
-      const normalized = Number(depositedAmount / BigInt(10 ** decimals));
-      return sum + normalized;
-    }, 0);
 
     return totalVolume;
   } catch (error) {
