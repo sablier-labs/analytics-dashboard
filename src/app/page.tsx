@@ -5,6 +5,7 @@ import { ChainDistributionChart } from "@/components/ChainDistributionChart";
 import { CumulativeTransactionChart } from "@/components/CumulativeTransactionChart";
 import { CumulativeTransactionGrowthChart } from "@/components/CumulativeTransactionGrowthChart";
 import { CumulativeUserChart } from "@/components/CumulativeUserChart";
+import { FlowTotalStreams } from "@/components/FlowTotalStreams";
 import { GrowthRateIndicators } from "@/components/GrowthRateIndicators";
 import { LargestStablecoinStreams } from "@/components/LargestStablecoinStreams";
 import { LastUpdated } from "@/components/LastUpdated";
@@ -39,6 +40,11 @@ export default function Home() {
             <TransactionCounter />
             <TotalVestingStreams />
             <TotalClaims />
+          </div>
+
+          {/* Flow (Open-Ended Streaming) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <FlowTotalStreams />
           </div>
 
           <Activity24Hours />
