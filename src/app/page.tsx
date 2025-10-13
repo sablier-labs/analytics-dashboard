@@ -26,7 +26,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-[#0c0d14] dark:to-[#0c0d14] transition-colors">
       <div className="px-16 py-8">
         <div className="max-w-4xl mx-auto text-center mb-12">
-          <h1 className="text-2xl font-semibold text-text-primary mb-6">Sablier Analytics</h1>
+          <h1 className="text-3xl font-semibold text-text-primary mb-6">Sablier Analytics</h1>
           <p className="text-xl text-text-secondary mb-6">
             Protocol metrics for token distribution, vesting, payroll, and more
           </p>
