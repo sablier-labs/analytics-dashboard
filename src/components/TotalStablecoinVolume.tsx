@@ -49,13 +49,16 @@ export function TotalStablecoinVolume() {
       className={`${containerVariants({ elevation: "sm", rounded: "lg", spacing: "default" })} transition-all duration-200 hover:shadow-md`}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-text-secondary">Total Stablecoin Volume</p>
-          <SourceCodeLink
-            fileName="aggregated-graphql.ts"
-            lineNumber={1}
-            tooltip="View fetchTotalStablecoinVolume source"
-          />
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-text-secondary">Total Stablecoin Volume</p>
+            <SourceCodeLink
+              fileName="aggregated-graphql.ts"
+              lineNumber={1}
+              tooltip="View fetchTotalStablecoinVolume source"
+            />
+          </div>
+          <p className="text-xs text-text-secondary">Sablier V2 protocols + Sablier on Solana</p>
         </div>
         <SharePanel
           description="Total USD value of stablecoins processed across all Sablier protocols"

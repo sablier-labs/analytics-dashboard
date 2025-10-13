@@ -59,6 +59,26 @@ interface StreamsWithDecimalsResponse {
   }>;
 }
 
+const FLOW_STABLECOINS = [
+  "USDC",
+  "USDC.e",
+  "USDT",
+  "DAI",
+  "USDB",
+  "PYUSD",
+  "BUSD",
+  "TUSD",
+  "USDP",
+  "GUSD",
+  "FRAX",
+  "LUSD",
+  "USDD",
+  "sUSD",
+  "USDbC",
+  "GHO",
+  "crvUSD",
+];
+
 export async function fetchFlowStablecoinVolume(): Promise<number> {
   // Fetch individual streams with their decimals to handle mixed decimal places
   const query = `
@@ -66,7 +86,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
       Stream(
         where: {
           asset: {
-            symbol: { _in: ["USDC", "USDC.e", "USDT", "DAI", "USDB", "PYUSD", "BUSD", "TUSD", "USDP", "GUSD", "FRAX", "LUSD", "USDD", "sUSD", "USDbC", "GHO", "crvUSD"] }
+            symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
           }
         }
       ) {
@@ -108,6 +128,62 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
     return totalVolume;
   } catch (error) {
     console.error("Error fetching Flow stablecoin volume:", error);
+    throw error;
+  }
+}
+
+export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<number> {
+  const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
+
+  // Fetch individual streams with their decimals to handle mixed decimal places
+  const query = `
+    query GetFlowStablecoinVolumeTimeRange {
+      Stream(
+        where: {
+          timestamp: { _gte: "${timestamp}" }
+          asset: {
+            symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
+          }
+        }
+      ) {
+        depositedAmount
+        asset {
+          decimals
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<StreamsWithDecimalsResponse> = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Normalize each stream amount by its decimals, then sum
+    const totalVolume = result.data.Stream.reduce((sum, stream) => {
+      const depositedAmount = BigInt(stream.depositedAmount);
+      const decimals = Number(stream.asset.decimals);
+      const normalized = Number(depositedAmount / BigInt(10 ** decimals));
+      return sum + normalized;
+    }, 0);
+
+    return totalVolume;
+  } catch (error) {
+    console.error("Error fetching Flow stablecoin volume time range:", error);
     throw error;
   }
 }

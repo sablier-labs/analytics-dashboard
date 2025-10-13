@@ -14,6 +14,7 @@ import { MonthlyStreamCreationChart } from "@/components/MonthlyStreamCreationCh
 import { SolanaSection } from "@/components/SolanaSection";
 import { StreamCategoryDistribution } from "@/components/StreamCategoryDistribution";
 import { StreamProperties } from "@/components/StreamProperties";
+import { TimeBasedStablecoinVolume } from "@/components/TimeBasedStablecoinVolume";
 import { TimeBasedTransactionCounters } from "@/components/TimeBasedTransactionCounters";
 import { TimeBasedUserCounters } from "@/components/TimeBasedUserCounters";
 import { TopAssetsChart } from "@/components/TopAssetsChart";
@@ -44,6 +45,9 @@ export default function Home() {
 
           {/* Total Stablecoin Volume */}
           <TotalStablecoinVolume />
+
+          {/* Stablecoin Volume by Time Period */}
+          <TimeBasedStablecoinVolume />
 
           {/* Stream Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

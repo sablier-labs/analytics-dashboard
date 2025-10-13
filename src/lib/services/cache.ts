@@ -33,6 +33,7 @@ import {
   fetchTotalUsers,
   fetchTotalVestingStreams,
 } from "./graphql";
+import type { TimeBasedStablecoinVolume } from "./stablecoin-volume-aggregate";
 
 // Optimized stream interface for Edge Config (only essential fields)
 export interface OptimizedStablecoinStream {
@@ -54,6 +55,7 @@ export interface CachedAnalyticsData {
   totalTransactions: number;
   totalClaims: number;
   totalStablecoinVolume: number;
+  timeBasedStablecoinVolume: TimeBasedStablecoinVolume;
   timeBasedUsers: TimeBasedUserCounts;
   timeBasedTransactions: TimeBasedTransactionCounts;
   monthlyUserGrowth: MonthlyUserGrowth[];

@@ -925,3 +925,62 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
     throw error;
   }
 }
+
+export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+  const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
+
+  const query = `
+    query GetAirdropsStablecoinVolumeTimeRange {
+      Campaign_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          timestamp: { _gte: "${timestamp}" }
+          asset: {
+            symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
+          }
+        }
+      ) {
+        aggregate {
+          sum {
+            aggregateAmount
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<StablecoinVolumeResponse> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    const sumString = result.data.Campaign_aggregate.aggregate.sum.aggregateAmount;
+
+    if (!sumString) return 0;
+
+    // aggregateAmount is in smallest unit (18 decimals for EVM)
+    const volumeInSmallestUnit = BigInt(sumString);
+    const volumeInUSD = Number(volumeInSmallestUnit / BigInt(10 ** 18));
+
+    return volumeInUSD;
+  } catch (error) {
+    console.error("Error fetching airdrops stablecoin volume time range:", error);
+    throw error;
+  }
+}

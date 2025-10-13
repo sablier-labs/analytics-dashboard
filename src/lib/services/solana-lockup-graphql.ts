@@ -397,3 +397,54 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
     throw error;
   }
 }
+
+export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): Promise<number> {
+  const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000);
+
+  const query = `
+    query GetSolanaLockupVolumeTimeRange {
+      streams(first: 1000, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
+        depositAmount
+        asset {
+          decimals
+          mint
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<StreamVolumeResponse> = await response.json();
+
+    if (result.errors) {
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Filter stablecoins by mint address and sum normalized amounts
+    const totalVolume = result.data.streams
+      .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
+      .reduce((sum, stream) => {
+        const decimals = Number(stream.asset.decimals);
+        const depositAmount = BigInt(stream.depositAmount);
+        const normalized = Number(depositAmount / BigInt(10 ** decimals));
+        return sum + normalized;
+      }, 0);
+
+    return totalVolume;
+  } catch (error) {
+    console.error("Error fetching Solana Lockup stablecoin volume time range:", error);
+    throw error;
+  }
+}

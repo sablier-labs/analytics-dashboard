@@ -1540,3 +1540,68 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
     throw error;
   }
 }
+
+export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
+  const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
+
+  const query = `
+    query GetLockupStablecoinVolumeTimeRange {
+      Stream(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          timestamp: { _gte: "${timestamp}" }
+          asset: {
+            symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+          }
+        }
+      ) {
+        depositAmount
+        asset {
+          decimals
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(GRAPHQL_ENDPOINT, {
+      body: JSON.stringify({ query }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: GraphQLResponse<{
+      Stream: Array<{
+        depositAmount: string;
+        asset: {
+          decimals: string;
+        };
+      }>;
+    }> = await response.json();
+
+    if (result.errors) {
+      console.error("GraphQL errors:", result.errors);
+      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+    }
+
+    // Sum all normalized deposit amounts
+    const totalVolume = result.data.Stream.reduce((sum, stream) => {
+      const decimals = parseInt(stream.asset.decimals, 10);
+      const depositAmount = BigInt(stream.depositAmount);
+      const normalized = Number(depositAmount / BigInt(10 ** decimals));
+      return sum + normalized;
+    }, 0);
+
+    return totalVolume;
+  } catch (error) {
+    console.error("Error fetching lockup stablecoin volume time range:", error);
+    throw error;
+  }
+}

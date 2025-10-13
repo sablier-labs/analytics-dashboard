@@ -24,7 +24,10 @@ import {
   fetchTopAssetsByStreamCount,
   fetchTotalVestingStreams,
 } from "@/lib/services/graphql";
-import { fetchTotalStablecoinVolume } from "@/lib/services/stablecoin-volume-aggregate";
+import {
+  fetchTimeBasedStablecoinVolume,
+  fetchTotalStablecoinVolume,
+} from "@/lib/services/stablecoin-volume-aggregate";
 import { normalizeAmount } from "@/lib/utils/sablier";
 
 export async function GET() {
@@ -50,6 +53,7 @@ export async function GET() {
       totalTransactions,
       totalClaims,
       totalStablecoinVolumeBreakdown,
+      timeBasedStablecoinVolume,
       timeBasedUsers,
       timeBasedTransactions,
       monthlyUserGrowth,
@@ -88,6 +92,10 @@ export async function GET() {
           solanaLockup: 0,
           total: 0,
         };
+      }),
+      fetchTimeBasedStablecoinVolume().catch((err) => {
+        console.error("Error fetching time-based stablecoin volume:", err);
+        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
       }),
       fetchAggregatedTimeBasedUserCounts().catch((err) => {
         console.error("Error fetching aggregated time-based users:", err);
@@ -191,6 +199,7 @@ export async function GET() {
       streamCategoryDistribution,
       streamDurationStats,
       streamProperties,
+      timeBasedStablecoinVolume,
       timeBasedTransactions,
       timeBasedUsers,
       topAssets,
