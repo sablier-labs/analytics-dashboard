@@ -30,6 +30,9 @@ import {
 } from "@/lib/services/stablecoin-volume-aggregate";
 import { normalizeAmount } from "@/lib/utils/sablier";
 
+// Maximum cache age in milliseconds (48 hours)
+const MAX_CACHE_AGE_MS = 48 * 60 * 60 * 1000;
+
 export async function GET() {
   let cached: CachedAnalyticsData | undefined;
 
@@ -38,6 +41,21 @@ export async function GET() {
     cached = await get<CachedAnalyticsData>("analytics");
   } catch (_error) {
     console.log("Edge Config not available, falling back to direct GraphQL fetch");
+  }
+
+  // CRITICAL: Check cache staleness to prevent serving outdated data
+  if (cached) {
+    const cacheAge = Date.now() - new Date(cached.lastUpdated).getTime();
+    const cacheAgeHours = Math.round(cacheAge / (1000 * 60 * 60));
+
+    if (cacheAge > MAX_CACHE_AGE_MS) {
+      console.warn(
+        `⚠️  Cache is stale (${cacheAgeHours} hours old, max ${MAX_CACHE_AGE_MS / (1000 * 60 * 60)} hours). Falling back to direct fetch.`,
+      );
+      cached = undefined; // Force fallback to fresh data
+    } else {
+      console.log(`✅ Serving fresh cached data (${cacheAgeHours} hours old)`);
+    }
   }
 
   if (cached) {

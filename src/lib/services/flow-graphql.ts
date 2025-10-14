@@ -1,4 +1,5 @@
 import { getTestnetChainIds } from "@/lib/constants/chains";
+import { EVM_STABLECOINS } from "@/lib/constants/stablecoins";
 
 const FLOW_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/3b4ea6b/v1/graphql";
 
@@ -60,30 +61,12 @@ interface StreamsWithDecimalsResponse {
   Stream: Array<{
     depositedAmount: string;
     asset: {
-      decimals: number;
+      decimals: string; // GraphQL returns string, not number
     };
   }>;
 }
 
-const FLOW_STABLECOINS = [
-  "USDC",
-  "USDC.e",
-  "USDT",
-  "DAI",
-  "USDB",
-  "PYUSD",
-  "BUSD",
-  "TUSD",
-  "USDP",
-  "GUSD",
-  "FRAX",
-  "LUSD",
-  "USDD",
-  "sUSD",
-  "USDbC",
-  "GHO",
-  "crvUSD",
-];
+// Flow uses the same stablecoin list as other EVM protocols (imported above)
 
 export async function fetchFlowStablecoinVolume(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
@@ -102,7 +85,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
             where: {
               chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               asset: {
-                symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
               }
             }
           ) {
@@ -138,7 +121,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
       const batchVolume = batch.reduce((sum, stream) => {
         const depositedAmount = BigInt(stream.depositedAmount);
         const decimals = Number(stream.asset.decimals);
-        if (isNaN(decimals)) {
+        if (Number.isNaN(decimals)) {
           throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
         }
         const normalized = Number(depositedAmount / BigInt(10) ** BigInt(decimals));
@@ -178,7 +161,7 @@ export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<
               chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               timestamp: { _gte: "${timestamp}" }
               asset: {
-                symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
               }
             }
           ) {
@@ -214,7 +197,7 @@ export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<
       const batchVolume = batch.reduce((sum, stream) => {
         const depositedAmount = BigInt(stream.depositedAmount);
         const decimals = Number(stream.asset.decimals);
-        if (isNaN(decimals)) {
+        if (Number.isNaN(decimals)) {
           throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
         }
         const normalized = Number(depositedAmount / BigInt(10) ** BigInt(decimals));

@@ -227,6 +227,44 @@ export async function updateAnalyticsCache() {
     totalVestingStreams,
   };
 
+  // CRITICAL: Validate data integrity before caching
+  const validationErrors: string[] = [];
+
+  // Validate critical metrics are non-zero (production data should never be all zeros)
+  if (totalUsers === 0) {
+    validationErrors.push("totalUsers is 0 - likely fetch failure");
+  }
+  if (totalTransactions === 0) {
+    validationErrors.push("totalTransactions is 0 - likely fetch failure");
+  }
+  if (totalClaims === 0) {
+    validationErrors.push("totalClaims is 0 - likely fetch failure");
+  }
+
+  // Validate arrays have reasonable data
+  if (chainDistribution.length === 0) {
+    validationErrors.push("chainDistribution is empty - likely fetch failure");
+  }
+  if (topAssets.length === 0) {
+    validationErrors.push("topAssets is empty - likely fetch failure");
+  }
+  if (monthlyUserGrowth.length === 0) {
+    validationErrors.push("monthlyUserGrowth is empty - likely fetch failure");
+  }
+
+  // If critical validations fail, abort cache update to prevent data corruption
+  if (validationErrors.length > 0) {
+    console.error("❌ Data validation failed - aborting cache update to preserve existing data:");
+    for (const error of validationErrors) {
+      console.error(`   - ${error}`);
+    }
+    throw new Error(
+      `Data validation failed: ${validationErrors.length} critical errors found. Aborting cache update to prevent data corruption.`,
+    );
+  }
+
+  console.log("✅ Data validation passed - proceeding with cache update");
+
   // Apply optimizations to reduce storage size
   const optimizedCachedData = optimizeAnalyticsCache(rawCachedData);
 

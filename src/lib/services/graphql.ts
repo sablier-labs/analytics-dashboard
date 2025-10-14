@@ -1,4 +1,5 @@
 import { getTestnetChainIds } from "@/lib/constants/chains";
+import { EVM_STABLECOINS } from "@/lib/constants/stablecoins";
 
 const GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/53b7e25/v1/graphql";
 
@@ -489,7 +490,7 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
 
     timeRanges.forEach((range, index) => {
       const key = `month_${index}`;
-      const cumulativeUsers = result.data[key].aggregate.count;
+      const cumulativeUsers = result.data[key]?.aggregate?.count ?? 0;
       const previousCumulative = index > 0 ? monthlyData[index - 1].cumulativeUsers : 0;
       const newUsers = cumulativeUsers - previousCumulative;
 
@@ -589,7 +590,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     uniqueChains.forEach((chainId, index) => {
       const key = `chain_${index}`;
-      const count = result.data[key].aggregate.count;
+      const count = result.data[key]?.aggregate?.count ?? 0;
 
       if (count > 0) {
         chainDistribution.push({
@@ -667,7 +668,7 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
 
     timeRanges.forEach((range, index) => {
       const key = `month_${index}`;
-      const cumulativeTransactions = result.data[key].aggregate.count;
+      const cumulativeTransactions = result.data[key]?.aggregate?.count ?? 0;
       const previousCumulative = index > 0 ? monthlyData[index - 1].cumulativeTransactions : 0;
       const newTransactions = cumulativeTransactions - previousCumulative;
 
@@ -800,79 +801,108 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
 
 export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
   const testnetChainIds = getTestnetChainIds();
-  // Use aggregation to get accurate stream counts without array limits
-  const query = `
-    query GetTopAssets {
-      Asset(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-        }
-      ) {
-        id
-        address
-        symbol
-        name
-        chainId
-        decimals
-        streams_aggregate {
-          aggregate {
-            count
-          }
-        }
-      }
-    }
-  `;
+  const allAssets: Array<{
+    id: string;
+    address: string;
+    symbol: string;
+    name: string;
+    chainId: string;
+    decimals: string;
+    streams_aggregate: {
+      aggregate: {
+        count: number;
+      };
+    };
+  }> = [];
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    // Paginate through all assets to ensure we find the true top 10
+    while (hasMore) {
+      const query = `
+        query GetTopAssets {
+          Asset(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+            }
+          ) {
+            id
+            address
+            symbol
+            name
+            chainId
+            decimals
+            streams_aggregate {
+              aggregate {
+                count
+              }
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
 
-    const result: GraphQLResponse<{
-      Asset: Array<{
-        id: string;
-        address: string;
-        symbol: string;
-        name: string;
-        chainId: string;
-        decimals: string;
-        streams_aggregate: {
-          aggregate: {
-            count: number;
-          };
-        };
-      }>;
-    }> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Convert to TopAsset format and sort by stream count
-    const topAssets = result.data.Asset.map((asset) => {
-      const decimals = parseInt(asset.decimals, 10);
-      if (isNaN(decimals)) {
-        throw new Error(`Invalid decimals value: ${asset.decimals}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return {
-        address: asset.address,
-        assetId: asset.id,
-        chainId: asset.chainId,
-        decimals,
-        name: asset.name,
-        streamCount: asset.streams_aggregate.aggregate.count,
-        symbol: asset.symbol,
-      };
-    })
+
+      const result: GraphQLResponse<{
+        Asset: Array<{
+          id: string;
+          address: string;
+          symbol: string;
+          name: string;
+          chainId: string;
+          decimals: string;
+          streams_aggregate: {
+            aggregate: {
+              count: number;
+            };
+          };
+        }>;
+      }> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Asset;
+      allAssets.push(...batch);
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
+    }
+
+    // Convert to TopAsset format, sort by stream count, and take top 10
+    const topAssets = allAssets
+      .map((asset) => {
+        const decimals = parseInt(asset.decimals, 10);
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${asset.decimals}`);
+        }
+        return {
+          address: asset.address,
+          assetId: asset.id,
+          chainId: asset.chainId,
+          decimals,
+          name: asset.name,
+          streamCount: asset.streams_aggregate.aggregate.count,
+          symbol: asset.symbol,
+        };
+      })
       .sort((a, b) => b.streamCount - a.streamCount) // Sort by stream count desc
       .slice(0, 10); // Take top 10
 
@@ -964,14 +994,14 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
 export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
   const testnetChainIds = getTestnetChainIds();
   // Filter out streams shorter than 24 hours (86400 seconds)
-  const minDuration = "86400"; // 24 hours in seconds
+  const minDurationSeconds = "86400"; // 24 hours in seconds
 
   const query = `
     query GetStreamDurationStats {
       Stream_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          duration: { _gte: "${minDuration}" }
+          duration: { _gte: "${minDurationSeconds}" }
         }
       ) {
         aggregate {
@@ -991,7 +1021,7 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
       totalCount: Stream_aggregate(
         where: {
           chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          duration: { _gte: "${minDuration}" }
+          duration: { _gte: "${minDurationSeconds}" }
         }
       ) {
         aggregate {
@@ -1038,53 +1068,124 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
     const { aggregate } = result.data.Stream_aggregate;
     const totalCount = result.data.totalCount.aggregate.count;
 
-    // Calculate median position
-    const medianPosition = Math.floor(totalCount / 2);
+    // Calculate median - handle even and odd-length datasets correctly
+    let median = 0;
+    if (totalCount % 2 === 0) {
+      // Even number of elements: average of two middle values
+      const middlePos1 = totalCount / 2 - 1;
+      const middlePos2 = totalCount / 2;
 
-    // Make another query to get the median value
-    const medianQuery = `
-      query GetMedianValue {
-        Stream(
-          where: {
-            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-            duration: { _gte: "${minDuration}" }
+      // Fetch both middle values
+      const medianQuery = `
+        query GetMedianValues {
+          value1: Stream(
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              duration: { _gte: "${minDurationSeconds}" }
+            }
+            order_by: { duration: asc }
+            limit: 1
+            offset: ${middlePos1}
+          ) {
+            duration
           }
-          order_by: { duration: asc }
-          limit: 1
-          offset: ${medianPosition}
-        ) {
-          duration
+          value2: Stream(
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              duration: { _gte: "${minDurationSeconds}" }
+            }
+            order_by: { duration: asc }
+            limit: 1
+            offset: ${middlePos2}
+          ) {
+            duration
+          }
         }
+      `;
+
+      const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query: medianQuery }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!medianResponse.ok) {
+        throw new Error(`HTTP error! status: ${medianResponse.status}`);
       }
-    `;
 
-    const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query: medianQuery }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+      const medianResult: GraphQLResponse<{
+        value1: Array<{ duration: string }>;
+        value2: Array<{ duration: string }>;
+      }> = await medianResponse.json();
 
-    if (!medianResponse.ok) {
-      throw new Error(`HTTP error! status: ${medianResponse.status}`);
-    }
+      if (medianResult.errors) {
+        console.error("GraphQL errors:", medianResult.errors);
+        throw new Error(`GraphQL error: ${medianResult.errors[0]?.message}`);
+      }
 
-    const medianResult: GraphQLResponse<{
-      Stream: Array<{ duration: string }>;
-    }> = await medianResponse.json();
+      const val1 = medianResult.data.value1[0]
+        ? parseInt(medianResult.data.value1[0].duration, 10)
+        : 0;
+      const val2 = medianResult.data.value2[0]
+        ? parseInt(medianResult.data.value2[0].duration, 10)
+        : 0;
 
-    if (medianResult.errors) {
-      console.error("GraphQL errors:", medianResult.errors);
-      throw new Error(`GraphQL error: ${medianResult.errors[0]?.message}`);
-    }
+      if (
+        (medianResult.data.value1[0] && isNaN(val1)) ||
+        (medianResult.data.value2[0] && isNaN(val2))
+      ) {
+        throw new Error("Invalid median duration values");
+      }
 
-    const median = medianResult.data.Stream[0]
-      ? parseInt(medianResult.data.Stream[0].duration, 10)
-      : 0;
+      median = Math.floor((val1 + val2) / 2);
+    } else {
+      // Odd number of elements: single middle value
+      const medianPosition = Math.floor(totalCount / 2);
 
-    if (medianResult.data.Stream[0] && isNaN(median)) {
-      throw new Error(`Invalid median duration value: ${medianResult.data.Stream[0].duration}`);
+      const medianQuery = `
+        query GetMedianValue {
+          Stream(
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              duration: { _gte: "${minDurationSeconds}" }
+            }
+            order_by: { duration: asc }
+            limit: 1
+            offset: ${medianPosition}
+          ) {
+            duration
+          }
+        }
+      `;
+
+      const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query: medianQuery }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!medianResponse.ok) {
+        throw new Error(`HTTP error! status: ${medianResponse.status}`);
+      }
+
+      const medianResult: GraphQLResponse<{
+        Stream: Array<{ duration: string }>;
+      }> = await medianResponse.json();
+
+      if (medianResult.errors) {
+        console.error("GraphQL errors:", medianResult.errors);
+        throw new Error(`GraphQL error: ${medianResult.errors[0]?.message}`);
+      }
+
+      median = medianResult.data.Stream[0] ? parseInt(medianResult.data.Stream[0].duration, 10) : 0;
+
+      if (medianResult.data.Stream[0] && isNaN(median)) {
+        throw new Error(`Invalid median duration value: ${medianResult.data.Stream[0].duration}`);
+      }
     }
 
     const minDuration = parseInt(aggregate.min.duration || "0", 10);
@@ -1453,7 +1554,7 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
             where: {
               chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               asset: {
-                symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
               }
             }
             limit: ${limit}
@@ -1587,26 +1688,6 @@ export async function fetch24HourMetrics(): Promise<Activity24Hours> {
   }
 }
 
-const STABLECOINS = [
-  "BUSD",
-  "DAI",
-  "FRAX",
-  "GHO",
-  "GUSD",
-  "LUSD",
-  "PYUSD",
-  "TUSD",
-  "USDB",
-  "USDC",
-  "USDC.e",
-  "USDbC",
-  "USDD",
-  "USDP",
-  "USDT",
-  "crvUSD",
-  "sUSD",
-];
-
 export async function fetchLockupStablecoinVolume(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
   let totalVolume = 0;
@@ -1624,7 +1705,7 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
             where: {
               chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               asset: {
-                symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
               }
             }
           ) {
@@ -1708,7 +1789,7 @@ export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promis
               chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               timestamp: { _gte: "${timestamp}" }
               asset: {
-                symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
               }
             }
           ) {

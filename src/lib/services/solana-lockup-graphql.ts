@@ -1,3 +1,5 @@
+import { SOLANA_STABLECOIN_MINTS } from "../constants/stablecoins";
+
 const SOLANA_LOCKUP_GRAPHQL_ENDPOINT =
   "https://graph.sablier.io/lockup-mainnet/subgraphs/name/sablier-lockup-solana-mainnet";
 
@@ -150,10 +152,11 @@ export async function fetchSolanaMAU(): Promise<number> {
       const batch = result.data.actions;
 
       // Dedupe addressA across all batches
-      batch
-        .map((action) => action.addressA)
-        .filter((addr): addr is string => addr !== null)
-        .forEach((addr) => uniqueUsers.add(addr));
+      for (const action of batch) {
+        if (action.addressA !== null) {
+          uniqueUsers.add(action.addressA);
+        }
+      }
 
       hasMore = batch.length === first;
       skip += first;
@@ -422,17 +425,13 @@ export async function fetchSolanaStreams24h(): Promise<number> {
 }
 
 // Solana stablecoin mint addresses (mainnet)
-const SOLANA_STABLECOIN_MINTS = [
-  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC
-  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT
-  "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", // PYUSD
-];
+// Solana stablecoin mints imported from centralized constants
 
 export interface StreamVolumeResponse {
   streams: Array<{
     depositAmount: string;
     asset: {
-      decimals: number;
+      decimals: string; // GraphQL returns string, not number
       mint: string;
     };
   }>;
@@ -483,7 +482,7 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
         .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
         .reduce((sum, stream) => {
           const decimals = Number(stream.asset.decimals);
-          if (isNaN(decimals)) {
+          if (Number.isNaN(decimals)) {
             throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
           }
           const depositAmount = BigInt(stream.depositAmount);
@@ -551,7 +550,7 @@ export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): 
         .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
         .reduce((sum, stream) => {
           const decimals = Number(stream.asset.decimals);
-          if (isNaN(decimals)) {
+          if (Number.isNaN(decimals)) {
             throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
           }
           const depositAmount = BigInt(stream.depositAmount);

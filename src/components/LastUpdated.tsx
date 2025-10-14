@@ -4,9 +4,15 @@ import { Clock } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RefreshButton } from "@/components/RefreshButton";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
+import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
+import { useFlowAnalytics } from "@/hooks/useFlowAnalytics";
+import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
 
 export function LastUpdated() {
-  const { data, loading, refetch } = useAnalyticsContext();
+  const { data, loading, refetch: refetchAnalytics } = useAnalyticsContext();
+  const { refetch: refetchAirdrops } = useAirdropsAnalytics();
+  const { refetch: refetchSolana } = useSolanaAnalytics();
+  const { refetch: refetchFlow } = useFlowAnalytics();
   const [relativeTime, setRelativeTime] = useState<string>("");
   const lastRefetchAttempt = useRef<number>(0);
 
@@ -61,6 +67,15 @@ export function LastUpdated() {
     return () => clearInterval(interval);
   }, [data?.lastUpdated, getRelativeTime]);
 
+  // Unified refetch function that refreshes all data sources
+  const refetchAll = useCallback(async () => {
+    console.log(
+      "🔄 Unified refresh: Refreshing all data sources (Analytics, Airdrops, Solana, Flow)...",
+    );
+    await Promise.all([refetchAnalytics(), refetchAirdrops(), refetchSolana(), refetchFlow()]);
+    console.log("✅ All data sources refreshed");
+  }, [refetchAnalytics, refetchAirdrops, refetchSolana, refetchFlow]);
+
   // Auto-refresh stale data
   useEffect(() => {
     if (!data?.lastUpdated || loading) return;
@@ -76,7 +91,7 @@ export function LastUpdated() {
       if (diffInHours >= 1 && timeSinceLastAttempt >= 5) {
         console.log("Data is stale (>1h old), auto-refreshing...");
         lastRefetchAttempt.current = now;
-        void refetch();
+        void refetchAll();
       }
     };
 
@@ -84,7 +99,7 @@ export function LastUpdated() {
     const freshnessInterval = setInterval(checkDataFreshness, 5 * 60 * 1000);
 
     return () => clearInterval(freshnessInterval);
-  }, [data?.lastUpdated, loading, refetch]);
+  }, [data?.lastUpdated, loading, refetchAll]);
 
   if (loading || !data?.lastUpdated) {
     return (
@@ -113,7 +128,7 @@ export function LastUpdated() {
           <span className="text-xs text-text-tertiary">{formatTimestamp(data.lastUpdated)}</span>
         </div>
       </div>
-      <RefreshButton onRefresh={refetch} />
+      <RefreshButton onRefresh={refetchAll} />
     </div>
   );
 }

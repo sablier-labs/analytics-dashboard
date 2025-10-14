@@ -17,7 +17,7 @@ const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/gra
 // Import Solana endpoints
 const SOLANA_LOCKUP_GRAPHQL_ENDPOINT =
   "https://graph.sablier.io/lockup-mainnet/subgraphs/name/sablier-lockup-solana-mainnet";
-const SOLANA_AIRDROPS_GRAPHQL_ENDPOINT =
+const _SOLANA_AIRDROPS_GRAPHQL_ENDPOINT =
   "https://graph.sablier.io/airdrops-mainnet/subgraphs/name/sablier-airdrops-solana-mainnet";
 
 interface GraphQLResponse<T> {
@@ -227,11 +227,12 @@ export async function fetchAggregatedMonthlyUserGrowth(): Promise<
 
         if (!response.ok) throw new Error(`Lockup EVM HTTP error! status: ${response.status}`);
 
-        const result: GraphQLResponse<any> = await response.json();
+        const result: GraphQLResponse<Record<string, { aggregate: { count: number } }>> =
+          await response.json();
         if (result.errors)
           throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
 
-        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+        return timeRanges.map((_, index) => result.data[`month_${index}`]?.aggregate?.count ?? 0);
       })(),
 
       // Airdrops EVM monthly cumulative counts
@@ -261,11 +262,12 @@ export async function fetchAggregatedMonthlyUserGrowth(): Promise<
 
         if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
 
-        const result: GraphQLResponse<any> = await response.json();
+        const result: GraphQLResponse<Record<string, { aggregate: { count: number } }>> =
+          await response.json();
         if (result.errors)
           throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
 
-        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+        return timeRanges.map((_, index) => result.data[`month_${index}`]?.aggregate?.count ?? 0);
       })(),
     ]);
 
@@ -816,11 +818,12 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
 
         if (!response.ok) throw new Error(`Lockup EVM HTTP error! status: ${response.status}`);
 
-        const result: GraphQLResponse<any> = await response.json();
+        const result: GraphQLResponse<Record<string, { aggregate: { count: number } }>> =
+          await response.json();
         if (result.errors)
           throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
 
-        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+        return timeRanges.map((_, index) => result.data[`month_${index}`]?.aggregate?.count ?? 0);
       })(),
 
       // Airdrops EVM monthly cumulative transaction counts
@@ -850,11 +853,12 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
 
         if (!response.ok) throw new Error(`Airdrops EVM HTTP error! status: ${response.status}`);
 
-        const result: GraphQLResponse<any> = await response.json();
+        const result: GraphQLResponse<Record<string, { aggregate: { count: number } }>> =
+          await response.json();
         if (result.errors)
           throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
 
-        return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
+        return timeRanges.map((_, index) => result.data[`month_${index}`]?.aggregate?.count ?? 0);
       })(),
     ]);
 

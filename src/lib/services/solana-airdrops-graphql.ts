@@ -1,3 +1,5 @@
+import { SOLANA_STABLECOIN_MINTS } from "../constants/stablecoins";
+
 const SOLANA_AIRDROPS_GRAPHQL_ENDPOINT =
   "https://graph.sablier.io/airdrops-mainnet/subgraphs/name/sablier-airdrops-solana-mainnet";
 
@@ -116,7 +118,7 @@ export async function fetchSolanaClaims24h(): Promise<number> {
       // Sum claims across all batches
       const batchClaims = batch.reduce((sum, activity) => {
         const claims = parseInt(activity.claims, 10);
-        if (isNaN(claims)) {
+        if (Number.isNaN(claims)) {
           throw new Error(`Invalid claims value: ${activity.claims}`);
         }
         return sum + claims;
@@ -178,7 +180,7 @@ export async function fetchSolanaTotalClaims(): Promise<number> {
       // Sum claims across all batches
       const batchClaims = batch.reduce((sum, activity) => {
         const claims = parseInt(activity.claims, 10);
-        if (isNaN(claims)) {
+        if (Number.isNaN(claims)) {
           throw new Error(`Invalid claims value: ${activity.claims}`);
         }
         return sum + claims;
@@ -198,11 +200,7 @@ export async function fetchSolanaTotalClaims(): Promise<number> {
 }
 
 // Solana stablecoin mint addresses (mainnet)
-const SOLANA_STABLECOIN_MINTS = [
-  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC
-  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT
-  "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", // PYUSD
-];
+// Solana stablecoin mints imported from centralized constants
 
 export interface CampaignVolumeResponse {
   campaigns: Array<{
@@ -259,7 +257,7 @@ export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
         .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
         .reduce((sum, campaign) => {
           const decimals = Number(campaign.asset.decimals);
-          if (isNaN(decimals)) {
+          if (Number.isNaN(decimals)) {
             throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
           }
           const aggregateAmount = BigInt(campaign.aggregateAmount);
@@ -327,7 +325,7 @@ export async function fetchSolanaAirdropsStablecoinVolumeTimeRange(days: number)
         .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
         .reduce((sum, campaign) => {
           const decimals = Number(campaign.asset.decimals);
-          if (isNaN(decimals)) {
+          if (Number.isNaN(decimals)) {
             throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
           }
           const aggregateAmount = BigInt(campaign.aggregateAmount);

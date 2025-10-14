@@ -22,13 +22,21 @@ interface SolanaAnalyticsData {
 export function useSolanaAnalytics() {
   const [data, setData] = useState<SolanaAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const loadSolanaAnalytics = useCallback(async () => {
+  const loadSolanaAnalytics = useCallback(async (bustCache = false) => {
     try {
-      setIsLoading(true);
+      if (bustCache) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
       setError(null);
-      const response = await fetch("/api/solana-analytics");
+      const url = bustCache ? `/api/solana-analytics?t=${Date.now()}` : "/api/solana-analytics";
+      const response = await fetch(url, {
+        cache: bustCache ? "no-store" : "default",
+      });
       if (!response.ok) {
         throw new Error(`Failed to fetch Solana analytics: ${response.statusText}`);
       }
@@ -38,6 +46,7 @@ export function useSolanaAnalytics() {
       setError(err instanceof Error ? err : new Error("Failed to load Solana analytics"));
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
 
@@ -45,7 +54,10 @@ export function useSolanaAnalytics() {
     void loadSolanaAnalytics();
   }, [loadSolanaAnalytics]);
 
-  const refetch = () => loadSolanaAnalytics();
+  const refetch = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await loadSolanaAnalytics(true);
+  };
 
-  return { data, error, isLoading, refetch };
+  return { data, error, isLoading, isRefreshing, refetch };
 }

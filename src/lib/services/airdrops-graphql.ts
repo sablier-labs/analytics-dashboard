@@ -1,5 +1,6 @@
 import { get } from "@vercel/edge-config";
 import { getMainnetChainName, getTestnetChainIds } from "@/lib/constants/chains";
+import { EVM_STABLECOINS } from "@/lib/constants/stablecoins";
 
 const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/graphql";
 
@@ -248,7 +249,7 @@ export async function fetchMonthlyCampaignCreation(): Promise<MonthlyCampaignCre
 
     // Convert response to monthly data
     const monthlyData: MonthlyCampaignCreation[] = timeRanges.map((range, index) => ({
-      count: result.data[`month${index}`].aggregate.count,
+      count: result.data[`month${index}`]?.aggregate?.count ?? 0,
       month: range.label,
     }));
 
@@ -261,62 +262,77 @@ export async function fetchMonthlyCampaignCreation(): Promise<MonthlyCampaignCre
 
 export async function fetchRecipientParticipation(): Promise<RecipientParticipation> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetRecipientParticipation {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          claimedCount: { _gte: "10" }
-        }
-      ) {
-        claimedCount
-        totalRecipients
-      }
-    }
-  `;
+  let totalClaimed = 0;
+  let totalRecipients = 0;
+  let campaignCount = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    // Paginate through all campaigns to ensure accurate participation rate
+    while (hasMore) {
+      const query = `
+        query GetRecipientParticipation {
+          Campaign(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              claimedCount: { _gte: "10" }
+            }
+          ) {
+            claimedCount
+            totalRecipients
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
 
-    const result: GraphQLResponse<ParticipationResponse> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Calculate overall participation rate
-    let totalClaimed = 0;
-    let totalRecipients = 0;
-
-    for (const campaign of result.data.Campaign) {
-      const claimedCount = parseInt(campaign.claimedCount, 10);
-      if (isNaN(claimedCount)) {
-        throw new Error(`Invalid claimed count: ${campaign.claimedCount}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const recipientCount = parseInt(campaign.totalRecipients, 10);
-      if (isNaN(recipientCount)) {
-        throw new Error(`Invalid total recipients: ${campaign.totalRecipients}`);
+
+      const result: GraphQLResponse<ParticipationResponse> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
       }
-      totalClaimed += claimedCount;
-      totalRecipients += recipientCount;
+
+      const batch = result.data.Campaign;
+
+      // Accumulate totals for this batch
+      for (const campaign of batch) {
+        const claimedCount = parseInt(campaign.claimedCount, 10);
+        if (Number.isNaN(claimedCount)) {
+          throw new Error(`Invalid claimed count: ${campaign.claimedCount}`);
+        }
+        const recipientCount = parseInt(campaign.totalRecipients, 10);
+        if (Number.isNaN(recipientCount)) {
+          throw new Error(`Invalid total recipients: ${campaign.totalRecipients}`);
+        }
+        totalClaimed += claimedCount;
+        totalRecipients += recipientCount;
+        campaignCount++;
+      }
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
 
     const percentage = totalRecipients > 0 ? (totalClaimed / totalRecipients) * 100 : 0;
 
     return {
-      campaignCount: result.data.Campaign.length,
+      campaignCount,
       percentage: Math.round(percentage * 10) / 10, // Round to 1 decimal place
     };
   } catch (error) {
@@ -327,53 +343,71 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
 
 export async function fetchMedianClaimers(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetMedianClaimers {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          claimedCount: { _gte: "10" }
-        }
-      ) {
-        claimedCount
-      }
-    }
-  `;
+  const allClaimerCounts: number[] = [];
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    // Paginate through all campaigns to ensure accurate median calculation
+    while (hasMore) {
+      const query = `
+        query GetMedianClaimers {
+          Campaign(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              claimedCount: { _gte: "10" }
+            }
+          ) {
+            claimedCount
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
 
-    const result: GraphQLResponse<MedianClaimersResponse> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Extract claimers counts and sort for median calculation
-    const claimerCounts = result.data.Campaign.map((campaign) => {
-      const claimedCount = parseInt(campaign.claimedCount, 10);
-      if (isNaN(claimedCount)) {
-        throw new Error(`Invalid claimed count: ${campaign.claimedCount}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return claimedCount;
-    }).sort((a, b) => a - b);
 
-    if (claimerCounts.length === 0) {
+      const result: GraphQLResponse<MedianClaimersResponse> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Campaign;
+
+      // Collect claimers counts from this batch
+      for (const campaign of batch) {
+        const claimedCount = parseInt(campaign.claimedCount, 10);
+        if (Number.isNaN(claimedCount)) {
+          throw new Error(`Invalid claimed count: ${campaign.claimedCount}`);
+        }
+        allClaimerCounts.push(claimedCount);
+      }
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
+    }
+
+    if (allClaimerCounts.length === 0) {
       console.log("No campaigns with ≥10 claims found");
       return 0;
     }
+
+    // Sort all claimers counts for accurate median calculation
+    const claimerCounts = allClaimerCounts.sort((a, b) => a - b);
 
     // Calculate median
     const median =
@@ -391,65 +425,84 @@ export async function fetchMedianClaimers(): Promise<number> {
 
 export async function fetchMedianClaimWindow(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetMedianClaimWindow {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          _and: [
-            { expiration: { _is_null: false } },
-            { expiration: { _neq: "0" } }
-          ]
-        }
-      ) {
-        timestamp
-        expiration
-      }
-    }
-  `;
+  const allClaimWindows: number[] = [];
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    // Paginate through all campaigns to ensure accurate median calculation
+    while (hasMore) {
+      const query = `
+        query GetMedianClaimWindow {
+          Campaign(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              _and: [
+                { expiration: { _is_null: false } },
+                { expiration: { _neq: "0" } }
+              ]
+            }
+          ) {
+            timestamp
+            expiration
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<MedianClaimWindowResponse> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Campaign;
+
+      // Calculate claim windows in days for this batch
+      for (const campaign of batch) {
+        const startTime = parseInt(campaign.timestamp, 10);
+        if (Number.isNaN(startTime)) {
+          throw new Error(`Invalid timestamp: ${campaign.timestamp}`);
+        }
+        const endTime = parseInt(campaign.expiration, 10);
+        if (Number.isNaN(endTime)) {
+          throw new Error(`Invalid expiration: ${campaign.expiration}`);
+        }
+        const durationSeconds = endTime - startTime;
+        const durationDays = durationSeconds / (24 * 60 * 60); // Convert seconds to days
+        if (durationDays > 0) {
+          // Only include valid durations
+          allClaimWindows.push(durationDays);
+        }
+      }
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
 
-    const result: GraphQLResponse<MedianClaimWindowResponse> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Calculate claim windows in days and sort for median calculation
-    const claimWindows = result.data.Campaign.map((campaign) => {
-      const startTime = parseInt(campaign.timestamp, 10);
-      if (isNaN(startTime)) {
-        throw new Error(`Invalid timestamp: ${campaign.timestamp}`);
-      }
-      const endTime = parseInt(campaign.expiration, 10);
-      if (isNaN(endTime)) {
-        throw new Error(`Invalid expiration: ${campaign.expiration}`);
-      }
-      const durationSeconds = endTime - startTime;
-      const durationDays = durationSeconds / (24 * 60 * 60); // Convert seconds to days
-      return durationDays;
-    })
-      .filter((duration) => duration > 0) // Only include valid durations
-      .sort((a, b) => a - b);
-
-    if (claimWindows.length === 0) {
+    if (allClaimWindows.length === 0) {
       console.log("No campaigns with valid expiration dates found");
       return 0;
     }
+
+    // Sort all claim windows for accurate median calculation
+    const claimWindows = allClaimWindows.sort((a, b) => a - b);
 
     // Calculate median
     const median =
@@ -533,45 +586,59 @@ export async function fetchVestingDistribution(): Promise<VestingDistribution> {
 
 export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetChainDistribution {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-        }
-      ) {
-        chainId
-      }
-    }
-  `;
+  const chainCounts = new Map<string, number>();
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    // Paginate through all campaigns to ensure complete chain distribution
+    while (hasMore) {
+      const query = `
+        query GetChainDistribution {
+          Campaign(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+            }
+          ) {
+            chainId
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
 
-    const result: GraphQLResponse<{ Campaign: Array<{ chainId: string }> }> = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
+      const result: GraphQLResponse<{ Campaign: Array<{ chainId: string }> }> =
+        await response.json();
 
-    // Aggregate campaigns by chainId
-    const chainCounts = new Map<string, number>();
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
 
-    for (const campaign of result.data.Campaign) {
-      const currentCount = chainCounts.get(campaign.chainId) || 0;
-      chainCounts.set(campaign.chainId, currentCount + 1);
+      const batch = result.data.Campaign;
+
+      // Aggregate campaigns by chainId for this batch
+      for (const campaign of batch) {
+        const currentCount = chainCounts.get(campaign.chainId) || 0;
+        chainCounts.set(campaign.chainId, currentCount + 1);
+      }
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
 
     // Convert to array and add chain names
@@ -654,7 +721,7 @@ export async function fetchMonthlyClaimTrends(): Promise<MonthlyClaimTrend[]> {
 
     // Convert response to monthly data
     const monthlyData: MonthlyClaimTrend[] = timeRanges.map((range, index) => ({
-      count: result.data[`month${index}`].aggregate.count,
+      count: result.data[`month${index}`]?.aggregate?.count ?? 0,
       month: range.label,
     }));
 
@@ -857,26 +924,6 @@ export async function getAirdropsCacheInfo(): Promise<{
   };
 }
 
-const EVM_STABLECOINS = [
-  "BUSD",
-  "DAI",
-  "FRAX",
-  "GHO",
-  "GUSD",
-  "LUSD",
-  "PYUSD",
-  "TUSD",
-  "USDB",
-  "USDC",
-  "USDC.e",
-  "USDbC",
-  "USDD",
-  "USDP",
-  "USDT",
-  "crvUSD",
-  "sUSD",
-];
-
 export interface StablecoinVolumeResponse {
   Campaign: Array<{
     aggregateAmount: string;
@@ -939,7 +986,7 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
       // Accumulate normalized volumes for this batch
       const batchVolume = batch.reduce((sum, campaign) => {
         const decimals = parseInt(campaign.asset.decimals, 10);
-        if (isNaN(decimals)) {
+        if (Number.isNaN(decimals)) {
           throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
         }
         const aggregateAmount = BigInt(campaign.aggregateAmount);
@@ -1016,7 +1063,7 @@ export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Prom
       // Accumulate normalized volumes for this batch
       const batchVolume = batch.reduce((sum, campaign) => {
         const decimals = parseInt(campaign.asset.decimals, 10);
-        if (isNaN(decimals)) {
+        if (Number.isNaN(decimals)) {
           throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
         }
         const aggregateAmount = BigInt(campaign.aggregateAmount);
