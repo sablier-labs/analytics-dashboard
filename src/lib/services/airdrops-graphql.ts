@@ -301,8 +301,16 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
     let totalRecipients = 0;
 
     for (const campaign of result.data.Campaign) {
-      totalClaimed += parseInt(campaign.claimedCount, 10);
-      totalRecipients += parseInt(campaign.totalRecipients, 10);
+      const claimedCount = parseInt(campaign.claimedCount, 10);
+      if (isNaN(claimedCount)) {
+        throw new Error(`Invalid claimed count: ${campaign.claimedCount}`);
+      }
+      const recipientCount = parseInt(campaign.totalRecipients, 10);
+      if (isNaN(recipientCount)) {
+        throw new Error(`Invalid total recipients: ${campaign.totalRecipients}`);
+      }
+      totalClaimed += claimedCount;
+      totalRecipients += recipientCount;
     }
 
     const percentage = totalRecipients > 0 ? (totalClaimed / totalRecipients) * 100 : 0;
@@ -354,9 +362,13 @@ export async function fetchMedianClaimers(): Promise<number> {
     }
 
     // Extract claimers counts and sort for median calculation
-    const claimerCounts = result.data.Campaign.map((campaign) =>
-      parseInt(campaign.claimedCount, 10),
-    ).sort((a, b) => a - b);
+    const claimerCounts = result.data.Campaign.map((campaign) => {
+      const claimedCount = parseInt(campaign.claimedCount, 10);
+      if (isNaN(claimedCount)) {
+        throw new Error(`Invalid claimed count: ${campaign.claimedCount}`);
+      }
+      return claimedCount;
+    }).sort((a, b) => a - b);
 
     if (claimerCounts.length === 0) {
       console.log("No campaigns with ≥10 claims found");
@@ -420,7 +432,13 @@ export async function fetchMedianClaimWindow(): Promise<number> {
     // Calculate claim windows in days and sort for median calculation
     const claimWindows = result.data.Campaign.map((campaign) => {
       const startTime = parseInt(campaign.timestamp, 10);
+      if (isNaN(startTime)) {
+        throw new Error(`Invalid timestamp: ${campaign.timestamp}`);
+      }
       const endTime = parseInt(campaign.expiration, 10);
+      if (isNaN(endTime)) {
+        throw new Error(`Invalid expiration: ${campaign.expiration}`);
+      }
       const durationSeconds = endTime - startTime;
       const durationDays = durationSeconds / (24 * 60 * 60); // Convert seconds to days
       return durationDays;
@@ -860,66 +878,83 @@ const EVM_STABLECOINS = [
 ];
 
 export interface StablecoinVolumeResponse {
-  Campaign_aggregate: {
-    aggregate: {
-      sum: {
-        aggregateAmount: string | null;
-      };
+  Campaign: Array<{
+    aggregateAmount: string;
+    asset: {
+      decimals: string;
     };
-  };
+  }>;
 }
 
 export async function fetchAirdropsStablecoinVolume(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetAirdropsStablecoinVolume {
-      Campaign_aggregate(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          asset: {
-            symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
-          }
-        }
-      ) {
-        aggregate {
-          sum {
-            aggregateAmount
-          }
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetAirdropsStablecoinVolume {
+          Campaign(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              asset: {
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
+              }
+            }
+          ) {
+            aggregateAmount
+            asset {
+              decimals
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StablecoinVolumeResponse> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Campaign;
+
+      // Accumulate normalized volumes for this batch
+      const batchVolume = batch.reduce((sum, campaign) => {
+        const decimals = parseInt(campaign.asset.decimals, 10);
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
+        }
+        const aggregateAmount = BigInt(campaign.aggregateAmount);
+        const normalized = Number(aggregateAmount / BigInt(10) ** BigInt(decimals));
+        return sum + normalized;
+      }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
 
-    const result: GraphQLResponse<StablecoinVolumeResponse> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const sumString = result.data.Campaign_aggregate.aggregate.sum.aggregateAmount;
-
-    if (!sumString) return 0;
-
-    // aggregateAmount is in smallest unit (18 decimals for EVM)
-    const volumeInSmallestUnit = BigInt(sumString);
-    const volumeInUSD = Number(volumeInSmallestUnit / BigInt(10 ** 18));
-
-    return volumeInUSD;
+    return totalVolume;
   } catch (error) {
     console.error("Error fetching airdrops stablecoin volume:", error);
     throw error;
@@ -929,56 +964,74 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
 export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
   const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
-
-  const query = `
-    query GetAirdropsStablecoinVolumeTimeRange {
-      Campaign_aggregate(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          timestamp: { _gte: "${timestamp}" }
-          asset: {
-            symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
-          }
-        }
-      ) {
-        aggregate {
-          sum {
-            aggregateAmount
-          }
-        }
-      }
-    }
-  `;
+  let totalVolume = 0;
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetAirdropsStablecoinVolumeTimeRange {
+          Campaign(
+            limit: ${limit}
+            offset: ${offset}
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              timestamp: { _gte: "${timestamp}" }
+              asset: {
+                symbol: { _in: ${JSON.stringify(EVM_STABLECOINS)} }
+              }
+            }
+          ) {
+            aggregateAmount
+            asset {
+              decimals
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StablecoinVolumeResponse> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Campaign;
+
+      // Accumulate normalized volumes for this batch
+      const batchVolume = batch.reduce((sum, campaign) => {
+        const decimals = parseInt(campaign.asset.decimals, 10);
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
+        }
+        const aggregateAmount = BigInt(campaign.aggregateAmount);
+        const normalized = Number(aggregateAmount / BigInt(10) ** BigInt(decimals));
+        return sum + normalized;
+      }, 0);
+
+      totalVolume += batchVolume;
+
+      // Check if we need to fetch more
+      hasMore = batch.length === limit;
+      offset += limit;
     }
 
-    const result: GraphQLResponse<StablecoinVolumeResponse> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const sumString = result.data.Campaign_aggregate.aggregate.sum.aggregateAmount;
-
-    if (!sumString) return 0;
-
-    // aggregateAmount is in smallest unit (18 decimals for EVM)
-    const volumeInSmallestUnit = BigInt(sumString);
-    const volumeInUSD = Number(volumeInSmallestUnit / BigInt(10 ** 18));
-
-    return volumeInUSD;
+    return totalVolume;
   } catch (error) {
     console.error("Error fetching airdrops stablecoin volume time range:", error);
     throw error;

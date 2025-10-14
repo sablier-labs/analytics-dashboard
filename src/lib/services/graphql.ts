@@ -430,6 +430,7 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
 }
 
 export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
+  const testnetChainIds = getTestnetChainIds();
   // Get last 12 months to prevent query timeout with distinct counts
   const now = new Date();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
@@ -447,6 +448,7 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
     return `
       month_${index}: Action_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _lte: "${range.timestamp}" }
         }
       ) {
@@ -605,6 +607,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 }
 
 export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactionGrowth[]> {
+  const testnetChainIds = getTestnetChainIds();
   const now = Date.now();
   const timeRanges: Array<{ label: string; timestamp: string }> = [];
 
@@ -624,6 +627,7 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
     return `
       month_${index}: Action_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _lte: "${range.timestamp}" }
         }
       ) {
@@ -682,6 +686,7 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
 }
 
 export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
+  const testnetChainIds = getTestnetChainIds();
   const _now = Date.now();
   const lastMonth = new Date();
   lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -700,6 +705,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
     query GetGrowthRateMetrics {
       currentMonthUsers: Action_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${lastMonthTimestamp}" }
         }
       ) {
@@ -709,6 +715,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       }
       previousMonthUsers: Action_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${twoMonthsAgoTimestamp}", _lt: "${lastMonthTimestamp}" }
         }
       ) {
@@ -718,6 +725,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       }
       currentMonthTransactions: Action_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${lastMonthTimestamp}" }
         }
       ) {
@@ -727,6 +735,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
       }
       previousMonthTransactions: Action_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${twoMonthsAgoTimestamp}", _lt: "${lastMonthTimestamp}" }
         }
       ) {
@@ -790,10 +799,15 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
 }
 
 export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
+  const testnetChainIds = getTestnetChainIds();
   // Use aggregation to get accurate stream counts without array limits
   const query = `
     query GetTopAssets {
-      Asset {
+      Asset(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
         id
         address
         symbol
@@ -844,15 +858,21 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
     }
 
     // Convert to TopAsset format and sort by stream count
-    const topAssets = result.data.Asset.map((asset) => ({
-      address: asset.address,
-      assetId: asset.id,
-      chainId: asset.chainId,
-      decimals: parseInt(asset.decimals, 10),
-      name: asset.name,
-      streamCount: asset.streams_aggregate.aggregate.count,
-      symbol: asset.symbol,
-    }))
+    const topAssets = result.data.Asset.map((asset) => {
+      const decimals = parseInt(asset.decimals, 10);
+      if (isNaN(decimals)) {
+        throw new Error(`Invalid decimals value: ${asset.decimals}`);
+      }
+      return {
+        address: asset.address,
+        assetId: asset.id,
+        chainId: asset.chainId,
+        decimals,
+        name: asset.name,
+        streamCount: asset.streams_aggregate.aggregate.count,
+        symbol: asset.symbol,
+      };
+    })
       .sort((a, b) => b.streamCount - a.streamCount) // Sort by stream count desc
       .slice(0, 10); // Take top 10
 
@@ -864,6 +884,7 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
 }
 
 export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreation[]> {
+  const testnetChainIds = getTestnetChainIds();
   // Generate last 12 months of time ranges
   const timeRanges: Array<{ label: string; startTimestamp: string; endTimestamp: string }> = [];
   const now = new Date();
@@ -885,6 +906,7 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
     return `
       month_${index}: Stream_aggregate(
         where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
           timestamp: { _gte: "${range.startTimestamp}", _lte: "${range.endTimestamp}" }
         }
       ) {
@@ -940,12 +962,18 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
 }
 
 export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
+  const testnetChainIds = getTestnetChainIds();
   // Filter out streams shorter than 24 hours (86400 seconds)
   const minDuration = "86400"; // 24 hours in seconds
 
   const query = `
     query GetStreamDurationStats {
-      Stream_aggregate(where: { duration: { _gte: "${minDuration}" } }) {
+      Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          duration: { _gte: "${minDuration}" }
+        }
+      ) {
         aggregate {
           avg {
             duration
@@ -960,7 +988,12 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
         }
       }
       # Get total count for median calculation
-      totalCount: Stream_aggregate(where: { duration: { _gte: "${minDuration}" } }) {
+      totalCount: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          duration: { _gte: "${minDuration}" }
+        }
+      ) {
         aggregate {
           count
         }
@@ -1012,7 +1045,10 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
     const medianQuery = `
       query GetMedianValue {
         Stream(
-          where: { duration: { _gte: "${minDuration}" } }
+          where: {
+            chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+            duration: { _gte: "${minDuration}" }
+          }
           order_by: { duration: asc }
           limit: 1
           offset: ${medianPosition}
@@ -1047,11 +1083,25 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
       ? parseInt(medianResult.data.Stream[0].duration, 10)
       : 0;
 
+    if (medianResult.data.Stream[0] && isNaN(median)) {
+      throw new Error(`Invalid median duration value: ${medianResult.data.Stream[0].duration}`);
+    }
+
+    const minDuration = parseInt(aggregate.min.duration || "0", 10);
+    if (isNaN(minDuration)) {
+      throw new Error(`Invalid min duration value: ${aggregate.min.duration}`);
+    }
+
+    const maxDuration = parseInt(aggregate.max.duration || "0", 10);
+    if (isNaN(maxDuration)) {
+      throw new Error(`Invalid max duration value: ${aggregate.max.duration}`);
+    }
+
     const stats: StreamDurationStats = {
       average: parseFloat(aggregate.avg.duration || "0"),
-      max: parseInt(aggregate.max.duration || "0", 10),
+      max: maxDuration,
       median,
-      min: parseInt(aggregate.min.duration || "0", 10),
+      min: minDuration,
     };
 
     return stats;
@@ -1062,27 +1112,45 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
 }
 
 export async function fetchStreamProperties(): Promise<StreamProperties> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetStreamProperties {
-      totalStreams: Stream_aggregate {
+      totalStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      cancelableStreams: Stream_aggregate(where: { cancelable: { _eq: true } }) {
+      cancelableStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          cancelable: { _eq: true }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      transferableStreams: Stream_aggregate(where: { transferable: { _eq: true } }) {
+      transferableStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          transferable: { _eq: true }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      bothProperties: Stream_aggregate(where: { 
-        cancelable: { _eq: true }, 
-        transferable: { _eq: true } 
-      }) {
+      bothProperties: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          cancelable: { _eq: true }
+          transferable: { _eq: true }
+        }
+      ) {
         aggregate {
           count
         }
@@ -1132,24 +1200,44 @@ export async function fetchStreamProperties(): Promise<StreamProperties> {
 }
 
 export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryDistribution> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetStreamCategoryDistribution {
-      totalStreams: Stream_aggregate {
+      totalStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      linearStreams: Stream_aggregate(where: { category: { _eq: "LockupLinear" } }) {
+      linearStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          category: { _eq: "LockupLinear" }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      dynamicStreams: Stream_aggregate(where: { category: { _eq: "LockupDynamic" } }) {
+      dynamicStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          category: { _eq: "LockupDynamic" }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      tranchedStreams: Stream_aggregate(where: { category: { _eq: "LockupTranched" } }) {
+      tranchedStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          category: { _eq: "LockupTranched" }
+        }
+      ) {
         aggregate {
           count
         }
@@ -1199,9 +1287,14 @@ export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryD
 }
 
 export async function fetchTotalVestingStreams(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetTotalVestingStreams {
-      totalStreams: Stream_aggregate {
+      totalStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
         aggregate {
           count
         }
@@ -1241,22 +1334,37 @@ export async function fetchTotalVestingStreams(): Promise<number> {
 }
 
 export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompletedStreams> {
+  const testnetChainIds = getTestnetChainIds();
   // Get current timestamp for determining active vs completed
   const currentTimestamp = Math.floor(Date.now() / 1000).toString();
 
   const query = `
     query GetActiveVsCompletedStreams {
-      totalStreams: Stream_aggregate {
+      totalStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      activeStreams: Stream_aggregate(where: { endTime: { _gt: "${currentTimestamp}" } }) {
+      activeStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          endTime: { _gt: "${currentTimestamp}" }
+        }
+      ) {
         aggregate {
           count
         }
       }
-      completedStreams: Stream_aggregate(where: { endTime: { _lte: "${currentTimestamp}" } }) {
+      completedStreams: Stream_aggregate(
+        where: {
+          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+          endTime: { _lte: "${currentTimestamp}" }
+        }
+      ) {
         aggregate {
           count
         }
@@ -1331,61 +1439,82 @@ export interface Activity24Hours {
 
 export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[]> {
   const testnetChainIds = getTestnetChainIds();
-  const query = `
-    query GetLargestStablecoinStreams {
-      Stream(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          asset: {
-            symbol: {
-              _in: ["USDC", "USDC.e", "USDT", "DAI", "BUSD", "TUSD", "USDP", "GUSD", "FRAX", "LUSD", "USDD"]
+  const allStreams: StablecoinStream[] = [];
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
+
+  try {
+    // Fetch all stablecoin streams across all batches
+    while (hasMore) {
+      const query = `
+        query GetLargestStablecoinStreams {
+          Stream(
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              asset: {
+                symbol: { _in: ${JSON.stringify(STABLECOINS)} }
+              }
+            }
+            limit: ${limit}
+            offset: ${offset}
+          ) {
+            id
+            tokenId
+            depositAmount
+            sender
+            recipient
+            chainId
+            timestamp
+            contract
+            startTime
+            endTime
+            duration
+            asset {
+              symbol
+              name
+              decimals
             }
           }
         }
-        order_by: { depositAmount: desc }
-        limit: 500
-      ) {
-        id
-        tokenId
-        depositAmount
-        sender
-        recipient
-        chainId
-        timestamp
-        contract
-        startTime
-        endTime
-        duration
-        asset {
-          symbol
-          name
-          decimals
-        }
+      `;
+
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    }
-  `;
 
-  try {
-    const response = await fetch(GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+      const result: GraphQLResponse<{ Stream: StablecoinStream[] }> = await response.json();
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
 
-    const result: GraphQLResponse<{ Stream: StablecoinStream[] }> = await response.json();
+      const batch = result.data.Stream;
 
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      // Accumulate streams from all batches
+      allStreams.push(...batch);
+
+      hasMore = batch.length === limit;
+      offset += limit;
     }
 
-    return result.data.Stream;
+    // Sort all streams by depositAmount DESC and return top 500
+    return allStreams
+      .sort((a, b) => {
+        const amountA = BigInt(a.depositAmount);
+        const amountB = BigInt(b.depositAmount);
+        return amountB > amountA ? -1 : amountB < amountA ? 1 : 0;
+      })
+      .slice(0, 500);
   } catch (error) {
     console.error("Error fetching largest stablecoin streams:", error);
     throw error;
@@ -1538,8 +1667,11 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
       // Accumulate normalized volumes for this batch
       const batchVolume = batch.reduce((sum, stream) => {
         const decimals = parseInt(stream.asset.decimals, 10);
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
+        }
         const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount / BigInt(10 ** decimals));
+        const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 
@@ -1619,8 +1751,11 @@ export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promis
       // Accumulate normalized volumes for this batch
       const batchVolume = batch.reduce((sum, stream) => {
         const decimals = parseInt(stream.asset.decimals, 10);
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
+        }
         const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount / BigInt(10 ** decimals));
+        const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 

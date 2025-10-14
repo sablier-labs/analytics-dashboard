@@ -7,6 +7,8 @@
  */
 
 import { getTestnetChainIds } from "@/lib/constants/chains";
+import { fetchSolanaClaims24h, fetchSolanaTotalClaims } from "./solana-airdrops-graphql";
+import { fetchSolanaStreams24h, fetchSolanaTransactions } from "./solana-lockup-graphql";
 
 // Import EVM endpoints
 const LOCKUP_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/53b7e25/v1/graphql";
@@ -15,7 +17,7 @@ const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/gra
 // Import Solana endpoints
 const SOLANA_LOCKUP_GRAPHQL_ENDPOINT =
   "https://graph.sablier.io/lockup-mainnet/subgraphs/name/sablier-lockup-solana-mainnet";
-const _SOLANA_AIRDROPS_GRAPHQL_ENDPOINT =
+const SOLANA_AIRDROPS_GRAPHQL_ENDPOINT =
   "https://graph.sablier.io/airdrops-mainnet/subgraphs/name/sablier-airdrops-solana-mainnet";
 
 interface GraphQLResponse<T> {
@@ -105,38 +107,47 @@ export async function fetchAggregatedTotalUsers(): Promise<number> {
         return result.data.Action_aggregate.aggregate.count;
       })(),
 
-      // Solana Lockup - collect sender + recipient from streams
-      // Note: TheGraph has `first` limits, so we get what we can
+      // Solana Lockup - collect sender + recipient from streams (with pagination)
       (async () => {
-        const query = `
-          query GetSolanaLockupUsers {
-            streams(first: 1000, orderBy: timestamp, orderDirection: desc) {
-              sender
-              recipient
-            }
-          }
-        `;
-
-        const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-          body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
-          method: "POST",
-        });
-
-        if (!response.ok) throw new Error(`Solana Lockup HTTP error! status: ${response.status}`);
-
-        const result: GraphQLResponse<{
-          streams: Array<{ sender: string; recipient: string }>;
-        }> = await response.json();
-
-        if (result.errors)
-          throw new Error(`Solana Lockup GraphQL error: ${result.errors[0]?.message}`);
-
-        // Collect unique addresses
         const uniqueAddresses = new Set<string>();
-        for (const stream of result.data.streams) {
-          uniqueAddresses.add(stream.sender);
-          uniqueAddresses.add(stream.recipient);
+        let solanaSkip = 0;
+        const solanaFirst = 1000;
+        let solanaHasMore = true;
+
+        while (solanaHasMore) {
+          const query = `
+            query GetSolanaLockupUsers {
+              streams(first: ${solanaFirst}, skip: ${solanaSkip}) {
+                sender
+                recipient
+              }
+            }
+          `;
+
+          const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+            body: JSON.stringify({ query }),
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+          });
+
+          if (!response.ok) throw new Error(`Solana Lockup HTTP error! status: ${response.status}`);
+
+          const result: GraphQLResponse<{
+            streams: Array<{ sender: string; recipient: string }>;
+          }> = await response.json();
+
+          if (result.errors)
+            throw new Error(`Solana Lockup GraphQL error: ${result.errors[0]?.message}`);
+
+          const solanaBatch = result.data.streams;
+
+          for (const stream of solanaBatch) {
+            uniqueAddresses.add(stream.sender);
+            uniqueAddresses.add(stream.recipient);
+          }
+
+          solanaHasMore = solanaBatch.length === solanaFirst;
+          solanaSkip += solanaFirst;
         }
 
         return uniqueAddresses.size;
@@ -446,7 +457,7 @@ export async function fetchAggregatedTotalTransactions(): Promise<number> {
   const testnetChainIds = getTestnetChainIds();
 
   try {
-    const [lockupEVMCount, airdropsEVMCount] = await Promise.all([
+    const [lockupEVMCount, airdropsEVMCount, solanaCount] = await Promise.all([
       // Lockup EVM - total transaction count from Action
       (async () => {
         const query = `
@@ -479,10 +490,7 @@ export async function fetchAggregatedTotalTransactions(): Promise<number> {
           throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
 
         return result.data.Action_aggregate.aggregate.count;
-      })().catch((err) => {
-        console.error("Error fetching Lockup EVM transactions:", err);
-        return 0;
-      }),
+      })(),
 
       // Airdrops EVM - total transaction count from Action
       (async () => {
@@ -516,20 +524,17 @@ export async function fetchAggregatedTotalTransactions(): Promise<number> {
           throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
 
         return result.data.Action_aggregate.aggregate.count;
-      })().catch((err) => {
-        console.error("Error fetching Airdrops EVM transactions:", err);
-        return 0;
-      }),
+      })(),
+
+      fetchSolanaTransactions(),
     ]);
 
-    // Note: Solana transaction counting would go here if available in schema
-    // For now, we only count EVM transactions
-
-    const total = lockupEVMCount + airdropsEVMCount;
+    const total = lockupEVMCount + airdropsEVMCount + solanaCount;
 
     console.log(`📊 Aggregated transaction counts:
       - Lockup EVM: ${lockupEVMCount}
       - Airdrops EVM: ${airdropsEVMCount}
+      - Solana: ${solanaCount}
       - Total: ${total}`);
 
     return total;
@@ -583,20 +588,9 @@ export async function fetchAggregatedTotalClaims(): Promise<number> {
           throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
 
         return result.data.Action_aggregate.aggregate.count;
-      })().catch((err) => {
-        console.error("Error fetching Airdrops EVM claims:", err);
-        return 0;
-      }),
+      })(),
 
-      // Solana Airdrops - count of claims (if available in schema)
-      // Note: Schema may not support claim counting, return 0 for now
-      (async () => {
-        // TODO: Add Solana claims query when schema is confirmed
-        return 0;
-      })().catch((err) => {
-        console.error("Error fetching Solana claims:", err);
-        return 0;
-      }),
+      fetchSolanaTotalClaims(),
     ]);
 
     const total = airdropsEVMCount + solanaCount;
@@ -609,7 +603,7 @@ export async function fetchAggregatedTotalClaims(): Promise<number> {
     return total;
   } catch (error) {
     console.error("Error fetching aggregated total claims:", error);
-    return 0;
+    throw error;
   }
 }
 
@@ -693,10 +687,7 @@ export async function fetchAggregatedTimeBasedTransactionCounts(): Promise<{
           past180Days: result.data.past180Days.aggregate.count,
           pastYear: result.data.pastYear.aggregate.count,
         };
-      })().catch((err) => {
-        console.error("Error fetching Lockup EVM time-based transactions:", err);
-        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
-      }),
+      })(),
 
       // Airdrops EVM time-based transaction counts
       (async () => {
@@ -760,10 +751,7 @@ export async function fetchAggregatedTimeBasedTransactionCounts(): Promise<{
           past180Days: result.data.past180Days.aggregate.count,
           pastYear: result.data.pastYear.aggregate.count,
         };
-      })().catch((err) => {
-        console.error("Error fetching Airdrops EVM time-based transactions:", err);
-        return { past30Days: 0, past90Days: 0, past180Days: 0, pastYear: 0 };
-      }),
+      })(),
     ]);
 
     // Aggregate counts from all sources
@@ -833,10 +821,7 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
           throw new Error(`Lockup EVM GraphQL error: ${result.errors[0]?.message}`);
 
         return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
-      })().catch((err) => {
-        console.error("Error fetching Lockup EVM monthly transaction growth:", err);
-        return timeRanges.map(() => 0);
-      }),
+      })(),
 
       // Airdrops EVM monthly cumulative transaction counts
       (async () => {
@@ -870,10 +855,7 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
           throw new Error(`Airdrops EVM GraphQL error: ${result.errors[0]?.message}`);
 
         return timeRanges.map((_, index) => result.data[`month_${index}`].aggregate.count);
-      })().catch((err) => {
-        console.error("Error fetching Airdrops EVM monthly transaction growth:", err);
-        return timeRanges.map(() => 0);
-      }),
+      })(),
     ]);
 
     // Aggregate monthly data
@@ -909,7 +891,7 @@ export async function fetchAggregated24HourMetrics(): Promise<{
   const twentyFourHoursAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000).toString();
 
   try {
-    const [lockupEVMMetrics, airdropsEVMMetrics] = await Promise.all([
+    const [lockupEVMMetrics, airdropsEVMMetrics, solanaStreams24h] = await Promise.all([
       // Lockup EVM 24-hour metrics
       (async () => {
         const query = `
@@ -957,10 +939,7 @@ export async function fetchAggregated24HourMetrics(): Promise<{
           streamsCreated: result.data.streams24h.aggregate.count,
           totalTransactions: result.data.transactions24h.aggregate.count,
         };
-      })().catch((err) => {
-        console.error("Error fetching Lockup EVM 24h metrics:", err);
-        return { streamsCreated: 0, totalTransactions: 0 };
-      }),
+      })(),
 
       // Airdrops EVM 24-hour metrics (claims + transactions)
       (async () => {
@@ -1010,20 +989,19 @@ export async function fetchAggregated24HourMetrics(): Promise<{
           claimsCreated: result.data.claims24h.aggregate.count,
           totalTransactions: result.data.transactions24h.aggregate.count,
         };
-      })().catch((err) => {
-        console.error("Error fetching Airdrops EVM 24h metrics:", err);
-        return { claimsCreated: 0, totalTransactions: 0 };
-      }),
+      })(),
+
+      fetchSolanaStreams24h(),
     ]);
 
     const aggregatedMetrics = {
       claimsCreated: airdropsEVMMetrics.claimsCreated,
-      streamsCreated: lockupEVMMetrics.streamsCreated,
+      streamsCreated: lockupEVMMetrics.streamsCreated + solanaStreams24h,
       totalTransactions: lockupEVMMetrics.totalTransactions + airdropsEVMMetrics.totalTransactions,
     };
 
     console.log(`📊 Aggregated 24h metrics:
-      - Streams Created: ${aggregatedMetrics.streamsCreated}
+      - Streams Created (EVM + Solana): ${aggregatedMetrics.streamsCreated}
       - Claims Created: ${aggregatedMetrics.claimsCreated}
       - Total Transactions: ${aggregatedMetrics.totalTransactions}`);
 

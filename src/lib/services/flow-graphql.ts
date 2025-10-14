@@ -1,3 +1,5 @@
+import { getTestnetChainIds } from "@/lib/constants/chains";
+
 const FLOW_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/3b4ea6b/v1/graphql";
 
 interface GraphQLResponse<T> {
@@ -14,9 +16,13 @@ interface DepositAggregateResponse {
 }
 
 export async function fetchFlowDeposits(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
   const query = `
     query GetFlowDeposits {
-      Action_aggregate(where: { category: { _eq: "Deposit" } }) {
+      Action_aggregate(where: {
+        chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+        category: { _eq: "Deposit" }
+      }) {
         aggregate {
           count
         }
@@ -80,6 +86,7 @@ const FLOW_STABLECOINS = [
 ];
 
 export async function fetchFlowStablecoinVolume(): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
   let totalVolume = 0;
   let offset = 0;
   const limit = 1000;
@@ -93,6 +100,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
             limit: ${limit}
             offset: ${offset}
             where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               asset: {
                 symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
               }
@@ -130,7 +138,10 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
       const batchVolume = batch.reduce((sum, stream) => {
         const depositedAmount = BigInt(stream.depositedAmount);
         const decimals = Number(stream.asset.decimals);
-        const normalized = Number(depositedAmount / BigInt(10 ** decimals));
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
+        }
+        const normalized = Number(depositedAmount / BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 
@@ -149,6 +160,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
 }
 
 export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<number> {
+  const testnetChainIds = getTestnetChainIds();
   const timestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000).toString();
   let totalVolume = 0;
   let offset = 0;
@@ -163,6 +175,7 @@ export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<
             limit: ${limit}
             offset: ${offset}
             where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
               timestamp: { _gte: "${timestamp}" }
               asset: {
                 symbol: { _in: ${JSON.stringify(FLOW_STABLECOINS)} }
@@ -201,7 +214,10 @@ export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<
       const batchVolume = batch.reduce((sum, stream) => {
         const depositedAmount = BigInt(stream.depositedAmount);
         const decimals = Number(stream.asset.decimals);
-        const normalized = Number(depositedAmount / BigInt(10 ** decimals));
+        if (isNaN(decimals)) {
+          throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
+        }
+        const normalized = Number(depositedAmount / BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 

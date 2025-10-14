@@ -55,39 +55,51 @@ export interface StreamTimestampResponse {
 }
 
 export async function fetchSolanaUsers(): Promise<number> {
-  const query = `
-    query GetSolanaUsers {
-      streams(first: 1000) {
-        sender
-        recipient
-      }
-    }
-  `;
+  const uniqueUsers = new Set<string>();
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaUsers {
+          streams(first: ${first}, skip: ${skip}) {
+            sender
+            recipient
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamsResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.streams;
+
+      // Dedupe senders and recipients across all batches
+      batch.forEach((stream) => {
+        uniqueUsers.add(stream.sender);
+        uniqueUsers.add(stream.recipient);
+      });
+
+      hasMore = batch.length === first;
+      skip += first;
     }
-
-    const result: GraphQLResponse<StreamsResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const uniqueUsers = new Set<string>();
-    result.data.streams.forEach((stream) => {
-      uniqueUsers.add(stream.sender);
-      uniqueUsers.add(stream.recipient);
-    });
 
     return uniqueUsers.size;
   } catch (error) {
@@ -98,42 +110,55 @@ export async function fetchSolanaUsers(): Promise<number> {
 
 export async function fetchSolanaMAU(): Promise<number> {
   const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
-
-  const query = `
-    query GetSolanaMAU {
-      actions(
-        where: { timestamp_gte: "${thirtyDaysAgo}" }
-        first: 1000
-      ) {
-        addressA
-      }
-    }
-  `;
+  const uniqueUsers = new Set<string>();
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaMAU {
+          actions(
+            where: { timestamp_gte: "${thirtyDaysAgo}" }
+            first: ${first}
+            skip: ${skip}
+          ) {
+            addressA
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
 
-    const result: GraphQLResponse<ActionResponse> = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
+      const result: GraphQLResponse<ActionResponse> = await response.json();
 
-    const uniqueUsers = new Set(
-      result.data.actions
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.actions;
+
+      // Dedupe addressA across all batches
+      batch
         .map((action) => action.addressA)
-        .filter((addr): addr is string => addr !== null),
-    );
+        .filter((addr): addr is string => addr !== null)
+        .forEach((addr) => uniqueUsers.add(addr));
+
+      hasMore = batch.length === first;
+      skip += first;
+    }
+
     return uniqueUsers.size;
   } catch (error) {
     console.error("Error fetching Solana MAU:", error);
@@ -142,34 +167,49 @@ export async function fetchSolanaMAU(): Promise<number> {
 }
 
 export async function fetchSolanaStreams(): Promise<number> {
-  const query = `
-    query GetSolanaStreams {
-      streams(first: 1000) {
-        id
-      }
-    }
-  `;
+  let total = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaStreams {
+          streams(first: ${first}, skip: ${skip}) {
+            id
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamAggregateResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.streams;
+
+      // Count all batches
+      total += batch.length;
+
+      hasMore = batch.length === first;
+      skip += first;
     }
 
-    const result: GraphQLResponse<StreamAggregateResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    return result.data.streams.length;
+    return total;
   } catch (error) {
     console.error("Error fetching Solana streams:", error);
     throw error;
@@ -177,34 +217,49 @@ export async function fetchSolanaStreams(): Promise<number> {
 }
 
 export async function fetchSolanaTransactions(): Promise<number> {
-  const query = `
-    query GetSolanaTransactions {
-      actions(first: 1000) {
-        id
-      }
-    }
-  `;
+  let total = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaTransactions {
+          actions(first: ${first}, skip: ${skip}) {
+            id
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<{ actions: Array<{ id: string }> }> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.actions;
+
+      // Count all batches
+      total += batch.length;
+
+      hasMore = batch.length === first;
+      skip += first;
     }
 
-    const result: GraphQLResponse<{ actions: Array<{ id: string }> }> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    return result.data.actions.length;
+    return total;
   } catch (error) {
     console.error("Error fetching Solana transactions:", error);
     throw error;
@@ -213,47 +268,66 @@ export async function fetchSolanaTransactions(): Promise<number> {
 
 export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
   const { resolveTokenMetadata } = await import("./solana-token-metadata");
-
-  const query = `
-    query GetTopTokens {
-      assets(first: 1000) {
-        id
-        mint
-        address
-        streams {
-          id
-        }
-      }
-    }
-  `;
+  const allAssets: Array<{
+    mint: string;
+    address: string;
+    streamCount: number;
+  }> = [];
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    // Fetch all assets across all batches
+    while (hasMore) {
+      const query = `
+        query GetTopTokens {
+          assets(first: ${first}, skip: ${skip}) {
+            id
+            mint
+            address
+            streams {
+              id
+            }
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<AssetResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.assets;
+
+      // Accumulate assets from all batches
+      batch.forEach((asset) => {
+        allAssets.push({
+          address: asset.address,
+          mint: asset.mint,
+          streamCount: asset.streams.length,
+        });
+      });
+
+      hasMore = batch.length === first;
+      skip += first;
     }
 
-    const result: GraphQLResponse<AssetResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const topTokens = result.data.assets
-      .map((asset) => ({
-        address: asset.address,
-        mint: asset.mint,
-        streamCount: asset.streams.length,
-      }))
-      .sort((a, b) => b.streamCount - a.streamCount)
-      .slice(0, 10);
+    // Sort all assets and get top 10
+    const topTokens = allAssets.sort((a, b) => b.streamCount - a.streamCount).slice(0, 10);
 
     console.log(`🎨 Enriching ${topTokens.length} tokens with metadata...`);
 
@@ -293,39 +367,54 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
 
 export async function fetchSolanaStreams24h(): Promise<number> {
   const twentyFourHoursAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000);
-
-  const query = `
-    query GetStreams24h {
-      streams(
-        where: { timestamp_gte: "${twentyFourHoursAgo}" }
-        first: 1000
-      ) {
-        id
-        timestamp
-      }
-    }
-  `;
+  let total = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetStreams24h {
+          streams(
+            where: { timestamp_gte: "${twentyFourHoursAgo}" }
+            first: ${first}
+            skip: ${skip}
+          ) {
+            id
+            timestamp
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_LOCKUP_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<StreamTimestampResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.streams;
+
+      // Count all batches
+      total += batch.length;
+
+      hasMore = batch.length === first;
+      skip += first;
     }
 
-    const result: GraphQLResponse<StreamTimestampResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    return result.data.streams.length;
+    return total;
   } catch (error) {
     console.error("Error fetching Solana streams 24h:", error);
     throw error;
@@ -394,8 +483,11 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
         .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
         .reduce((sum, stream) => {
           const decimals = Number(stream.asset.decimals);
+          if (isNaN(decimals)) {
+            throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
+          }
           const depositAmount = BigInt(stream.depositAmount);
-          const normalized = Number(depositAmount / BigInt(10 ** decimals));
+          const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
           return sum + normalized;
         }, 0);
 
@@ -459,8 +551,11 @@ export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): 
         .filter((stream) => SOLANA_STABLECOIN_MINTS.includes(stream.asset.mint))
         .reduce((sum, stream) => {
           const decimals = Number(stream.asset.decimals);
+          if (isNaN(decimals)) {
+            throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
+          }
           const depositAmount = BigInt(stream.depositAmount);
-          const normalized = Number(depositAmount / BigInt(10 ** decimals));
+          const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
           return sum + normalized;
         }, 0);
 

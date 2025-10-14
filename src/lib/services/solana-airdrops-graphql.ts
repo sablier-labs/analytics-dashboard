@@ -21,34 +21,49 @@ export interface ActivityResponse {
 }
 
 export async function fetchSolanaCampaigns(): Promise<number> {
-  const query = `
-    query GetSolanaCampaigns {
-      campaigns(first: 1000) {
-        id
-      }
-    }
-  `;
+  let total = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetSolanaCampaigns {
+          campaigns(first: ${first}, skip: ${skip}) {
+            id
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<CampaignAggregateResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.campaigns;
+
+      // Count all batches
+      total += batch.length;
+
+      hasMore = batch.length === first;
+      skip += first;
     }
 
-    const result: GraphQLResponse<CampaignAggregateResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    return result.data.campaigns.length;
+    return total;
   } catch (error) {
     console.error("Error fetching Solana campaigns:", error);
     throw error;
@@ -57,46 +72,127 @@ export async function fetchSolanaCampaigns(): Promise<number> {
 
 export async function fetchSolanaClaims24h(): Promise<number> {
   const twentyFourHoursAgo = Math.floor((Date.now() - 24 * 60 * 60 * 1000) / 1000);
-
-  const query = `
-    query GetClaims24h {
-      activities(
-        where: { timestamp_gte: "${twentyFourHoursAgo}" }
-        first: 1000
-      ) {
-        id
-        timestamp
-        claims
-      }
-    }
-  `;
+  let totalClaims = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    });
+    while (hasMore) {
+      const query = `
+        query GetClaims24h {
+          activities(
+            where: { timestamp_gte: "${twentyFourHoursAgo}" }
+            first: ${first}
+            skip: ${skip}
+          ) {
+            id
+            timestamp
+            claims
+          }
+        }
+      `;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<ActivityResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.activities;
+
+      // Sum claims across all batches
+      const batchClaims = batch.reduce((sum, activity) => {
+        const claims = parseInt(activity.claims, 10);
+        if (isNaN(claims)) {
+          throw new Error(`Invalid claims value: ${activity.claims}`);
+        }
+        return sum + claims;
+      }, 0);
+
+      totalClaims += batchClaims;
+
+      hasMore = batch.length === first;
+      skip += first;
     }
-
-    const result: GraphQLResponse<ActivityResponse> = await response.json();
-
-    if (result.errors) {
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    const totalClaims = result.data.activities.reduce((sum, activity) => {
-      return sum + parseInt(activity.claims, 10);
-    }, 0);
 
     return totalClaims;
   } catch (error) {
     console.error("Error fetching Solana claims 24h:", error);
+    throw error;
+  }
+}
+
+export async function fetchSolanaTotalClaims(): Promise<number> {
+  let totalClaims = 0;
+  let skip = 0;
+  const first = 1000;
+  let hasMore = true;
+
+  try {
+    while (hasMore) {
+      const query = `
+        query GetTotalClaims {
+          activities(
+            first: ${first}
+            skip: ${skip}
+          ) {
+            id
+            claims
+          }
+        }
+      `;
+
+      const response = await fetch(SOLANA_AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<ActivityResponse> = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.activities;
+
+      // Sum claims across all batches
+      const batchClaims = batch.reduce((sum, activity) => {
+        const claims = parseInt(activity.claims, 10);
+        if (isNaN(claims)) {
+          throw new Error(`Invalid claims value: ${activity.claims}`);
+        }
+        return sum + claims;
+      }, 0);
+
+      totalClaims += batchClaims;
+
+      hasMore = batch.length === first;
+      skip += first;
+    }
+
+    return totalClaims;
+  } catch (error) {
+    console.error("Error fetching Solana total claims:", error);
     throw error;
   }
 }
@@ -163,8 +259,11 @@ export async function fetchSolanaAirdropsStablecoinVolume(): Promise<number> {
         .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
         .reduce((sum, campaign) => {
           const decimals = Number(campaign.asset.decimals);
+          if (isNaN(decimals)) {
+            throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
+          }
           const aggregateAmount = BigInt(campaign.aggregateAmount);
-          const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
+          const normalized = Number(aggregateAmount / BigInt(10) ** BigInt(decimals));
           return sum + normalized;
         }, 0);
 
@@ -228,8 +327,11 @@ export async function fetchSolanaAirdropsStablecoinVolumeTimeRange(days: number)
         .filter((campaign) => SOLANA_STABLECOIN_MINTS.includes(campaign.asset.mint))
         .reduce((sum, campaign) => {
           const decimals = Number(campaign.asset.decimals);
+          if (isNaN(decimals)) {
+            throw new Error(`Invalid decimals value: ${campaign.asset.decimals}`);
+          }
           const aggregateAmount = BigInt(campaign.aggregateAmount);
-          const normalized = Number(aggregateAmount / BigInt(10 ** decimals));
+          const normalized = Number(aggregateAmount / BigInt(10) ** BigInt(decimals));
           return sum + normalized;
         }, 0);
 
