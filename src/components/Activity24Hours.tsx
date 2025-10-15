@@ -1,6 +1,7 @@
 "use client";
 
 import { BarChart3, Clock, Gift, Plus, Zap } from "lucide-react";
+import { memo } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { Activity24Hours as Activity24HoursMetrics } from "@/lib/services/graphql";
 
@@ -8,10 +9,11 @@ interface Activity24HoursData {
   activity24Hours?: Activity24HoursMetrics;
 }
 
-export function Activity24Hours() {
-  const { data, loading } = useAnalyticsContext() as {
+export const Activity24Hours = memo(function Activity24Hours() {
+  const { data, loading, error } = useAnalyticsContext() as {
     data: Activity24HoursData | null;
     loading: boolean;
+    error: string | null;
   };
 
   if (loading) {
@@ -28,6 +30,19 @@ export function Activity24Hours() {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
+          <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+            Error loading 24-hour activity data
+          </p>
+          <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+        </div>
       </div>
     );
   }
@@ -110,4 +125,4 @@ export function Activity24Hours() {
       </div>
     </div>
   );
-}
+});

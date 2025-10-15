@@ -1,7 +1,7 @@
 "use client";
 
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
@@ -10,7 +10,7 @@ import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export function VestingDistribution() {
+export const VestingDistribution = memo(function VestingDistribution() {
   const { data, isLoading, error } = useAirdropsAnalytics();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,39 +73,42 @@ export function VestingDistribution() {
     labels: ["Instant", "Vesting"],
   };
 
-  const options = {
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false, // We'll create custom legend below
-      },
-      tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        bodyColor: "rgb(255, 255, 255)",
-        bodyFont: {
-          size: 12,
+  const options = useMemo(
+    () => ({
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false, // We'll create custom legend below
         },
-        borderWidth: 0,
-        callbacks: {
-          label: (context: any) => {
-            const value = context.parsed;
-            const percentage = ((value / total) * 100).toFixed(1);
-            const formattedValue = new Intl.NumberFormat().format(value);
-            return `${context.label}: ${formattedValue} campaigns (${percentage}%)`;
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
+            size: 12,
+          },
+          borderWidth: 0,
+          callbacks: {
+            label: (context: any) => {
+              const value = context.parsed;
+              const percentage = ((value / total) * 100).toFixed(1);
+              const formattedValue = new Intl.NumberFormat().format(value);
+              return `${context.label}: ${formattedValue} campaigns (${percentage}%)`;
+            },
+          },
+          cornerRadius: 6,
+          displayColors: true,
+          padding: 12,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
           },
         },
-        cornerRadius: 6,
-        displayColors: true,
-        padding: 12,
-        titleColor: "rgb(255, 255, 255)",
-        titleFont: {
-          size: 13,
-          weight: "bold" as const,
-        },
       },
-    },
-    responsive: true,
-  };
+      responsive: true,
+    }),
+    [total],
+  );
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -187,4 +190,4 @@ export function VestingDistribution() {
       </div>
     </div>
   );
-}
+});

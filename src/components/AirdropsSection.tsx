@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { AirdropsChainDistribution } from "./AirdropsChainDistribution";
 import { CampaignCreationTrend } from "./CampaignCreationTrend";
 import { MedianClaimers } from "./MedianClaimers";
@@ -10,7 +11,7 @@ import { TopPerformingCampaigns } from "./TopPerformingCampaigns";
 import { TotalCampaigns } from "./TotalCampaigns";
 import { VestingDistribution } from "./VestingDistribution";
 
-export function AirdropsSection() {
+export const AirdropsSection = memo(function AirdropsSection() {
   return (
     <div className="space-y-8">
       <div>
@@ -49,4 +50,4 @@ export function AirdropsSection() {
       </div>
     </div>
   );
-}
+});

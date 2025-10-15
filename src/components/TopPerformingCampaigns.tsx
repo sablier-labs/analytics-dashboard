@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { getMainnetChainName } from "@/lib/constants/chains";
 import type { TopPerformingCampaign } from "@/lib/services/airdrops-graphql";
@@ -36,7 +36,7 @@ interface TopPerformingCampaignsData {
   topPerformingCampaigns?: TopPerformingCampaign[];
 }
 
-export function TopPerformingCampaigns() {
+export const TopPerformingCampaigns = memo(function TopPerformingCampaigns() {
   const { data, isLoading, error } = useAirdropsAnalytics() as {
     data: TopPerformingCampaignsData | null;
     isLoading: boolean;
@@ -73,7 +73,10 @@ export function TopPerformingCampaigns() {
     );
   }
 
-  const campaigns = data?.topPerformingCampaigns || [];
+  const campaigns = useMemo(
+    () => data?.topPerformingCampaigns || [],
+    [data?.topPerformingCampaigns],
+  );
 
   if (campaigns.length === 0) {
     return (
@@ -192,4 +195,4 @@ export function TopPerformingCampaigns() {
       </div>
     </div>
   );
-}
+});

@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function SolanaClaims24h() {
+export const SolanaClaims24h = memo(function SolanaClaims24h() {
   const { data, isLoading, error } = useSolanaAnalytics();
   const claims24h = data?.claims24h || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,4 +76,4 @@ export function SolanaClaims24h() {
       </div>
     </div>
   );
-}
+});

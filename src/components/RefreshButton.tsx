@@ -1,13 +1,13 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 interface RefreshButtonProps {
   onRefresh?: () => Promise<void> | void;
 }
 
-export function RefreshButton({ onRefresh }: RefreshButtonProps) {
+export const RefreshButton = memo(function RefreshButton({ onRefresh }: RefreshButtonProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -106,4 +106,4 @@ export function RefreshButton({ onRefresh }: RefreshButtonProps) {
       )}
     </div>
   );
-}
+});

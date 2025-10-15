@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function SolanaStreams24h() {
+export const SolanaStreams24h = memo(function SolanaStreams24h() {
   const { data, isLoading, error } = useSolanaAnalytics();
   const streams24h = data?.streams24h || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,4 +76,4 @@ export function SolanaStreams24h() {
       </div>
     </div>
   );
-}
+});

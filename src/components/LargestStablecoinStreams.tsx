@@ -1,4 +1,5 @@
 "use client";
+import { memo, useMemo } from "react";
 
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { getMainnetChainName, isTestnetChain } from "@/lib/constants/chains";
@@ -30,10 +31,11 @@ interface LargestStablecoinStreamsData {
   largestStablecoinStreams?: OptimizedStablecoinStream[];
 }
 
-export function LargestStablecoinStreams() {
-  const { data, loading } = useAnalyticsContext() as {
+export const LargestStablecoinStreams = memo(function LargestStablecoinStreams() {
+  const { data, loading, error } = useAnalyticsContext() as {
     data: LargestStablecoinStreamsData | null;
     loading: boolean;
+    error: string | null;
   };
 
   if (loading) {
@@ -51,8 +53,22 @@ export function LargestStablecoinStreams() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading stablecoin streams data
+        </p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+      </div>
+    );
+  }
+
   // Streams are already optimized, filtered, and sorted from Edge Config/cache
-  const streams = data?.largestStablecoinStreams || [];
+  const streams = useMemo(
+    () => data?.largestStablecoinStreams || [],
+    [data?.largestStablecoinStreams],
+  );
 
   return (
     <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
@@ -166,4 +182,4 @@ export function LargestStablecoinStreams() {
       )}
     </div>
   );
-}
+});

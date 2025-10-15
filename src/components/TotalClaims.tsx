@@ -1,13 +1,13 @@
 "use client";
 
 import { Gift } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TotalClaims() {
+export const TotalClaims = memo(function TotalClaims() {
   const { data, loading, error } = useAnalyticsContext();
   const totalClaims = data?.totalClaims || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,4 +68,4 @@ export function TotalClaims() {
       </div>
     </div>
   );
-}
+});

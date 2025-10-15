@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function RecipientParticipation() {
+export const RecipientParticipation = memo(function RecipientParticipation() {
   const { data, isLoading, error } = useAirdropsAnalytics();
   const participationData = data?.recipientParticipation || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,10 +68,10 @@ export function RecipientParticipation() {
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <p className="text-2xl font-bold text-text-primary mb-1">
-            {participationData.percentage.toFixed(1)}%
+            {participationData?.percentage.toFixed(1) ?? "—"}%
           </p>
           <p className="text-xs text-text-tertiary">
-            Across {formatNumber(participationData.campaignCount)} campaigns
+            Across {formatNumber(participationData?.campaignCount ?? 0)} campaigns
           </p>
         </div>
         <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg">
@@ -92,4 +92,4 @@ export function RecipientParticipation() {
       </div>
     </div>
   );
-}
+});

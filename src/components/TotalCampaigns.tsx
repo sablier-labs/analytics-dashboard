@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TotalCampaigns() {
+export const TotalCampaigns = memo(function TotalCampaigns() {
   const { data, isLoading, error } = useAirdropsAnalytics();
   const totalCampaigns = data?.totalCampaigns || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,4 +78,4 @@ export function TotalCampaigns() {
       </div>
     </div>
   );
-}
+});

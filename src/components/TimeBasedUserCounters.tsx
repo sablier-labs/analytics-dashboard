@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { TimeBasedUserCounts } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TimeBasedUserCounters() {
+export const TimeBasedUserCounters = memo(function TimeBasedUserCounters() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -140,4 +140,4 @@ export function TimeBasedUserCounters() {
       </div>
     </div>
   );
-}
+});

@@ -1,13 +1,13 @@
 "use client";
 
 import { Users } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function UserCounter() {
+export const UserCounter = memo(function UserCounter() {
   const { data, loading, error } = useAnalyticsContext();
   const userCount = data?.totalUsers || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,4 +68,4 @@ export function UserCounter() {
       </div>
     </div>
   );
-}
+});

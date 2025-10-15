@@ -1,13 +1,13 @@
 "use client";
 
 import { Activity } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TransactionCounter() {
+export const TransactionCounter = memo(function TransactionCounter() {
   const { data, loading, error } = useAnalyticsContext();
   const transactionCount = data?.totalTransactions || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,4 +70,4 @@ export function TransactionCounter() {
       </div>
     </div>
   );
-}
+});

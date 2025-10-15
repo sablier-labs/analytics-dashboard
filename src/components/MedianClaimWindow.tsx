@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function MedianClaimWindow() {
+export const MedianClaimWindow = memo(function MedianClaimWindow() {
   const { data, isLoading, error } = useAirdropsAnalytics();
   const medianClaimWindow = data?.medianClaimWindow || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -85,4 +85,4 @@ export function MedianClaimWindow() {
       </div>
     </div>
   );
-}
+});

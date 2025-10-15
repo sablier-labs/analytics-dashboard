@@ -66,7 +66,8 @@ export async function fetchSolanaUsers(): Promise<number> {
     while (hasMore) {
       const query = `
         query GetSolanaUsers {
-          streams(first: ${first}, skip: ${skip}) {
+          streams(first: ${first}, skip: ${skip}, orderBy: id, orderDirection: asc) {
+            id
             sender
             recipient
           }
@@ -125,7 +126,10 @@ export async function fetchSolanaMAU(): Promise<number> {
             where: { timestamp_gte: "${thirtyDaysAgo}" }
             first: ${first}
             skip: ${skip}
+            orderBy: id
+            orderDirection: asc
           ) {
+            id
             addressA
           }
         }
@@ -179,7 +183,7 @@ export async function fetchSolanaStreams(): Promise<number> {
     while (hasMore) {
       const query = `
         query GetSolanaStreams {
-          streams(first: ${first}, skip: ${skip}) {
+          streams(first: ${first}, skip: ${skip}, orderBy: id, orderDirection: asc) {
             id
           }
         }
@@ -229,7 +233,7 @@ export async function fetchSolanaTransactions(): Promise<number> {
     while (hasMore) {
       const query = `
         query GetSolanaTransactions {
-          actions(first: ${first}, skip: ${skip}) {
+          actions(first: ${first}, skip: ${skip}, orderBy: id, orderDirection: asc) {
             id
           }
         }
@@ -285,7 +289,7 @@ export async function fetchSolanaTopTokens(): Promise<TopSPLToken[]> {
     while (hasMore) {
       const query = `
         query GetTopTokens {
-          assets(first: ${first}, skip: ${skip}) {
+          assets(first: ${first}, skip: ${skip}, orderBy: id, orderDirection: asc) {
             id
             mint
             address
@@ -383,6 +387,8 @@ export async function fetchSolanaStreams24h(): Promise<number> {
             where: { timestamp_gte: "${twentyFourHoursAgo}" }
             first: ${first}
             skip: ${skip}
+            orderBy: id
+            orderDirection: asc
           ) {
             id
             timestamp
@@ -447,7 +453,8 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
     while (hasMore) {
       const query = `
         query GetSolanaLockupVolume {
-          streams(first: ${first}, skip: ${skip}, where: {depositAmount_gt: "0"}) {
+          streams(first: ${first}, skip: ${skip}, where: {depositAmount_gt: "0"}, orderBy: id, orderDirection: asc) {
+            id
             depositAmount
             asset {
               decimals
@@ -486,7 +493,8 @@ export async function fetchSolanaLockupStablecoinVolume(): Promise<number> {
             throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
           }
           const depositAmount = BigInt(stream.depositAmount);
-          const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
+          // Convert to Number before division to preserve decimal precision
+          const normalized = Number(depositAmount) / Number(BigInt(10) ** BigInt(decimals));
           return sum + normalized;
         }, 0);
 
@@ -515,7 +523,8 @@ export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): 
     while (hasMore) {
       const query = `
         query GetSolanaLockupVolumeTimeRange {
-          streams(first: ${first}, skip: ${skip}, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}) {
+          streams(first: ${first}, skip: ${skip}, where: {depositAmount_gt: "0", timestamp_gte: "${timestamp}"}, orderBy: id, orderDirection: asc) {
+            id
             depositAmount
             asset {
               decimals
@@ -554,7 +563,8 @@ export async function fetchSolanaLockupStablecoinVolumeTimeRange(days: number): 
             throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
           }
           const depositAmount = BigInt(stream.depositAmount);
-          const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
+          // Convert to Number before division to preserve decimal precision
+          const normalized = Number(depositAmount) / Number(BigInt(10) ** BigInt(decimals));
           return sum + normalized;
         }, 0);
 

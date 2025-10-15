@@ -1,12 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { TimeBasedStablecoinVolume as TimeBasedStablecoinVolumeData } from "@/lib/services/stablecoin-volume-aggregate";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TimeBasedStablecoinVolume() {
+export const TimeBasedStablecoinVolume = memo(function TimeBasedStablecoinVolume() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -147,4 +147,4 @@ export function TimeBasedStablecoinVolume() {
       </div>
     </div>
   );
-}
+});

@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { CachedAnalyticsData } from "@/lib/services/cache";
+import { CachedAnalyticsDataSchema } from "@/lib/validation/analytics-schema";
 
 interface AnalyticsContextType {
   data: CachedAnalyticsData | null;
@@ -36,8 +37,23 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) {
         throw new Error("Failed to fetch analytics data");
       }
-      const analyticsData = await response.json();
-      console.log("📊 Analytics data loaded, lastUpdated:", analyticsData.lastUpdated);
+      const rawData = await response.json();
+
+      // Validate data with zod schema
+      const validationResult = CachedAnalyticsDataSchema.safeParse(rawData);
+
+      if (!validationResult.success) {
+        console.error("❌ Data validation failed:", validationResult.error.format());
+        throw new Error(
+          `Invalid analytics data structure: ${validationResult.error.issues[0]?.message || "Unknown validation error"}`,
+        );
+      }
+
+      const analyticsData = validationResult.data;
+      console.log(
+        "📊 Analytics data loaded and validated, lastUpdated:",
+        analyticsData.lastUpdated,
+      );
       setData(analyticsData);
     } catch (err) {
       console.error("❌ Failed to load analytics:", err);

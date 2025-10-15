@@ -1,7 +1,7 @@
 "use client";
 
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Pie } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -11,7 +11,7 @@ import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export function StreamCategoryDistribution() {
+export const StreamCategoryDistribution = memo(function StreamCategoryDistribution() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -74,50 +74,53 @@ export function StreamCategoryDistribution() {
     labels: ["LockupLinear", "LockupDynamic", "LockupTranched"],
   };
 
-  const options = {
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        labels: {
-          color: theme === "dark" ? "rgb(209, 213, 219)" : "rgb(75, 85, 99)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
+  const options = useMemo(
+    () => ({
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: theme === "dark" ? "rgb(209, 213, 219)" : "rgb(75, 85, 99)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 12,
+            },
+            padding: 20,
+            pointStyle: "circle",
+            usePointStyle: true,
+          },
+          position: "bottom" as const,
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
             size: 12,
           },
-          padding: 20,
-          pointStyle: "circle",
-          usePointStyle: true,
-        },
-        position: "bottom" as const,
-      },
-      tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        bodyColor: "rgb(255, 255, 255)",
-        bodyFont: {
-          size: 12,
-        },
-        borderWidth: 0,
-        callbacks: {
-          label: (context: any) => {
-            const value = context.parsed;
-            const percentage = ((value / categoryData.total) * 100).toFixed(1);
-            const formattedValue = new Intl.NumberFormat().format(value);
-            return `${context.label}: ${formattedValue} (${percentage}%)`;
+          borderWidth: 0,
+          callbacks: {
+            label: (context: any) => {
+              const value = context.parsed;
+              const percentage = ((value / categoryData.total) * 100).toFixed(1);
+              const formattedValue = new Intl.NumberFormat().format(value);
+              return `${context.label}: ${formattedValue} (${percentage}%)`;
+            },
+          },
+          cornerRadius: 6,
+          displayColors: true,
+          padding: 12,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
           },
         },
-        cornerRadius: 6,
-        displayColors: true,
-        padding: 12,
-        titleColor: "rgb(255, 255, 255)",
-        titleFont: {
-          size: 13,
-          weight: "bold" as const,
-        },
       },
-    },
-    responsive: true,
-  };
+      responsive: true,
+    }),
+    [theme, categoryData],
+  );
 
   return (
     <div
@@ -169,4 +172,4 @@ export function StreamCategoryDistribution() {
       </div>
     </div>
   );
-}
+});

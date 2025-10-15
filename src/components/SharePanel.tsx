@@ -1,7 +1,7 @@
 "use client";
 
 import html2canvas from "html2canvas";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 interface SharePanelProps {
   title: string;
@@ -9,7 +9,11 @@ interface SharePanelProps {
   description?: string;
 }
 
-export function SharePanel({ title, elementRef, description }: SharePanelProps) {
+export const SharePanel = memo(function SharePanel({
+  title,
+  elementRef,
+  description,
+}: SharePanelProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
@@ -105,4 +109,4 @@ export function SharePanel({ title, elementRef, description }: SharePanelProps) 
       </button>
     </div>
   );
-}
+});

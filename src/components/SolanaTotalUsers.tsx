@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function SolanaTotalUsers() {
+export const SolanaTotalUsers = memo(function SolanaTotalUsers() {
   const { data, isLoading, error } = useSolanaAnalytics();
   const totalUsers = data?.totalUsers || null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,4 +78,4 @@ export function SolanaTotalUsers() {
       </div>
     </div>
   );
-}
+});

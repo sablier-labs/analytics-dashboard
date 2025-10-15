@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { StreamDurationStats } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
@@ -22,7 +22,7 @@ function formatDuration(seconds: number): { value: string; unit: string } {
     }
     return {
       unit: years === 1 ? "year" : "years",
-      value: `${years}.${Math.floor(remainingDays / 36.5)}`,
+      value: `${years}.${Math.floor((remainingDays / 365) * 10)}`,
     };
   }
 
@@ -34,7 +34,7 @@ function formatDuration(seconds: number): { value: string; unit: string } {
     }
     return {
       unit: months === 1 ? "month" : "months",
-      value: `${months}.${Math.floor(remainingDays / 3)}`,
+      value: `${months}.${Math.floor((remainingDays / 30) * 10)}`,
     };
   }
 
@@ -46,7 +46,7 @@ function formatDuration(seconds: number): { value: string; unit: string } {
     }
     return {
       unit: weeks === 1 ? "week" : "weeks",
-      value: `${weeks}.${Math.floor(remainingDays * 1.4)}`,
+      value: `${weeks}.${Math.floor((remainingDays / 7) * 10)}`,
     };
   }
 
@@ -65,7 +65,7 @@ function formatDuration(seconds: number): { value: string; unit: string } {
   return { unit: seconds === 1 ? "second" : "seconds", value: seconds.toString() };
 }
 
-export function MedianStreamDuration() {
+export const MedianStreamDuration = memo(function MedianStreamDuration() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -142,4 +142,4 @@ export function MedianStreamDuration() {
       </div>
     </div>
   );
-}
+});

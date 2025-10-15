@@ -1,5 +1,6 @@
 "use client";
 
+import type { TooltipItem } from "chart.js";
 import {
   BarElement,
   CategoryScale,
@@ -9,7 +10,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -19,12 +20,133 @@ import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export function TopAssetsChart() {
+export const TopAssetsChart = memo(function TopAssetsChart() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const topAssets = data?.topAssets || null;
+
+  const chartData = useMemo(() => {
+    if (!topAssets) return { datasets: [], labels: [] };
+
+    return {
+      datasets: [
+        {
+          backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.8)" : "rgba(255, 80, 1, 0.8)",
+          borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+          borderRadius: 4,
+          borderSkipped: false,
+          borderWidth: 1,
+          data: topAssets.map((asset) => asset.streamCount),
+          label: "Stream Count",
+        },
+      ],
+      labels: topAssets.map((asset) => asset.symbol),
+    };
+  }, [topAssets, theme]);
+
+  const options = useMemo(
+    () => ({
+      indexAxis: "y" as const,
+      interaction: {
+        intersect: false,
+        mode: "index" as const,
+      },
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
+            size: 12,
+          },
+          borderWidth: 0,
+          callbacks: {
+            afterLabel: (context: TooltipItem<"bar">) => {
+              if (!topAssets) return "";
+              const asset = topAssets[context.dataIndex];
+              return `${asset.name} (Chain ${asset.chainId})`;
+            },
+            label: (context: TooltipItem<"bar">) => {
+              const value = new Intl.NumberFormat().format(context.parsed.x as number);
+              return `${value} streams`;
+            },
+            title: (context: TooltipItem<"bar">[]) => {
+              if (!topAssets) return "";
+              const asset = topAssets[context[0].dataIndex];
+              return `${asset.symbol} - ${asset.name}`;
+            },
+          },
+          cornerRadius: 6,
+          displayColors: false,
+          padding: 12,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
+          },
+        },
+      },
+      responsive: true,
+      scales: {
+        x: {
+          beginAtZero: true,
+          border: {
+            display: false,
+          },
+          grid: {
+            color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
+            drawBorder: false,
+            lineWidth: 1,
+          },
+          ticks: {
+            callback: (tickValue: string | number) => {
+              const value = Number(tickValue);
+              if (value >= 1000) {
+                return (value / 1000).toFixed(0) + "k";
+              }
+              return new Intl.NumberFormat().format(value);
+            },
+            color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 11,
+              weight: "normal" as const,
+            },
+            maxTicksLimit: 6,
+            padding: 12,
+          },
+        },
+        y: {
+          border: {
+            display: false,
+          },
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 11,
+              weight: "normal" as const,
+            },
+            padding: 8,
+          },
+        },
+      },
+    }),
+    [theme, topAssets],
+  );
+
+  const _totalStreams = useMemo(
+    () => topAssets?.reduce((sum, asset) => sum + asset.streamCount, 0) || 0,
+    [topAssets],
+  );
 
   if (loading) {
     return (
@@ -59,115 +181,6 @@ export function TopAssetsChart() {
       </div>
     );
   }
-
-  const chartData = {
-    datasets: [
-      {
-        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.8)" : "rgba(255, 80, 1, 0.8)",
-        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
-        borderRadius: 4,
-        borderSkipped: false,
-        borderWidth: 1,
-        data: topAssets.map((asset) => asset.streamCount),
-        label: "Stream Count",
-      },
-    ],
-    labels: topAssets.map((asset) => asset.symbol),
-  };
-
-  const options = {
-    indexAxis: "y" as const,
-    interaction: {
-      intersect: false,
-      mode: "index" as const,
-    },
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        bodyColor: "rgb(255, 255, 255)",
-        bodyFont: {
-          size: 12,
-        },
-        borderWidth: 0,
-        callbacks: {
-          afterLabel: (context: any) => {
-            const asset = topAssets[context.dataIndex];
-            return `${asset.name} (Chain ${asset.chainId})`;
-          },
-          label: (context: any) => {
-            const value = new Intl.NumberFormat().format(context.parsed.x);
-            return `${value} streams`;
-          },
-          title: (context: any) => {
-            const asset = topAssets[context[0].dataIndex];
-            return `${asset.symbol} - ${asset.name}`;
-          },
-        },
-        cornerRadius: 6,
-        displayColors: false,
-        padding: 12,
-        titleColor: "rgb(255, 255, 255)",
-        titleFont: {
-          size: 13,
-          weight: "bold" as const,
-        },
-      },
-    },
-    responsive: true,
-    scales: {
-      x: {
-        beginAtZero: true,
-        border: {
-          display: false,
-        },
-        grid: {
-          color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
-          drawBorder: false,
-          lineWidth: 1,
-        },
-        ticks: {
-          callback: (tickValue: any) => {
-            const value = Number(tickValue);
-            if (value >= 1000) {
-              return (value / 1000).toFixed(0) + "k";
-            }
-            return new Intl.NumberFormat().format(value);
-          },
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
-          },
-          maxTicksLimit: 6,
-          padding: 12,
-        },
-      },
-      y: {
-        border: {
-          display: false,
-        },
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
-          },
-          padding: 8,
-        },
-      },
-    },
-  };
-
-  const _totalStreams = topAssets.reduce((sum, asset) => sum + asset.streamCount, 0);
 
   return (
     <div
@@ -205,4 +218,4 @@ export function TopAssetsChart() {
       </div>
     </div>
   );
-}
+});

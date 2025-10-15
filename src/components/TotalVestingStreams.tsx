@@ -1,13 +1,13 @@
 "use client";
 
 import { Waves } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TotalVestingStreams() {
+export const TotalVestingStreams = memo(function TotalVestingStreams() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -79,4 +79,4 @@ export function TotalVestingStreams() {
       </div>
     </div>
   );
-}
+});

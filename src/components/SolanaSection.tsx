@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { SolanaClaims24h } from "./SolanaClaims24h";
 import { SolanaMAU } from "./SolanaMAU";
 import { SolanaStreams24h } from "./SolanaStreams24h";
@@ -9,7 +10,7 @@ import { SolanaTotalStreams } from "./SolanaTotalStreams";
 import { SolanaTotalTransactions } from "./SolanaTotalTransactions";
 import { SolanaTotalUsers } from "./SolanaTotalUsers";
 
-export function SolanaSection() {
+export const SolanaSection = memo(function SolanaSection() {
   return (
     <div className="space-y-8">
       <div>
@@ -39,4 +40,4 @@ export function SolanaSection() {
       </div>
     </div>
   );
-}
+});

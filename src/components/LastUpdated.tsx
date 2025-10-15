@@ -1,14 +1,14 @@
 "use client";
 
 import { Clock } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { RefreshButton } from "@/components/RefreshButton";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { useFlowAnalytics } from "@/hooks/useFlowAnalytics";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
 
-export function LastUpdated() {
+export const LastUpdated = memo(function LastUpdated() {
   const { data, loading, refetch: refetchAnalytics } = useAnalyticsContext();
   const { refetch: refetchAirdrops } = useAirdropsAnalytics();
   const { refetch: refetchSolana } = useSolanaAnalytics();
@@ -131,4 +131,4 @@ export function LastUpdated() {
       <RefreshButton onRefresh={refetchAll} />
     </div>
   );
-}
+});

@@ -1,13 +1,13 @@
 "use client";
 
 import { DollarSign } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function TotalStablecoinVolume() {
+export const TotalStablecoinVolume = memo(function TotalStablecoinVolume() {
   const { data, error, loading } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const volume = data?.totalStablecoinVolume ?? null;
@@ -78,4 +78,4 @@ export function TotalStablecoinVolume() {
       </div>
     </div>
   );
-}
+});

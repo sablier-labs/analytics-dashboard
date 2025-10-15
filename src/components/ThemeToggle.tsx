@@ -1,8 +1,9 @@
 "use client";
 
+import { memo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 
-export function ThemeToggle() {
+export const ThemeToggle = memo(function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -43,4 +44,4 @@ export function ThemeToggle() {
       )}
     </button>
   );
-}
+});

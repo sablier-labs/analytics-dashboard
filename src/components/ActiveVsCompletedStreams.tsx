@@ -1,23 +1,89 @@
 "use client";
 
+import type { TooltipItem } from "chart.js";
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import type { ActiveVsCompletedStreams as ActiveVsCompletedStreamsType } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export function ActiveVsCompletedStreams() {
+export const ActiveVsCompletedStreams = memo(function ActiveVsCompletedStreams() {
   const { data, loading, error } = useAnalyticsContext();
-  const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Use cached data if available, otherwise use fallback data
   const streamsData = data?.activeVsCompletedStreams || null;
+
+  const chartData = useMemo(() => {
+    if (!streamsData) {
+      return {
+        datasets: [],
+        labels: [],
+      };
+    }
+
+    return {
+      datasets: [
+        {
+          backgroundColor: [
+            "rgba(255, 80, 1, 0.8)", // Primary brand orange for Active
+            "rgba(124, 45, 18, 0.8)", // Sablier-900 (dark brown) for Completed
+          ],
+          borderColor: [
+            "rgb(255, 80, 1)", // sablier-500
+            "rgb(124, 45, 18)", // sablier-900
+          ],
+          borderWidth: 2,
+          cutout: "60%", // This creates the donut effect
+          data: [streamsData.active, streamsData.completed],
+          hoverBackgroundColor: ["rgba(255, 80, 1, 0.9)", "rgba(124, 45, 18, 0.9)"],
+        },
+      ],
+      labels: ["Active", "Completed"],
+    };
+  }, [streamsData]);
+
+  const options = useMemo(
+    () => ({
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false, // We'll create custom legend below
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
+            size: 12,
+          },
+          borderWidth: 0,
+          callbacks: {
+            label: (context: TooltipItem<"doughnut">) => {
+              if (!streamsData) return "";
+              const value = context.parsed;
+              const percentage = ((value / streamsData.total) * 100).toFixed(1);
+              const formattedValue = new Intl.NumberFormat().format(value);
+              return `${context.label}: ${formattedValue} (${percentage}%)`;
+            },
+          },
+          cornerRadius: 6,
+          displayColors: true,
+          padding: 12,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
+          },
+        },
+      },
+      responsive: true,
+    }),
+    [streamsData],
+  );
 
   if (loading) {
     return (
@@ -52,60 +118,6 @@ export function ActiveVsCompletedStreams() {
       </div>
     );
   }
-
-  const chartData = {
-    datasets: [
-      {
-        backgroundColor: [
-          "rgba(255, 80, 1, 0.8)", // Primary brand orange for Active
-          "rgba(124, 45, 18, 0.8)", // Sablier-900 (dark brown) for Completed
-        ],
-        borderColor: [
-          "rgb(255, 80, 1)", // sablier-500
-          "rgb(124, 45, 18)", // sablier-900
-        ],
-        borderWidth: 2,
-        cutout: "60%", // This creates the donut effect
-        data: [streamsData.active, streamsData.completed],
-        hoverBackgroundColor: ["rgba(255, 80, 1, 0.9)", "rgba(124, 45, 18, 0.9)"],
-      },
-    ],
-    labels: ["Active", "Completed"],
-  };
-
-  const options = {
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false, // We'll create custom legend below
-      },
-      tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        bodyColor: "rgb(255, 255, 255)",
-        bodyFont: {
-          size: 12,
-        },
-        borderWidth: 0,
-        callbacks: {
-          label: (context: any) => {
-            const value = context.parsed;
-            const percentage = ((value / streamsData.total) * 100).toFixed(1);
-            const formattedValue = new Intl.NumberFormat().format(value);
-            return `${context.label}: ${formattedValue} (${percentage}%)`;
-          },
-        },
-        cornerRadius: 6,
-        displayColors: true,
-        padding: 12,
-        titleColor: "rgb(255, 255, 255)",
-        titleFont: {
-          size: 13,
-          weight: "bold" as const,
-        },
-      },
-    },
-    responsive: true,
-  };
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat().format(num);
@@ -189,4 +201,4 @@ export function ActiveVsCompletedStreams() {
       </div>
     </div>
   );
-}
+});

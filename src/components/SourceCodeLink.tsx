@@ -1,12 +1,14 @@
 "use client";
 
+import { memo } from "react";
+
 interface SourceCodeLinkProps {
   fileName: string;
   lineNumber?: number;
   tooltip?: string;
 }
 
-export function SourceCodeLink({
+export const SourceCodeLink = memo(function SourceCodeLink({
   fileName,
   lineNumber,
   tooltip = "View source code",
@@ -27,4 +29,4 @@ export function SourceCodeLink({
       </svg>
     </a>
   );
-}
+});

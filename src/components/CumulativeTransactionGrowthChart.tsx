@@ -1,5 +1,6 @@
 "use client";
 
+import type { TooltipItem } from "chart.js";
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -11,7 +12,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -30,21 +31,141 @@ ChartJS.register(
   Filler,
 );
 
-export function CumulativeTransactionGrowthChart() {
+export const CumulativeTransactionGrowthChart = memo(function CumulativeTransactionGrowthChart() {
   const { data, loading, error } = useAnalyticsContext();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const transactionGrowthData = data?.monthlyTransactionGrowth || null;
 
-  const formatMonth = (monthString: string) => {
-    const [year, month] = monthString.split("-");
-    const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      year: "numeric",
-    });
-  };
+  const formatMonth = useMemo(() => {
+    return (monthString: string) => {
+      const [year, month] = monthString.split("-");
+      const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      });
+    };
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (!transactionGrowthData) return { datasets: [], labels: [] };
+
+    return {
+      datasets: [
+        {
+          backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.1)" : "rgba(255, 80, 1, 0.1)",
+          borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+          borderWidth: 2,
+          data: transactionGrowthData.map((data) => data.cumulativeTransactions),
+          fill: true,
+          label: "Cumulative Transactions",
+          pointBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+          pointBorderColor: "rgb(255, 255, 255)",
+          pointBorderWidth: 2,
+          pointHoverBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+          pointHoverRadius: 6,
+          pointRadius: 0,
+          tension: 0.4,
+        },
+      ],
+      labels: transactionGrowthData.map((data) => formatMonth(data.month)),
+    };
+  }, [transactionGrowthData, theme, formatMonth]);
+
+  const options = useMemo(
+    () => ({
+      interaction: {
+        intersect: false,
+        mode: "index" as const,
+      },
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
+            size: 12,
+          },
+          borderWidth: 0,
+          callbacks: {
+            label: (context: TooltipItem<"line">) => {
+              const value = new Intl.NumberFormat().format(context.parsed.y);
+              return `${value} transactions`;
+            },
+            title: (context: TooltipItem<"line">[]) => {
+              const dataIndex = context[0].dataIndex;
+              return transactionGrowthData[dataIndex].month;
+            },
+          },
+          cornerRadius: 6,
+          displayColors: false,
+          padding: 12,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
+          },
+        },
+      },
+      responsive: true,
+      scales: {
+        x: {
+          border: {
+            display: false,
+          },
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 11,
+              weight: "normal" as const,
+            },
+            maxTicksLimit: 8,
+            padding: 8,
+          },
+        },
+        y: {
+          beginAtZero: true,
+          border: {
+            display: false,
+          },
+          grid: {
+            color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
+            drawBorder: false,
+          },
+          ticks: {
+            callback: (value: string | number) => {
+              const num = Number(value);
+              if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + "M";
+              }
+              if (num >= 1000) {
+                return (num / 1000).toFixed(0) + "k";
+              }
+              return new Intl.NumberFormat().format(num);
+            },
+            color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 11,
+              weight: "normal" as const,
+            },
+            maxTicksLimit: 6,
+            padding: 12,
+          },
+        },
+      },
+    }),
+    [theme, transactionGrowthData],
+  );
 
   if (loading) {
     return (
@@ -73,117 +194,6 @@ export function CumulativeTransactionGrowthChart() {
       </div>
     );
   }
-
-  const chartData = {
-    datasets: [
-      {
-        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.1)" : "rgba(255, 80, 1, 0.1)",
-        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
-        borderWidth: 2,
-        data: transactionGrowthData.map((data) => data.cumulativeTransactions),
-        fill: true,
-        label: "Cumulative Transactions",
-        pointBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
-        pointBorderColor: "rgb(255, 255, 255)",
-        pointBorderWidth: 2,
-        pointHoverBackgroundColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
-        pointHoverRadius: 6,
-        pointRadius: 0,
-        tension: 0.4,
-      },
-    ],
-    labels: transactionGrowthData.map((data) => formatMonth(data.month)),
-  };
-
-  const options = {
-    interaction: {
-      intersect: false,
-      mode: "index" as const,
-    },
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        bodyColor: "rgb(255, 255, 255)",
-        bodyFont: {
-          size: 12,
-        },
-        borderWidth: 0,
-        callbacks: {
-          label: (context: any) => {
-            const value = new Intl.NumberFormat().format(context.parsed.y);
-            return `${value} transactions`;
-          },
-          title: (context: any) => {
-            const dataIndex = context[0].dataIndex;
-            return transactionGrowthData[dataIndex].month;
-          },
-        },
-        cornerRadius: 6,
-        displayColors: false,
-        padding: 12,
-        titleColor: "rgb(255, 255, 255)",
-        titleFont: {
-          size: 13,
-          weight: "bold" as const,
-        },
-      },
-    },
-    responsive: true,
-    scales: {
-      x: {
-        border: {
-          display: false,
-        },
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
-          },
-          maxTicksLimit: 8,
-          padding: 8,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        border: {
-          display: false,
-        },
-        grid: {
-          color: theme === "dark" ? "rgba(75, 85, 99, 0.5)" : "rgba(229, 231, 235, 0.5)",
-          drawBorder: false,
-        },
-        ticks: {
-          callback: (value: any) => {
-            const num = Number(value);
-            if (num >= 1000000) {
-              return (num / 1000000).toFixed(1) + "M";
-            }
-            if (num >= 1000) {
-              return (num / 1000).toFixed(0) + "k";
-            }
-            return new Intl.NumberFormat().format(num);
-          },
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
-          },
-          maxTicksLimit: 6,
-          padding: 12,
-        },
-      },
-    },
-  };
 
   return (
     <div
@@ -215,4 +225,4 @@ export function CumulativeTransactionGrowthChart() {
       </div>
     </div>
   );
-}
+});

@@ -9,7 +9,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
@@ -19,7 +19,7 @@ import { TokenLogo } from "./TokenLogo";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export function SolanaTopSPLTokens() {
+export const SolanaTopSPLTokens = memo(function SolanaTopSPLTokens() {
   const { data, isLoading, error } = useSolanaAnalytics();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -59,115 +59,121 @@ export function SolanaTopSPLTokens() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const chartData = {
-    datasets: [
-      {
-        backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.8)" : "rgba(255, 80, 1, 0.8)",
-        borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
-        borderRadius: 4,
-        borderSkipped: false,
-        borderWidth: 1,
-        data: topSPLTokens.map((token) => token.streamCount),
-        label: "Stream Count",
-      },
-    ],
-    labels: topSPLTokens.map((token) => token.symbol || truncateAddress(token.mint)),
-  };
+  const chartData = useMemo(
+    () => ({
+      datasets: [
+        {
+          backgroundColor: theme === "dark" ? "rgba(255, 165, 0, 0.8)" : "rgba(255, 80, 1, 0.8)",
+          borderColor: theme === "dark" ? "rgb(255, 165, 0)" : "rgb(255, 80, 1)",
+          borderRadius: 4,
+          borderSkipped: false,
+          borderWidth: 1,
+          data: topSPLTokens.map((token) => token.streamCount),
+          label: "Stream Count",
+        },
+      ],
+      labels: topSPLTokens.map((token) => token.symbol || truncateAddress(token.mint)),
+    }),
+    [topSPLTokens, theme],
+  );
 
-  const options = {
-    indexAxis: "y" as const,
-    interaction: {
-      intersect: false,
-      mode: "index" as const,
-    },
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
+  const options = useMemo(
+    () => ({
+      indexAxis: "y" as const,
+      interaction: {
+        intersect: false,
+        mode: "index" as const,
       },
-      tooltip: {
-        backgroundColor: "rgba(0, 0, 0, 0.9)",
-        bodyColor: "rgb(255, 255, 255)",
-        bodyFont: {
-          size: 12,
-        },
-        borderWidth: 0,
-        callbacks: {
-          afterLabel: (context: any) => {
-            const token = topSPLTokens[context.dataIndex];
-            return `Mint: ${truncateAddress(token.mint)}`;
-          },
-          label: (context: any) => {
-            const value = new Intl.NumberFormat().format(context.parsed.x);
-            return `${value} streams`;
-          },
-          title: (context: any) => {
-            const token = topSPLTokens[context[0].dataIndex];
-            if (token.symbol && token.name) {
-              return `${token.symbol} - ${token.name}`;
-            }
-            return truncateAddress(token.mint);
-          },
-        },
-        cornerRadius: 6,
-        displayColors: false,
-        padding: 12,
-        titleColor: "rgb(255, 255, 255)",
-        titleFont: {
-          size: 13,
-          weight: "bold" as const,
-        },
-      },
-    },
-    responsive: true,
-    scales: {
-      x: {
-        beginAtZero: true,
-        border: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
           display: false,
         },
-        grid: {
-          color: theme === "dark" ? "rgba(55, 65, 81, 0.5)" : "rgba(229, 231, 235, 0.5)",
-          drawBorder: false,
-          lineWidth: 1,
-        },
-        ticks: {
-          callback: (tickValue: any) => {
-            const value = Number(tickValue);
-            if (value >= 1000) {
-              return (value / 1000).toFixed(0) + "k";
-            }
-            return new Intl.NumberFormat().format(value);
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
+            size: 12,
           },
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
+          borderWidth: 0,
+          callbacks: {
+            afterLabel: (context: any) => {
+              const token = topSPLTokens[context.dataIndex];
+              return `Mint: ${truncateAddress(token.mint)}`;
+            },
+            label: (context: any) => {
+              const value = new Intl.NumberFormat().format(context.parsed.x);
+              return `${value} streams`;
+            },
+            title: (context: any) => {
+              const token = topSPLTokens[context[0].dataIndex];
+              if (token.symbol && token.name) {
+                return `${token.symbol} - ${token.name}`;
+              }
+              return truncateAddress(token.mint);
+            },
           },
-          maxTicksLimit: 6,
+          cornerRadius: 6,
+          displayColors: false,
           padding: 12,
-        },
-      },
-      y: {
-        border: {
-          display: false,
-        },
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
-          font: {
-            family: "Inter, system-ui, sans-serif",
-            size: 11,
-            weight: "normal" as const,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
           },
-          padding: 8,
         },
       },
-    },
-  };
+      responsive: true,
+      scales: {
+        x: {
+          beginAtZero: true,
+          border: {
+            display: false,
+          },
+          grid: {
+            color: theme === "dark" ? "rgba(55, 65, 81, 0.5)" : "rgba(229, 231, 235, 0.5)",
+            drawBorder: false,
+            lineWidth: 1,
+          },
+          ticks: {
+            callback: (tickValue: any) => {
+              const value = Number(tickValue);
+              if (value >= 1000) {
+                return (value / 1000).toFixed(0) + "k";
+              }
+              return new Intl.NumberFormat().format(value);
+            },
+            color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 11,
+              weight: "normal" as const,
+            },
+            maxTicksLimit: 6,
+            padding: 12,
+          },
+        },
+        y: {
+          border: {
+            display: false,
+          },
+          grid: {
+            display: false,
+          },
+          ticks: {
+            color: theme === "dark" ? "rgb(156, 163, 175)" : "rgb(107, 114, 128)",
+            font: {
+              family: "Inter, system-ui, sans-serif",
+              size: 11,
+              weight: "normal" as const,
+            },
+            padding: 8,
+          },
+        },
+      },
+    }),
+    [theme, topSPLTokens],
+  );
 
   return (
     <div
@@ -233,4 +239,4 @@ export function SolanaTopSPLTokens() {
       </div>
     </div>
   );
-}
+});

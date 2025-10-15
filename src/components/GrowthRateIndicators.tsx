@@ -1,29 +1,32 @@
 "use client";
 
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useAnalyticsContext } from "@/contexts/AnalyticsContext";
 import type { GrowthRateMetrics } from "@/lib/services/graphql";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
 
-export function GrowthRateIndicators() {
+export const GrowthRateIndicators = memo(function GrowthRateIndicators() {
   const { data, loading, error } = useAnalyticsContext();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const growthMetrics = data?.growthRateMetrics || null;
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | null) => {
+    if (value === null) return "N/A";
     const sign = value >= 0 ? "+" : "";
     return `${sign}${value.toFixed(1)}%`;
   };
 
-  const getGrowthColor = (value: number) => {
+  const getGrowthColor = (value: number | null) => {
+    if (value === null) return "text-text-secondary";
     if (value > 0) return "text-green-600 dark:text-green-400";
     if (value < 0) return "text-red-600 dark:text-red-400";
     return "text-text-secondary";
   };
 
-  const getGrowthIcon = (value: number) => {
+  const getGrowthIcon = (value: number | null) => {
+    if (value === null) return null;
     if (value > 0) {
       return (
         <svg
@@ -175,11 +178,13 @@ export function GrowthRateIndicators() {
               </div>
               <div
                 className={`flex items-center justify-center w-12 h-12 rounded-lg ${
-                  metric.value > 0
-                    ? "bg-green-100 dark:bg-green-900/20"
-                    : metric.value < 0
-                      ? "bg-red-100 dark:bg-red-900/20"
-                      : "bg-bg-tertiary dark:bg-surface-raised"
+                  metric.value === null
+                    ? "bg-bg-tertiary dark:bg-surface-raised"
+                    : metric.value > 0
+                      ? "bg-green-100 dark:bg-green-900/20"
+                      : metric.value < 0
+                        ? "bg-red-100 dark:bg-red-900/20"
+                        : "bg-bg-tertiary dark:bg-surface-raised"
                 }`}
               >
                 {getGrowthIcon(metric.value)}
@@ -190,4 +195,4 @@ export function GrowthRateIndicators() {
       </div>
     </div>
   );
-}
+});

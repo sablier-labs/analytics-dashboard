@@ -1,5 +1,5 @@
 import { TokenIcon } from "@web3icons/react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 interface TokenLogoProps {
   className?: string;
@@ -8,7 +8,12 @@ interface TokenLogoProps {
   symbol: string;
 }
 
-export function TokenLogo({ className = "", logoURI, size = 24, symbol }: TokenLogoProps) {
+export const TokenLogo = memo(function TokenLogo({
+  className = "",
+  logoURI,
+  size = 24,
+  symbol,
+}: TokenLogoProps) {
   const [hasError, setHasError] = useState(false);
   const [logoURIError, setLogoURIError] = useState(false);
 
@@ -62,4 +67,4 @@ export function TokenLogo({ className = "", logoURI, size = 24, symbol }: TokenL
       </div>
     );
   }
-}
+});

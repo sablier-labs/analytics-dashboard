@@ -192,7 +192,7 @@ export async function fetchAggregatedMonthlyUserGrowth(): Promise<
   for (let i = 11; i >= 0; i--) {
     const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
-    const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
+    const timestamp = Math.ceil(endOfMonth.getTime() / 1000).toString(); // Use ceil to include all milliseconds
     const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
   }
@@ -783,7 +783,7 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
   for (let i = 11; i >= 0; i--) {
     const current = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0, 23, 59, 59, 999);
-    const timestamp = Math.floor(endOfMonth.getTime() / 1000).toString();
+    const timestamp = Math.ceil(endOfMonth.getTime() / 1000).toString(); // Use ceil to include all milliseconds
     const label = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
     timeRanges.push({ label, timestamp });
   }

@@ -116,9 +116,9 @@ export interface UserTransactionDistribution {
 }
 
 export interface GrowthRateMetrics {
-  userGrowthRate: number;
-  transactionGrowthRate: number;
-  averageTransactionGrowthRate: number;
+  userGrowthRate: number | null;
+  transactionGrowthRate: number | null;
+  averageTransactionGrowthRate: number | null;
 }
 
 export interface TopAsset {
@@ -776,17 +776,28 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
     const currentTransactions = result.data.currentMonthTransactions.aggregate.count;
     const previousTransactions = result.data.previousMonthTransactions.aggregate.count;
 
+    // Return null for undefined growth rates (division by zero)
     const userGrowthRate =
-      previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0;
+      previousUsers > 0
+        ? ((currentUsers - previousUsers) / previousUsers) * 100
+        : currentUsers > 0
+          ? null // Infinite growth (0 → positive)
+          : 0; // No change (0 → 0)
     const transactionGrowthRate =
       previousTransactions > 0
         ? ((currentTransactions - previousTransactions) / previousTransactions) * 100
-        : 0;
+        : currentTransactions > 0
+          ? null // Infinite growth
+          : 0; // No change
 
     const currentAvgTx = currentUsers > 0 ? currentTransactions / currentUsers : 0;
     const previousAvgTx = previousUsers > 0 ? previousTransactions / previousUsers : 0;
     const averageTransactionGrowthRate =
-      previousAvgTx > 0 ? ((currentAvgTx - previousAvgTx) / previousAvgTx) * 100 : 0;
+      previousAvgTx > 0
+        ? ((currentAvgTx - previousAvgTx) / previousAvgTx) * 100
+        : currentAvgTx > 0
+          ? null // Infinite growth
+          : 0; // No change
 
     return {
       averageTransactionGrowthRate,
@@ -1752,7 +1763,8 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
           throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
         }
         const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
+        // Convert to Number before division to preserve decimal precision
+        const normalized = Number(depositAmount) / Number(BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 
@@ -1836,7 +1848,8 @@ export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promis
           throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
         }
         const depositAmount = BigInt(stream.depositAmount);
-        const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
+        // Convert to Number before division to preserve decimal precision
+        const normalized = Number(depositAmount) / Number(BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 

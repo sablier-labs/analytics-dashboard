@@ -1,12 +1,12 @@
 "use client";
 
 import { Waves } from "lucide-react";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { useFlowAnalytics } from "@/hooks/useFlowAnalytics";
 import { containerVariants } from "@/lib/variants";
 import { SharePanel } from "./SharePanel";
 
-export function FlowTotalStreams() {
+export const FlowTotalStreams = memo(function FlowTotalStreams() {
   const { data, isLoading, error } = useFlowAnalytics();
   const totalStreams = data?.totalDeposits ?? null;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,4 +71,4 @@ export function FlowTotalStreams() {
       </div>
     </div>
   );
-}
+});

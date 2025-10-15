@@ -333,7 +333,7 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
 
     return {
       campaignCount,
-      percentage: Math.round(percentage * 10) / 10, // Round to 1 decimal place
+      percentage: Math.floor(percentage * 10) / 10, // Floor to 1 decimal place (never round up to 100%)
     };
   } catch (error) {
     console.error("Error fetching recipient participation:", error);
@@ -735,50 +735,80 @@ export async function fetchMonthlyClaimTrends(): Promise<MonthlyClaimTrend[]> {
 
 export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampaign[]> {
   const testnetChainIds = getTestnetChainIds();
-
-  const query = `
-    query GetTopPerformingCampaigns {
-      Campaign(
-        where: {
-          chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
-          claimedCount: { _gte: "10" }
-        }
-        order_by: { claimedCount: desc }
-        limit: 10
-      ) {
-        id
-        chainId
-        claimedCount
-        totalRecipients
-        timestamp
-        expiration
-        admin
-      }
-    }
-  `;
+  const allCampaigns: Array<{
+    id: string;
+    chainId: string;
+    claimedCount: string;
+    totalRecipients: string;
+    timestamp: string;
+    expiration: string;
+    admin: string;
+  }> = [];
+  let offset = 0;
+  const limit = 1000;
+  let hasMore = true;
 
   try {
-    const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
-      body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
+    // Fetch ALL campaigns first (with pagination)
+    while (hasMore) {
+      const query = `
+        query GetTopPerformingCampaigns {
+          Campaign(
+            where: {
+              chainId: { _nin: ${JSON.stringify(testnetChainIds)} }
+              claimedCount: { _gte: "10" }
+            }
+            limit: ${limit}
+            offset: ${offset}
+          ) {
+            id
+            chainId
+            claimedCount
+            totalRecipients
+            timestamp
+            expiration
+            admin
+          }
+        }
+      `;
+
+      const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
+        body: JSON.stringify({ query }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: GraphQLResponse<TopPerformingCampaignsResponse> = await response.json();
+
+      if (result.errors) {
+        console.error("GraphQL errors:", result.errors);
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+
+      const batch = result.data.Campaign;
+      allCampaigns.push(...batch);
+
+      hasMore = batch.length === limit;
+      offset += limit;
+    }
+
+    // Now sort ALL campaigns by claimedCount and take top 10
+    const sortedCampaigns = allCampaigns.sort((a, b) => {
+      const claimedA = parseInt(a.claimedCount, 10);
+      const claimedB = parseInt(b.claimedCount, 10);
+      return claimedB - claimedA; // Descending order
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    const top10 = sortedCampaigns.slice(0, 10);
 
-    const result: GraphQLResponse<TopPerformingCampaignsResponse> = await response.json();
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
-    }
-
-    // Transform response to include chain names and claim rates
-    const topCampaigns: TopPerformingCampaign[] = result.data.Campaign.map((campaign) => {
+    // Transform to include chain names and claim rates
+    const topCampaigns: TopPerformingCampaign[] = top10.map((campaign) => {
       const claimedCount = parseInt(campaign.claimedCount, 10);
       const totalRecipients = parseInt(campaign.totalRecipients, 10);
       const claimRate = totalRecipients > 0 ? (claimedCount / totalRecipients) * 100 : 0;
@@ -788,7 +818,7 @@ export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampai
         chainId: campaign.chainId,
         chainName: getMainnetChainName(campaign.chainId),
         claimedCount: campaign.claimedCount,
-        claimRate: Math.round(claimRate * 10) / 10, // Round to 1 decimal place
+        claimRate: Math.floor(claimRate * 10) / 10, // Floor to 1 decimal place (never round up to 100%)
         expiration: campaign.expiration,
         id: campaign.id,
         timestamp: campaign.timestamp,
