@@ -99,7 +99,7 @@ export const CumulativeUserChart = memo(function CumulativeUserChart() {
             },
             title: (context: TooltipItem<"line">[]) => {
               const dataIndex = context[0].dataIndex;
-              return userGrowthData[dataIndex].month;
+              return userGrowthData?.[dataIndex]?.month || "";
             },
           },
           cornerRadius: 6,

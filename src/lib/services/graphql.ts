@@ -2,6 +2,18 @@ import { getTestnetChainIds } from "@/lib/constants/chains";
 import { EVM_STABLECOINS } from "@/lib/constants/stablecoins";
 
 const GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/53b7e25/v1/graphql";
+const BEARER_TOKEN = process.env.HYPERSYNC_BEARER_TOKEN;
+
+// Helper to create headers with bearer token
+function getHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (BEARER_TOKEN) {
+    headers.Authorization = `Bearer ${BEARER_TOKEN}`;
+  }
+  return headers;
+}
 
 export interface GraphQLResponse<T> {
   data: T;
@@ -193,9 +205,7 @@ export async function fetchTotalUsers(): Promise<number> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -236,9 +246,7 @@ export async function fetchTotalTransactions(): Promise<number> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -317,9 +325,7 @@ export async function fetchTimeBasedUserCounts(): Promise<TimeBasedUserCounts> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -402,9 +408,7 @@ export async function fetchTimeBasedTransactionCounts(): Promise<TimeBasedTransa
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -469,9 +473,7 @@ export async function fetchMonthlyUserGrowth(): Promise<MonthlyUserGrowth[]> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -527,9 +529,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
   try {
     const chainResponse = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query: chainQuery }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -569,9 +569,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query: aggregateQuery }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -648,9 +646,7 @@ export async function fetchMonthlyTransactionGrowth(): Promise<MonthlyTransactio
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -750,9 +746,7 @@ export async function fetchGrowthRateMetrics(): Promise<GrowthRateMetrics> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -858,9 +852,7 @@ export async function fetchTopAssetsByStreamCount(): Promise<TopAsset[]> {
 
       const response = await fetch(GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -967,9 +959,7 @@ export async function fetchMonthlyStreamCreation(): Promise<MonthlyStreamCreatio
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1045,9 +1035,7 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1116,9 +1104,7 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
 
       const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query: medianQuery }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -1173,9 +1159,7 @@ export async function fetchStreamDurationStats(): Promise<StreamDurationStats> {
 
       const medianResponse = await fetch(GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query: medianQuery }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -1273,9 +1257,7 @@ export async function fetchStreamProperties(): Promise<StreamProperties> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1360,9 +1342,7 @@ export async function fetchStreamCategoryDistribution(): Promise<StreamCategoryD
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1417,9 +1397,7 @@ export async function fetchTotalVestingStreams(): Promise<number> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1487,9 +1465,7 @@ export async function fetchActiveVsCompletedStreams(): Promise<ActiveVsCompleted
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1593,9 +1569,7 @@ export async function fetchLargestStablecoinStreams(): Promise<StablecoinStream[
 
       const response = await fetch(GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -1666,9 +1640,7 @@ export async function fetch24HourMetrics(): Promise<Activity24Hours> {
   try {
     const response = await fetch(GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -1730,9 +1702,7 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
 
       const response = await fetch(GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -1815,9 +1785,7 @@ export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promis
 
       const response = await fetch(GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 

@@ -70,19 +70,20 @@ export const ChainDistributionChart = memo(function ChainDistributionChart() {
 
               // Show ALL legend entries to match chart data (removed .slice(0, 10))
               return (
-                data.labels?.map((label: string, index: number) => {
+                data.labels?.map((label, index) => {
                   const value = data.datasets[0].data[index];
                   const percentage = ((value / total) * 100).toFixed(1);
+                  const backgroundColor = data.datasets[0].backgroundColor as string[];
 
                   return {
-                    fillStyle: data.datasets[0].backgroundColor[index],
+                    fillStyle: backgroundColor[index],
                     fontColor: theme === "dark" ? "rgb(255, 255, 255)" : "rgb(55, 65, 81)",
                     hidden: false,
                     index: index,
                     lineWidth: 0,
-                    pointStyle: "circle",
+                    pointStyle: "circle" as const,
                     strokeStyle: "transparent",
-                    text: `${label} (${percentage}%)`,
+                    text: `${String(label)} (${percentage}%)`,
                   };
                 }) || []
               );

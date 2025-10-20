@@ -2,6 +2,18 @@ import { getTestnetChainIds } from "@/lib/constants/chains";
 import { EVM_STABLECOINS } from "@/lib/constants/stablecoins";
 
 const FLOW_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/3b4ea6b/v1/graphql";
+const BEARER_TOKEN = process.env.HYPERSYNC_BEARER_TOKEN;
+
+// Helper to create headers with bearer token
+function getHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (BEARER_TOKEN) {
+    headers.Authorization = `Bearer ${BEARER_TOKEN}`;
+  }
+  return headers;
+}
 
 interface GraphQLResponse<T> {
   data: T;
@@ -34,9 +46,7 @@ export async function fetchFlowDeposits(): Promise<number> {
   try {
     const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -99,9 +109,7 @@ export async function fetchFlowStablecoinVolume(): Promise<number> {
 
       const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -175,9 +183,7 @@ export async function fetchFlowStablecoinVolumeTimeRange(days: number): Promise<
 
       const response = await fetch(FLOW_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 

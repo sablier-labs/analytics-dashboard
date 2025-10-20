@@ -13,6 +13,18 @@ import { fetchSolanaStreams24h, fetchSolanaTransactions } from "./solana-lockup-
 // Import EVM endpoints
 const LOCKUP_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/53b7e25/v1/graphql";
 const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/graphql";
+const BEARER_TOKEN = process.env.HYPERSYNC_BEARER_TOKEN;
+
+// Helper to create headers with bearer token
+function getHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (BEARER_TOKEN) {
+    headers.Authorization = `Bearer ${BEARER_TOKEN}`;
+  }
+  return headers;
+}
 
 // Import Solana endpoints
 const SOLANA_LOCKUP_GRAPHQL_ENDPOINT =
@@ -57,7 +69,7 @@ export async function fetchAggregatedTotalUsers(): Promise<number> {
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -91,7 +103,7 @@ export async function fetchAggregatedTotalUsers(): Promise<number> {
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -221,7 +233,7 @@ export async function fetchAggregatedMonthlyUserGrowth(): Promise<
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -256,7 +268,7 @@ export async function fetchAggregatedMonthlyUserGrowth(): Promise<
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -351,7 +363,7 @@ export async function fetchAggregatedTimeBasedUserCounts(): Promise<{
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -415,7 +427,7 @@ export async function fetchAggregatedTimeBasedUserCounts(): Promise<{
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -478,7 +490,7 @@ export async function fetchAggregatedTotalTransactions(): Promise<number> {
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -512,7 +524,7 @@ export async function fetchAggregatedTotalTransactions(): Promise<number> {
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -576,7 +588,7 @@ export async function fetchAggregatedTotalClaims(): Promise<number> {
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -668,7 +680,7 @@ export async function fetchAggregatedTimeBasedTransactionCounts(): Promise<{
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -732,7 +744,7 @@ export async function fetchAggregatedTimeBasedTransactionCounts(): Promise<{
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -812,7 +824,7 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -847,7 +859,7 @@ export async function fetchAggregatedMonthlyTransactionGrowth(): Promise<
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -925,7 +937,7 @@ export async function fetchAggregated24HourMetrics(): Promise<{
 
         const response = await fetch(LOCKUP_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 
@@ -975,7 +987,7 @@ export async function fetchAggregated24HourMetrics(): Promise<{
 
         const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
           body: JSON.stringify({ query }),
-          headers: { "Content-Type": "application/json" },
+          headers: getHeaders(),
           method: "POST",
         });
 

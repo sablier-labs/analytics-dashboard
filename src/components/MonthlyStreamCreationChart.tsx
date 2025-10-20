@@ -99,7 +99,9 @@ export const MonthlyStreamCreationChart = memo(function MonthlyStreamCreationCha
             },
             title: (context: TooltipItem<"line">[]) => {
               const monthIndex = context[0].dataIndex;
-              const [year, month] = streamData[monthIndex].month.split("-");
+              const monthData = streamData?.[monthIndex];
+              if (!monthData) return "";
+              const [year, month] = monthData.month.split("-");
               return new Date(parseInt(year, 10), parseInt(month, 10) - 1).toLocaleDateString(
                 "en-US",
                 {

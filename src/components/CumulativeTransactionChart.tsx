@@ -100,7 +100,7 @@ export const CumulativeTransactionChart = memo(function CumulativeTransactionCha
             },
             title: (context: TooltipItem<"line">[]) => {
               const dataIndex = context[0].dataIndex;
-              return transactionData[dataIndex].month;
+              return transactionData?.[dataIndex]?.month || "";
             },
           },
           cornerRadius: 6,

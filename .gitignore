@@ -1,10 +1,12 @@
 # directories
+.claude
 .next
 dist
 node_modules
 
 # files
 *.env
+.env.local
 *.log
 *.tsbuildinfo
 settings.local.json

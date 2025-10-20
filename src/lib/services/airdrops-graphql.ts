@@ -3,6 +3,18 @@ import { getMainnetChainName, getTestnetChainIds } from "@/lib/constants/chains"
 import { EVM_STABLECOINS } from "@/lib/constants/stablecoins";
 
 const AIRDROPS_GRAPHQL_ENDPOINT = "https://indexer.hyperindex.xyz/508d217/v1/graphql";
+const BEARER_TOKEN = process.env.HYPERSYNC_BEARER_TOKEN;
+
+// Helper to create headers with bearer token
+function getHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (BEARER_TOKEN) {
+    headers.Authorization = `Bearer ${BEARER_TOKEN}`;
+  }
+  return headers;
+}
 
 export interface GraphQLResponse<T> {
   data: T;
@@ -162,9 +174,7 @@ export async function fetchTotalCampaigns(): Promise<number> {
   try {
     const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -229,9 +239,7 @@ export async function fetchMonthlyCampaignCreation(): Promise<MonthlyCampaignCre
   try {
     const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -290,9 +298,7 @@ export async function fetchRecipientParticipation(): Promise<RecipientParticipat
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -368,9 +374,7 @@ export async function fetchMedianClaimers(): Promise<number> {
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -454,9 +458,7 @@ export async function fetchMedianClaimWindow(): Promise<number> {
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -554,9 +556,7 @@ export async function fetchVestingDistribution(): Promise<VestingDistribution> {
   try {
     const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -610,9 +610,7 @@ export async function fetchChainDistribution(): Promise<ChainDistribution[]> {
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -701,9 +699,7 @@ export async function fetchMonthlyClaimTrends(): Promise<MonthlyClaimTrend[]> {
   try {
     const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
       body: JSON.stringify({ query }),
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getHeaders(),
       method: "POST",
     });
 
@@ -774,9 +770,7 @@ export async function fetchTopPerformingCampaigns(): Promise<TopPerformingCampai
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -994,9 +988,7 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
@@ -1071,9 +1063,7 @@ export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Prom
 
       const response = await fetch(AIRDROPS_GRAPHQL_ENDPOINT, {
         body: JSON.stringify({ query }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getHeaders(),
         method: "POST",
       });
 
