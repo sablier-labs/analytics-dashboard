@@ -11,7 +11,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { memo, useMemo, useRef } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
@@ -35,14 +35,14 @@ export const MonthlyClaimTrends = memo(function MonthlyClaimTrends() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
-  const formatMonth = (monthString: string) => {
+  const formatMonth = useCallback((monthString: string) => {
     const [year, month] = monthString.split("-");
     const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1, 1);
     return date.toLocaleDateString("en-US", {
       month: "short",
       year: "numeric",
     });
-  };
+  }, []);
 
   const chartData = useMemo(() => {
     if (!claimData) return { datasets: [], labels: [] };
