@@ -3,7 +3,6 @@
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import { memo, useMemo, useRef } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useAirdropsAnalytics } from "@/hooks/useAirdropsAnalytics";
 import { SharePanel } from "./SharePanel";
 import { SourceCodeLink } from "./SourceCodeLink";
