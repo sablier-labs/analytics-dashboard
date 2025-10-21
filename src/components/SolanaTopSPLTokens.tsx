@@ -9,7 +9,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { memo, useMemo, useRef } from "react";
+import { memo, useCallback, useMemo, useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSolanaAnalytics } from "@/hooks/useSolanaAnalytics";
@@ -23,41 +23,12 @@ export const SolanaTopSPLTokens = memo(function SolanaTopSPLTokens() {
   const { data, isLoading, error } = useSolanaAnalytics();
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-
-  if (isLoading) {
-    return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
-        <div className="animate-pulse">
-          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
-          <div className="h-80 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading top SPL tokens</p>
-        <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
-      </div>
-    );
-  }
-
   const topSPLTokens = data?.topSPLTokens || [];
 
-  if (topSPLTokens.length === 0) {
-    return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
-        <p className="text-text-secondary">No SPL token data available</p>
-      </div>
-    );
-  }
-
-  const truncateAddress = (address: string) => {
+  const truncateAddress = useCallback((address: string) => {
     if (address.length <= 12) return address;
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
+  }, []);
 
   const chartData = useMemo(
     () => ({
@@ -74,7 +45,7 @@ export const SolanaTopSPLTokens = memo(function SolanaTopSPLTokens() {
       ],
       labels: topSPLTokens.map((token) => token.symbol || truncateAddress(token.mint)),
     }),
-    [topSPLTokens, theme],
+    [topSPLTokens, theme, truncateAddress],
   );
 
   const options = useMemo(
@@ -172,8 +143,36 @@ export const SolanaTopSPLTokens = memo(function SolanaTopSPLTokens() {
         },
       },
     }),
-    [theme, topSPLTokens],
+    [theme, topSPLTokens, truncateAddress],
   );
+
+  if (isLoading) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
+        <div className="animate-pulse">
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
+          <div className="h-80 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">Error loading top SPL tokens</p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error.message}</p>
+      </div>
+    );
+  }
+
+  if (topSPLTokens.length === 0) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
+        <p className="text-text-secondary">No SPL token data available</p>
+      </div>
+    );
+  }
 
   return (
     <div
