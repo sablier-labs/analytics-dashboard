@@ -1013,6 +1013,15 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
         }
         const aggregateAmount = BigInt(campaign.aggregateAmount);
         const normalized = Number(aggregateAmount / BigInt(10) ** BigInt(decimals));
+
+        // Debug suspicious values
+        if (normalized > 10_000_000_000) {
+          console.error(`⚠️  Suspicious airdrop volume detected!`);
+          console.error(`   Normalized USD value: $${normalized.toLocaleString()}`);
+          console.error(`   Raw aggregateAmount: ${campaign.aggregateAmount}`);
+          console.error(`   Decimals: ${decimals}`);
+        }
+
         return sum + normalized;
       }, 0);
 
@@ -1088,6 +1097,15 @@ export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Prom
         }
         const aggregateAmount = BigInt(campaign.aggregateAmount);
         const normalized = Number(aggregateAmount / BigInt(10) ** BigInt(decimals));
+
+        // Debug suspicious values
+        if (normalized > 10_000_000_000) {
+          console.error(`⚠️  Suspicious airdrop volume detected!`);
+          console.error(`   Normalized USD value: $${normalized.toLocaleString()}`);
+          console.error(`   Raw aggregateAmount: ${campaign.aggregateAmount}`);
+          console.error(`   Decimals: ${decimals}`);
+        }
+
         return sum + normalized;
       }, 0);
 
