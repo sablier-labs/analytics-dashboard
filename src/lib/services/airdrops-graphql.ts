@@ -950,9 +950,12 @@ export async function getAirdropsCacheInfo(): Promise<{
 
 export interface StablecoinVolumeResponse {
   Campaign: Array<{
+    id: string;
+    chainId: string;
     aggregateAmount: string;
     asset: {
       decimals: string;
+      symbol: string;
     };
   }>;
 }
@@ -978,9 +981,12 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
               }
             }
           ) {
+            id
+            chainId
             aggregateAmount
             asset {
               decimals
+              symbol
             }
           }
         }
@@ -1017,6 +1023,9 @@ export async function fetchAirdropsStablecoinVolume(): Promise<number> {
         // Debug suspicious values
         if (normalized > 10_000_000_000) {
           console.error(`⚠️  Suspicious airdrop volume detected!`);
+          console.error(`   Campaign ID: ${campaign.id}`);
+          console.error(`   Chain ID: ${campaign.chainId}`);
+          console.error(`   Asset: ${campaign.asset.symbol}`);
           console.error(`   Normalized USD value: $${normalized.toLocaleString()}`);
           console.error(`   Raw aggregateAmount: ${campaign.aggregateAmount}`);
           console.error(`   Decimals: ${decimals}`);
@@ -1062,9 +1071,12 @@ export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Prom
               }
             }
           ) {
+            id
+            chainId
             aggregateAmount
             asset {
               decimals
+              symbol
             }
           }
         }
@@ -1101,6 +1113,9 @@ export async function fetchAirdropsStablecoinVolumeTimeRange(days: number): Prom
         // Debug suspicious values
         if (normalized > 10_000_000_000) {
           console.error(`⚠️  Suspicious airdrop volume detected!`);
+          console.error(`   Campaign ID: ${campaign.id}`);
+          console.error(`   Chain ID: ${campaign.chainId}`);
+          console.error(`   Asset: ${campaign.asset.symbol}`);
           console.error(`   Normalized USD value: $${normalized.toLocaleString()}`);
           console.error(`   Raw aggregateAmount: ${campaign.aggregateAmount}`);
           console.error(`   Decimals: ${decimals}`);
