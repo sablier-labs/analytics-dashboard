@@ -19,36 +19,6 @@ export const StreamCategoryDistribution = memo(function StreamCategoryDistributi
   // Use cached data if available, otherwise use fallback data
   const categoryData = data?.streamCategoryDistribution || null;
 
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
-        <div className="animate-pulse">
-          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-48 mb-4"></div>
-          <div className="h-64 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
-        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
-          Error loading stream category distribution
-        </p>
-        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
-      </div>
-    );
-  }
-
-  if (!categoryData || categoryData.total === 0) {
-    return (
-      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
-        <p className="text-text-secondary">No stream category data available</p>
-      </div>
-    );
-  }
-
   const chartData = {
     datasets: [
       {
@@ -63,7 +33,7 @@ export const StreamCategoryDistribution = memo(function StreamCategoryDistributi
           "rgb(253, 186, 116)", // sablier-300
         ],
         borderWidth: 2,
-        data: [categoryData.linear, categoryData.dynamic, categoryData.tranched],
+        data: [categoryData?.linear || 0, categoryData?.dynamic || 0, categoryData?.tranched || 0],
         hoverBackgroundColor: [
           "rgba(255, 80, 1, 0.9)",
           "rgba(154, 52, 18, 0.9)",
@@ -100,7 +70,9 @@ export const StreamCategoryDistribution = memo(function StreamCategoryDistributi
           },
           borderWidth: 0,
           callbacks: {
+            // biome-ignore lint/suspicious/noExplicitAny: Chart.js callback types
             label: (context: any) => {
+              if (!categoryData) return "";
               const value = context.parsed;
               const percentage = ((value / categoryData.total) * 100).toFixed(1);
               const formattedValue = new Intl.NumberFormat().format(value);
@@ -121,6 +93,41 @@ export const StreamCategoryDistribution = memo(function StreamCategoryDistributi
     }),
     [theme, categoryData],
   );
+
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
+        <div className="animate-pulse">
+          <div className="h-6 bg-bg-tertiary dark:bg-surface-hover rounded w-64 mb-4"></div>
+          <div className="h-64 bg-bg-tertiary dark:bg-surface-hover rounded mb-4"></div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="h-16 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
+            <div className="h-16 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
+            <div className="h-16 bg-bg-tertiary dark:bg-surface-hover rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-red-300 dark:border-red-600 shadow-lg p-6 transition-all duration-200 ">
+        <p className="text-sm text-red-600 dark:text-red-400 mb-2">
+          Error loading stream category distribution
+        </p>
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+      </div>
+    );
+  }
+
+  if (!categoryData || categoryData.total === 0) {
+    return (
+      <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
+        <p className="text-text-secondary">No stream category distribution data available</p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -150,26 +157,28 @@ export const StreamCategoryDistribution = memo(function StreamCategoryDistributi
         <Pie data={chartData} options={options} />
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-4 text-center">
-        <div>
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            {((categoryData.linear / categoryData.total) * 100).toFixed(1)}%
+      {categoryData && (
+        <div className="mt-6 grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+              {((categoryData.linear / categoryData.total) * 100).toFixed(1)}%
+            </div>
+            <div className="text-sm text-text-secondary">Linear</div>
           </div>
-          <div className="text-sm text-text-secondary">Linear</div>
-        </div>
-        <div>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {((categoryData.dynamic / categoryData.total) * 100).toFixed(1)}%
+          <div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {((categoryData.dynamic / categoryData.total) * 100).toFixed(1)}%
+            </div>
+            <div className="text-sm text-text-secondary">Dynamic</div>
           </div>
-          <div className="text-sm text-text-secondary">Dynamic</div>
-        </div>
-        <div>
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-            {((categoryData.tranched / categoryData.total) * 100).toFixed(1)}%
+          <div>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              {((categoryData.tranched / categoryData.total) * 100).toFixed(1)}%
+            </div>
+            <div className="text-sm text-text-secondary">Tranched</div>
           </div>
-          <div className="text-sm text-text-secondary">Tranched</div>
         </div>
-      </div>
+      )}
     </div>
   );
 });
