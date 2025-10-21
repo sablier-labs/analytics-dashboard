@@ -38,6 +38,12 @@ export const LargestStablecoinStreams = memo(function LargestStablecoinStreams()
     error: string | null;
   };
 
+  // Streams are already optimized, filtered, and sorted from Edge Config/cache
+  const streams = useMemo(
+    () => data?.largestStablecoinStreams || [],
+    [data?.largestStablecoinStreams],
+  );
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
@@ -63,12 +69,6 @@ export const LargestStablecoinStreams = memo(function LargestStablecoinStreams()
       </div>
     );
   }
-
-  // Streams are already optimized, filtered, and sorted from Edge Config/cache
-  const streams = useMemo(
-    () => data?.largestStablecoinStreams || [],
-    [data?.largestStablecoinStreams],
-  );
 
   return (
     <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">

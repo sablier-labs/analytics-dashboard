@@ -44,6 +44,11 @@ export const TopPerformingCampaigns = memo(function TopPerformingCampaigns() {
   };
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const campaigns = useMemo(
+    () => data?.topPerformingCampaigns || [],
+    [data?.topPerformingCampaigns],
+  );
+
   if (isLoading) {
     return (
       <div className="bg-white dark:bg-bg-secondary rounded-xl border border-border-default shadow-lg p-6 transition-all duration-200 ">
@@ -72,11 +77,6 @@ export const TopPerformingCampaigns = memo(function TopPerformingCampaigns() {
       </div>
     );
   }
-
-  const campaigns = useMemo(
-    () => data?.topPerformingCampaigns || [],
-    [data?.topPerformingCampaigns],
-  );
 
   if (campaigns.length === 0) {
     return (
