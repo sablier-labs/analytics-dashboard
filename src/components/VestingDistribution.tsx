@@ -12,10 +12,72 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export const VestingDistribution = memo(function VestingDistribution() {
   const { data, isLoading, error } = useAirdropsAnalytics();
-  const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const vestingData = data?.vestingDistribution || null;
+  const total = vestingData ? vestingData.instant + vestingData.vesting : 0;
+
+  const chartData = {
+    datasets: [
+      {
+        backgroundColor: [
+          "rgba(59, 130, 246, 0.8)", // Blue for instant
+          "rgba(249, 115, 22, 0.8)", // Orange for vesting
+        ],
+        borderColor: [
+          "rgb(59, 130, 246)", // Blue border
+          "rgb(249, 115, 22)", // Orange border
+        ],
+        borderWidth: 2,
+        cutout: "60%", // This creates the donut effect
+        data: [vestingData?.instant || 0, vestingData?.vesting || 0],
+        hoverBackgroundColor: ["rgba(59, 130, 246, 0.9)", "rgba(249, 115, 22, 0.9)"],
+      },
+    ],
+    labels: ["Instant", "Vesting"],
+  };
+
+  const options = useMemo(
+    () => ({
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false, // We'll create custom legend below
+        },
+        tooltip: {
+          backgroundColor: "rgba(0, 0, 0, 0.9)",
+          bodyColor: "rgb(255, 255, 255)",
+          bodyFont: {
+            size: 12,
+          },
+          borderWidth: 0,
+          callbacks: {
+            // biome-ignore lint/suspicious/noExplicitAny: Chart.js callback types
+            label: (context: any) => {
+              const value = context.parsed;
+              const percentage = ((value / total) * 100).toFixed(1);
+              const formattedValue = new Intl.NumberFormat().format(value);
+              return `${context.label}: ${formattedValue} campaigns (${percentage}%)`;
+            },
+          },
+          cornerRadius: 6,
+          displayColors: true,
+          padding: 12,
+          titleColor: "rgb(255, 255, 255)",
+          titleFont: {
+            size: 13,
+            weight: "bold" as const,
+          },
+        },
+      },
+      responsive: true,
+    }),
+    [total],
+  );
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat().format(num);
+  };
 
   if (isLoading) {
     return (
@@ -50,69 +112,6 @@ export const VestingDistribution = memo(function VestingDistribution() {
       </div>
     );
   }
-
-  const total = vestingData.instant + vestingData.vesting;
-
-  const chartData = {
-    datasets: [
-      {
-        backgroundColor: [
-          "rgba(59, 130, 246, 0.8)", // Blue for instant
-          "rgba(249, 115, 22, 0.8)", // Orange for vesting
-        ],
-        borderColor: [
-          "rgb(59, 130, 246)", // Blue border
-          "rgb(249, 115, 22)", // Orange border
-        ],
-        borderWidth: 2,
-        cutout: "60%", // This creates the donut effect
-        data: [vestingData.instant, vestingData.vesting],
-        hoverBackgroundColor: ["rgba(59, 130, 246, 0.9)", "rgba(249, 115, 22, 0.9)"],
-      },
-    ],
-    labels: ["Instant", "Vesting"],
-  };
-
-  const options = useMemo(
-    () => ({
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false, // We'll create custom legend below
-        },
-        tooltip: {
-          backgroundColor: "rgba(0, 0, 0, 0.9)",
-          bodyColor: "rgb(255, 255, 255)",
-          bodyFont: {
-            size: 12,
-          },
-          borderWidth: 0,
-          callbacks: {
-            label: (context: any) => {
-              const value = context.parsed;
-              const percentage = ((value / total) * 100).toFixed(1);
-              const formattedValue = new Intl.NumberFormat().format(value);
-              return `${context.label}: ${formattedValue} campaigns (${percentage}%)`;
-            },
-          },
-          cornerRadius: 6,
-          displayColors: true,
-          padding: 12,
-          titleColor: "rgb(255, 255, 255)",
-          titleFont: {
-            size: 13,
-            weight: "bold" as const,
-          },
-        },
-      },
-      responsive: true,
-    }),
-    [total],
-  );
-
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat().format(num);
-  };
 
   return (
     <div
