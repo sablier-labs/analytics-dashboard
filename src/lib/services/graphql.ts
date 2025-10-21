@@ -1733,8 +1733,8 @@ export async function fetchLockupStablecoinVolume(): Promise<number> {
           throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
         }
         const depositAmount = BigInt(stream.depositAmount);
-        // Convert to Number before division to preserve decimal precision
-        const normalized = Number(depositAmount) / Number(BigInt(10) ** BigInt(decimals));
+        // Divide first (in BigInt) to preserve precision, then convert to Number
+        const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 
@@ -1816,8 +1816,8 @@ export async function fetchLockupStablecoinVolumeTimeRange(days: number): Promis
           throw new Error(`Invalid decimals value: ${stream.asset.decimals}`);
         }
         const depositAmount = BigInt(stream.depositAmount);
-        // Convert to Number before division to preserve decimal precision
-        const normalized = Number(depositAmount) / Number(BigInt(10) ** BigInt(decimals));
+        // Divide first (in BigInt) to preserve precision, then convert to Number
+        const normalized = Number(depositAmount / BigInt(10) ** BigInt(decimals));
         return sum + normalized;
       }, 0);
 
